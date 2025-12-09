@@ -1,0 +1,718 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+/* ============================================================================
+   RESET E VARIABILI GLOBALI
+   ========================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+  text-decoration: none;
+  list-style: none;
+}
+
+/* ===== VARIABILI COLORI - MOBISHARE ===== */
+:root {
+  /* Colori primari - Teal (mobilità sostenibile) */
+  --primary-teal: #0ea5a8;
+  --primary-teal-dark: #0d9488;
+
+  /* Colori secondari - Verde (eco-friendly) */
+  --secondary-green: #10b981;
+
+  /* Colori neutrali */
+  --light-bg: #f0fdf4;
+  --white: #fff;
+  --dark-text: #333;
+  --light-text: #888;
+
+  /* Colori feedback */
+  --error-bg: #ffe6e6;
+  --error-color: #ff4444;
+  --error-dark: #cc0000;
+  --success-bg: #e6ffe6;
+  --success-color: #44dd44;
+  --success-dark: #00aa00;
+
+  /* Transizioni */
+  --transition-fast: 0.3s;
+  --transition-medium: 0.6s ease-in-out;
+  --transition-slow: 1.8s ease-in-out;
+}
+
+/* ============================================================================
+   LAYOUT BASE
+   ========================================================================== */
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(
+    135deg,
+    #f0fdf4 0%,
+    #ecfdf5 15%,
+    #d1fae5 30%,
+    #a7f3d0 50%,
+    #6ee7b7 70%,
+    #34d399 85%,
+    #10b981 100%
+  );
+  background-attachment: fixed;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   CONTAINER PRINCIPALE
+   ========================================================================== */
+
+.container {
+  position: relative;
+  width: 950px;
+  height: 650px;
+  background: var(--white);
+  margin: auto;
+  border-radius: 30px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.container h1 {
+  font-size: 36px;
+  margin: -10px 0;
+}
+
+.container p {
+  font-size: 14.5px;
+  margin: 15px 0;
+}
+
+/* ============================================================================
+   FORM BOX
+   ========================================================================== */
+
+form {
+  width: 100%;
+}
+
+.form-box {
+  position: absolute;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--dark-text);
+  text-align: center;
+  padding: 40px;
+  z-index: 1;
+  transition: var(--transition-medium) 1.2s;
+  visibility: hidden;
+}
+
+.form-box.login {
+  visibility: visible;
+}
+
+.container.active .form-box {
+  right: 50%;
+}
+
+.container.active .form-box.register {
+  visibility: visible;
+}
+
+/* ============================================================================
+   INPUT BOX
+   ========================================================================== */
+
+.input-box {
+  position: relative;
+  margin: 30px 0 15px 0;
+}
+
+.input-box input {
+  width: 100%;
+  padding: 13px 50px 13px 20px;
+  background: #eee;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  outline: none;
+  font-size: 16px;
+  color: var(--dark-text);
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.input-box input::placeholder {
+  color: var(--light-text);
+  font-weight: 400;
+}
+
+.input-box input:focus {
+  background: #f5f5f5;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(14, 165, 168, 0.1);
+}
+
+.input-box i {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: var(--light-text);
+}
+
+/* ===== PASSWORD INPUT BOX ===== */
+.password-input-box {
+  position: relative;
+}
+
+.toggle-password {
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--transition-fast);
+  pointer-events: all !important;
+}
+
+/* ============================================================================
+   LINK
+   ========================================================================== */
+
+.forget-link {
+  margin: -5px 0 15px;
+}
+
+.forget-link a {
+  font-size: 14.5px;
+  color: var(--dark-text);
+  transition: var(--transition-fast);
+}
+
+.forget-link a:hover {
+  color: var(--primary-teal);
+}
+
+/* ============================================================================
+   BUTTON
+   ========================================================================== */
+
+.btn {
+  width: 100%;
+  height: 48px;
+  background: var(--primary-teal);
+  border: none;
+  border-radius: 8px;
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(14, 165, 168, 0.3);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn:hover {
+  background: var(--primary-teal-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(14, 165, 168, 0.4);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* ============================================================================
+   TOGGLE BOX
+   ========================================================================== */
+
+.toggle-box {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.toggle-box::before {
+  content: "";
+  position: absolute;
+  left: -250%;
+  width: 300%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    var(--primary-teal),
+    var(--secondary-green)
+  );
+  border-radius: 150px;
+  z-index: 2;
+  transition: var(--transition-slow);
+}
+
+.container.active .toggle-box::before {
+  left: 50%;
+}
+
+.toggle-panel {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  transition: var(--transition-medium);
+}
+
+.toggle-panel.toggle-left {
+  left: 0;
+  transition-delay: 1.2s;
+}
+
+.container.active .toggle-panel.toggle-left {
+  left: -50%;
+  transition-delay: 0.6s;
+}
+
+.toggle-panel.toggle-right {
+  right: -50%;
+  transition-delay: 0.6s;
+}
+
+.container.active .toggle-panel.toggle-right {
+  right: 0;
+  transition-delay: 1.2s;
+}
+
+.toggle-panel h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.toggle-panel p {
+  margin-bottom: 20px;
+  font-size: 14.5px;
+}
+
+.toggle-panel .btn {
+  width: 160px;
+  height: 46px;
+  background: transparent;
+  border: 2px solid var(--white);
+  box-shadow: none;
+}
+
+.toggle-panel .btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================================
+   MESSAGGI ERRORE
+   ========================================================================== */
+
+.error-messages {
+  margin: 15px 0;
+  padding: 10px;
+  background-color: var(--error-bg);
+  border: 1.5px solid var(--error-color);
+  border-radius: 5px;
+  display: none;
+  text-align: center;
+}
+
+.error-messages:not(:empty) {
+  display: block;
+  animation: slideUp 0.3s ease;
+}
+
+.error-message {
+  color: var(--error-dark);
+  font-size: 14px;
+  margin: 5px 0;
+  font-weight: 500;
+}
+
+.input-error {
+  border: 2px solid var(--error-color) !important;
+  background-color: #fff5f5 !important;
+}
+
+.input-error:focus {
+  border: 2px solid var(--error-color) !important;
+  box-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+}
+
+/* ============================================================================
+   MESSAGGI SUCCESSO
+   ========================================================================== */
+
+.success-message {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: var(--success-bg);
+  border: 1.5px solid var(--success-color);
+  border-radius: 5px;
+  color: var(--success-dark);
+  font-weight: 500;
+  text-align: center;
+  animation: slideUp 0.3s ease;
+}
+
+/* ============================================================================
+   MODALE
+   ========================================================================== */
+
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background-color: var(--white);
+  padding: 40px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+.modal-content h2 {
+  color: var(--dark-text);
+  font-size: 24px;
+  margin-bottom: 15px;
+  margin-top: 0;
+}
+
+.modal-content p {
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  color: var(--dark-text);
+}
+
+.close {
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #999;
+  transition: var(--transition-fast);
+}
+
+.close:hover {
+  color: var(--dark-text);
+}
+
+.modal-button-group {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+.btn-modal-cancel {
+  background: var(--white);
+  color: var(--dark-text);
+  border: 1px solid var(--error-color);
+  box-shadow: none;
+}
+
+.btn-modal-cancel:hover {
+  background: #fff5f5;
+  border-color: var(--error-color);
+  color: var(--error-color);
+  transform: translateY(-2px);
+}
+
+/* ============================================================================
+   ANIMAZIONI
+   ========================================================================== */
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - SCHERMI MEDI (1024px)
+   ========================================================================== */
+
+@media (max-width: 1023px) {
+  .container {
+    width: 95%;
+    margin: auto;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - SCHERMI PICCOLI (768px)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .form-box {
+    padding: 20px;
+  }
+
+  .container h1 {
+    font-size: 28px;
+    margin: -5px 0;
+  }
+
+  .container p {
+    font-size: 13px;
+    margin: 12px 0;
+  }
+
+  .input-box {
+    margin: 20px 0;
+  }
+
+  .input-box input {
+    padding: 10px 40px 10px 15px;
+    font-size: 14px;
+  }
+
+  .input-box i {
+    right: 15px;
+    font-size: 18px;
+  }
+
+  .forget-link {
+    margin: -10px 0 10px;
+  }
+
+  .forget-link a {
+    font-size: 13px;
+  }
+
+  .btn {
+    height: 42px;
+    font-size: 14px;
+  }
+
+  .toggle-panel h1 {
+    font-size: 26px;
+    margin-bottom: 8px;
+  }
+
+  .toggle-panel p {
+    margin-bottom: 15px;
+    font-size: 13px;
+  }
+
+  .toggle-panel .btn {
+    width: 140px;
+    height: 40px;
+    font-size: 13px;
+  }
+
+  .modal-content {
+    padding: 30px;
+  }
+
+  .modal-content h2 {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .modal-content p {
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+
+  .close {
+    font-size: 24px;
+  }
+
+  .modal-button-group {
+    grid-template-columns: 1fr 1.5fr;
+    gap: 8px;
+    margin-top: 15px;
+  }
+
+  .error-message {
+    font-size: 13px;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - SCHERMI MOLTO PICCOLI (650px)
+   ========================================================================== */
+
+@media screen and (max-width: 650px) {
+  .container {
+    height: calc(100vh - 40px);
+  }
+
+  .form-box {
+    bottom: 0;
+    width: 100%;
+    height: 70%;
+  }
+
+  .container.active .form-box {
+    right: 0;
+    bottom: 30%;
+  }
+
+  .toggle-box::before {
+    left: 0;
+    top: -270%;
+    width: 100%;
+    height: 300%;
+    border-radius: 20vw;
+  }
+
+  .container.active .toggle-box::before {
+    left: 0;
+    top: 70%;
+  }
+
+  .toggle-panel {
+    width: 100%;
+    height: 30%;
+  }
+
+  .toggle-panel.toggle-left {
+    top: 0;
+  }
+
+  .container.active .toggle-panel.toggle-left {
+    left: 0;
+    top: -30%;
+  }
+
+  .toggle-panel.toggle-right {
+    right: 0;
+    bottom: -30%;
+  }
+
+  .container.active .toggle-panel.toggle-right {
+    bottom: 0;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - MOBILE (480px)
+   ========================================================================== */
+
+@media screen and (max-width: 480px) {
+  .container h1 {
+    font-size: 22px;
+    margin: -3px 0;
+  }
+
+  .container p {
+    font-size: 12px;
+    margin: 8px 0;
+  }
+
+  .input-box {
+    margin: 15px 0;
+  }
+
+  .input-box input {
+    padding: 8px 35px 8px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+
+  .input-box i {
+    right: 12px;
+    font-size: 16px;
+  }
+
+  .forget-link a {
+    font-size: 12px;
+  }
+
+  .btn {
+    height: 38px;
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .form-box {
+    padding: 15px;
+  }
+
+  .toggle-panel h1 {
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+
+  .toggle-panel p {
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+
+  .toggle-panel .btn {
+    width: 120px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .modal-content {
+    padding: 20px;
+    border-radius: 8px;
+  }
+
+  .modal-content h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .modal-content p {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .close {
+    font-size: 20px;
+  }
+
+  .modal-button-group {
+    grid-template-columns: 1fr 1.2fr;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .error-message {
+    font-size: 12px;
+    margin: 3px 0;
+  }
+}

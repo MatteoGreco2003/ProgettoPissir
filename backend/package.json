@@ -1,0 +1,33 @@
+{
+  "name": "mobishare-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend API per Mobishare",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "mobishare",
+    "mobility",
+    "sharing"
+  ],
+  "author": "Matteo & Francesco",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "latest",
+    "cors": "latest",
+    "dotenv": "latest",
+    "ejs": "^3.1.10",
+    "express": "latest",
+    "jsonwebtoken": "latest",
+    "mqtt": "latest",
+    "pg": "latest",
+    "pg-hstore": "latest",
+    "sequelize": "latest"
+  },
+  "devDependencies": {
+    "nodemon": "latest"
+  }
+}
