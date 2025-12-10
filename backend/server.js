@@ -1,11 +1,15 @@
 import express from "express";
 import cors from "cors";
-import { Sequelize } from "sequelize";
+import sequelize from "./config/database.js";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.js";
 import usersRoutes from "./routes/users.js";
+import pagesRoutes from "./routes/pages.js";
+import vehicleRoutes from "./routes/vehicles.js";
+import "./models/associations.js"; //!dopo parking e vehicles
+import cookieParser from "cookie-parser";
 
 // Carica variabili d'ambiente
 dotenv.config();
@@ -19,29 +23,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // ========== CONFIGURAZIONE EJS ==========
-// Motor per renderizzare i template EJS
 app.set("view engine", "ejs");
-// Punta alla cartella frontend/views
-app.set("views", "../frontend/views");
+app.set("views", path.join(__dirname, "../frontend/views"));
 
 // ========== SERVIRE FILE STATICI ==========
-// CSS, JS, IMG da frontend/public
 app.use(express.static(path.join(__dirname, "../frontend/public")));
-
-// Setup Database Connection
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    dialect: "postgres",
-    logging: false, // Metti true per debug SQL queries
-  }
-);
 
 // Test connessione database
 async function initDB() {
@@ -54,17 +43,24 @@ async function initDB() {
   }
 }
 
-// ✅ Routes
-// Health check endpoint
+// ========== ROUTES ==========
+
+// Health check API
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running" });
 });
-// Pagina login (homepage)
-app.get("/", (req, res) => {
-  res.render("auth"); // Renderizza frontend/views/login.ejs
-});
+
+//route
+// pagesRoutes (renderizza le pagine server-side)
+app.use("/", pagesRoutes);
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
+app.use("/vehicles", vehicleRoutes);
+
+// 404 Handler
+app.use((req, res) => {
+  res.status(404).render("404", { title: "Pagina non trovata" });
+});
 
 // Start server
 const PORT = process.env.PORT || 3000;

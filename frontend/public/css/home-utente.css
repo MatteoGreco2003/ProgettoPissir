@@ -1,0 +1,655 @@
+/* ===== COLORI PRINCIPALI (6 SOLI) ===== */
+:root {
+  --primary-teal: rgba(33, 128, 141, 1);
+  --primary-teal-dark: rgba(29, 116, 128, 1);
+  --success-green: rgba(33, 128, 141, 1);
+  --error-red: rgba(192, 21, 47, 1);
+  --light-bg: rgba(252, 252, 249, 1);
+  --dark-text: rgba(19, 52, 59, 1);
+  --light-text: rgba(98, 108, 113, 1);
+  --white: rgba(255, 255, 255, 1);
+  --border-color: rgba(94, 82, 64, 0.2);
+}
+
+/* ===== LAYOUT BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: var(--light-bg);
+  color: var(--dark-text);
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  background-color: var(--white);
+  border-bottom: 1px solid var(--border-color);
+  padding: 16px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-logo {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-teal);
+}
+
+.navbar-greeting {
+  font-size: 14px;
+  color: var(--light-text);
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 60px;
+  width: 250px;
+  height: calc(100vh - 60px);
+  background-color: var(--white);
+  border-right: 1px solid var(--border-color);
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: var(--light-text);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 150ms ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(33, 128, 141, 0.1);
+  color: var(--primary-teal);
+}
+
+.nav-item.active {
+  background-color: rgba(33, 128, 141, 0.15);
+  color: var(--primary-teal);
+  border-left: 3px solid var(--primary-teal);
+  padding-left: 13px;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  margin-left: 250px;
+  margin-top: 60px;
+  padding: 24px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--dark-text);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ===== CARD ===== */
+.card {
+  background-color: var(--white);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: box-shadow 250ms ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: rgba(94, 82, 64, 0.08);
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 550;
+  color: var(--dark-text);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* ===== PARKING GRID ===== */
+.parking-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.parking-card {
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 250ms ease;
+}
+
+.parking-card--available {
+  background-color: rgba(33, 128, 141, 0.1);
+  border-color: var(--success-green);
+}
+
+.parking-card--available:hover {
+  background-color: rgba(33, 128, 141, 0.15);
+  transform: translateY(-4px);
+}
+
+.parking-card--unavailable {
+  background-color: rgba(94, 82, 64, 0.08);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.parking-name {
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--dark-text);
+}
+
+.parking-count {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-teal);
+}
+
+/* ===== VEHICLES GRID ===== */
+.vehicles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.vehicle-card {
+  background-color: var(--white);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: all 250ms ease;
+}
+
+.vehicle-card:hover {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.vehicle-header {
+  padding: 16px;
+  background-color: rgba(94, 82, 64, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.vehicle-icon {
+  font-size: 20px;
+  color: var(--primary-teal);
+}
+
+.vehicle-info {
+  flex: 1;
+}
+
+.vehicle-id {
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+.vehicle-type {
+  font-size: 12px;
+  color: var(--light-text);
+}
+
+.vehicle-battery {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vehicle-battery--good {
+  background-color: rgba(33, 128, 141, 0.15);
+  color: var(--success-green);
+}
+
+.vehicle-battery--warning {
+  background-color: rgba(230, 129, 97, 0.15);
+  color: #e68161;
+}
+
+.vehicle-details {
+  padding: 16px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.detail-label {
+  color: var(--light-text);
+}
+
+.detail-value {
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+.vehicle-actions {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.vehicle-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary-teal);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 250ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.vehicle-btn:hover:not(:disabled) {
+  background-color: var(--primary-teal-dark);
+  transform: translateY(-2px);
+}
+
+.vehicle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== STATS ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--white);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card--primary {
+  background: linear-gradient(
+    135deg,
+    var(--primary-teal),
+    var(--primary-teal-dark)
+  );
+}
+
+.stat-card--success {
+  background: linear-gradient(
+    135deg,
+    var(--success-green),
+    var(--primary-teal-dark)
+  );
+}
+
+.stat-card--error {
+  background: linear-gradient(135deg, var(--error-red), #c01530);
+}
+
+.stat-icon {
+  font-size: 30px;
+  opacity: 0.8;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* ===== FORM ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--light-text);
+}
+
+.form-group input,
+.form-group select {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--white);
+  color: var(--dark-text);
+  font-size: 14px;
+  font-family: "Poppins", sans-serif;
+  transition: all 150ms ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
+}
+
+/* ===== CREDITO ===== */
+.credit-display {
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.credit-amount {
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--primary-teal);
+  margin-bottom: 16px;
+}
+
+.credit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.credit-badge--success {
+  background-color: rgba(33, 128, 141, 0.15);
+  color: var(--success-green);
+}
+
+.credit-badge--warning {
+  background-color: rgba(230, 129, 97, 0.15);
+  color: #e68161;
+}
+
+/* ===== TRANSAZIONI ===== */
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transaction-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  transition: all 150ms ease;
+}
+
+.transaction-item:hover {
+  background-color: rgba(94, 82, 64, 0.04);
+}
+
+.transaction-icon {
+  font-size: 16px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.transaction-icon--credit {
+  background-color: rgba(33, 128, 141, 0.15);
+  color: var(--success-green);
+}
+
+.transaction-icon--debit {
+  background-color: rgba(192, 21, 47, 0.15);
+  color: var(--error-red);
+}
+
+.transaction-details {
+  flex: 1;
+}
+
+.transaction-type {
+  font-weight: 600;
+  color: var(--dark-text);
+  margin-bottom: 4px;
+}
+
+.transaction-date {
+  font-size: 12px;
+  color: var(--light-text);
+}
+
+.transaction-amount {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.transaction-amount--credit {
+  background-color: rgba(33, 128, 141, 0.15);
+  color: var(--success-green);
+}
+
+.transaction-amount--debit {
+  background-color: rgba(192, 21, 47, 0.15);
+  color: var(--error-red);
+}
+
+/* ===== SNACKBAR ===== */
+.snackbar {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--success-green);
+  color: var(--white);
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(100px);
+  transition: all 250ms ease;
+  z-index: 1000;
+  max-width: 400px;
+}
+
+.snackbar.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.snackbar--error {
+  background-color: var(--error-red);
+}
+
+.snackbar--warning {
+  background-color: #e68161;
+}
+
+/* ===== TABS ===== */
+.tabs-container {
+  display: flex;
+  gap: 12px;
+  border-bottom: 2px solid var(--border-color);
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+
+.tab-btn {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--light-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 150ms ease;
+}
+
+.tab-btn:hover {
+  color: var(--primary-teal);
+}
+
+.tab-btn.active {
+  color: var(--primary-teal);
+  border-bottom-color: var(--primary-teal);
+}
+
+/* ===== RESPONSIVE - TABLET ===== */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -250px;
+    transition: left 250ms ease;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 16px;
+  }
+
+  .vehicles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .navbar-greeting {
+    display: none;
+  }
+}
+
+/* ===== RESPONSIVE - MOBILE ===== */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 12px;
+  }
+
+  .page-title {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    padding: 12px;
+  }
+
+  .card-body {
+    padding: 12px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 16px;
+  }
+
+  .parking-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .vehicle-card {
+    margin-bottom: 0;
+  }
+
+  .transaction-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .snackbar {
+    left: 16px;
+    right: 16px;
+    max-width: none;
+    font-size: 12px;
+  }
+}

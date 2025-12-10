@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MobiShare - Home Utente</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/css/home-utente.css" />
+  </head>
+
+  <body>
+    <!-- ===== APP CONTAINER ===== -->
+    <div id="app">
+      <!-- ===== NAVBAR ===== -->
+      <nav class="navbar">
+        <div class="navbar-container">
+          <!-- Logo -->
+          <div class="navbar-logo">
+            <i class="fas fa-bicycle"></i>
+            <span>MobiShare</span>
+          </div>
+
+          <!-- User Greeting -->
+          <div class="navbar-greeting">
+            <i class="fas fa-user-circle"></i>
+            <span id="userName">Ciao, Utente</span>
+          </div>
+
+          <!-- Menu Toggle Button -->
+          <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </nav>
+
+      <!-- ===== SIDEBAR ===== -->
+      <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-page="homepage">
+            <i class="fas fa-home"></i>
+            <span>Homepage</span>
+          </button>
+          <button class="nav-item" data-page="profile">
+            <i class="fas fa-user"></i>
+            <span>Profilo Utente</span>
+          </button>
+          <button class="nav-item" data-page="credit">
+            <i class="fas fa-wallet"></i>
+            <span>Gestione Credito</span>
+          </button>
+        </nav>
+
+        <hr class="sidebar-divider" />
+
+        <button class="nav-item logout-btn" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </aside>
+
+      <!-- ===== MAIN CONTENT ===== -->
+      <main class="main-content">
+        <div class="container">
+          <!-- ===== HOMEPAGE ===== -->
+          <section id="homepage" class="page-section active">
+            <h1 class="page-title">
+              <i class="fas fa-lock-open"></i>
+              Prenota un mezzo!
+            </h1>
+
+            <!-- Mappa Parcheggi -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-map-marker-alt"></i>
+                  Mappa Parcheggi
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="parking-grid" id="parkingGrid">
+                  <!-- Generato dinamicamente -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabs Filtro Mezzi -->
+            <div class="tabs-container mb-6">
+              <button class="tab-btn active" data-tab="all">Tutti</button>
+              <button class="tab-btn" data-tab="Elettrico">
+                E-Bike/Monopattini
+              </button>
+              <button class="tab-btn" data-tab="Muscolare">
+                Bici Muscolari
+              </button>
+            </div>
+
+            <!-- Lista Mezzi -->
+            <div class="vehicles-grid" id="vehiclesGrid">
+              <!-- Generato dinamicamente -->
+            </div>
+          </section>
+
+          <!-- ===== PROFILO UTENTE ===== -->
+          <section id="profile" class="page-section">
+            <h1 class="page-title">
+              <i class="fas fa-user"></i>
+              Profilo Utente
+            </h1>
+
+            <!-- Dati Utente -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-id-card"></i>
+                  I miei dati
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text" id="profileNome" readonly />
+                  </div>
+                  <div class="form-group">
+                    <label>Cognome</label>
+                    <input type="text" id="profileCognome" readonly />
+                  </div>
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmail" readonly />
+                  </div>
+                  <div class="form-group">
+                    <label>ID Utente</label>
+                    <input type="text" id="profileId" readonly />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Statistiche Corse -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-chart-line"></i>
+                  Statistiche Corse
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="stats-grid">
+                  <div class="stat-card stat-card--primary">
+                    <div class="stat-icon">
+                      <i class="fas fa-bicycle"></i>
+                    </div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="totalRides">0</div>
+                      <div class="stat-label">Corse Totali</div>
+                    </div>
+                  </div>
+
+                  <div class="stat-card stat-card--success">
+                    <div class="stat-icon">
+                      <i class="fas fa-road"></i>
+                    </div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="totalDistance">0 km</div>
+                      <div class="stat-label">Km Percorsi</div>
+                    </div>
+                  </div>
+
+                  <div class="stat-card stat-card--warning">
+                    <div class="stat-icon">
+                      <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="totalSpent">€0.00</div>
+                      <div class="stat-label">Euro Spesi</div>
+                    </div>
+                  </div>
+
+                  <div class="stat-card stat-card--info">
+                    <div class="stat-icon">
+                      <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="loyaltyPoints">0</div>
+                      <div class="stat-label">Punti Fedeltà</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===== GESTIONE CREDITO ===== -->
+          <section id="credit" class="page-section">
+            <h1 class="page-title">
+              <i class="fas fa-wallet"></i>
+              Gestione Credito
+            </h1>
+
+            <!-- Credito Disponibile -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-piggy-bank"></i>
+                  Credito Disponibile
+                </h2>
+              </div>
+              <div class="card-body credit-display">
+                <div class="credit-amount" id="creditAmount">€0.00</div>
+                <div
+                  id="creditStatus"
+                  class="credit-badge credit-badge--success"
+                >
+                  <i class="fas fa-check-circle"></i>
+                  Credito Sufficiente
+                </div>
+              </div>
+            </div>
+
+            <!-- Ricarica Credito -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-credit-card"></i>
+                  Ricarica Credito
+                </h2>
+              </div>
+              <div class="card-body">
+                <form id="rechargeForm" class="recharge-form">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="rechargeAmount">Importo da ricaricare</label>
+                      <select id="rechargeAmount" required>
+                        <option value="">Seleziona importo</option>
+                        <option value="5">€5</option>
+                        <option value="10">€10</option>
+                        <option value="20">€20</option>
+                        <option value="50">€50</option>
+                        <option value="100">€100</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="paymentMethod">Metodo di pagamento</label>
+                      <select id="paymentMethod" required>
+                        <option value="">Seleziona metodo</option>
+                        <option value="credit_card">Carta di Credito</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="bank_transfer">Bonifico</option>
+                        <option value="satispay">Satispay</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn--primary btn--large">
+                    <i class="fas fa-plus"></i>
+                    Ricarica Credito
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Storico Transazioni -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-history"></i>
+                  Storico Transazioni
+                </h2>
+              </div>
+              <div class="card-body">
+                <div id="transactionsList" class="transactions-list">
+                  <!-- Generato dinamicamente -->
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== SNACKBAR NOTIFICHE ===== -->
+    <div id="snackbar" class="snackbar"></div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="/js/home-utente.js"></script>
+  </body>
+</html>

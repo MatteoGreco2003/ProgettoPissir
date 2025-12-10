@@ -7,6 +7,7 @@ import Ride from "./models/Ride.js";
 import Transaction from "./models/Transaction.js";
 import Report from "./models/Report.js";
 import Feedback from "./models/Feedback.js";
+import "./models/associations.js";
 
 console.log("🔄 Sincronizzando models con database...");
 

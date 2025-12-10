@@ -141,7 +141,7 @@ function showErrors(formType, errors) {
   errors.forEach((error) => {
     const errorDiv = document.createElement("div");
     errorDiv.className = "error-message";
-    errorDiv.textContent = error;
+    errorDiv.textContent = "⚠️ " + error;
     errorContainer.appendChild(errorDiv);
   });
 }
@@ -157,7 +157,7 @@ function showErrorsForgotPass(errors) {
   errors.forEach((error) => {
     const errorDiv = document.createElement("div");
     errorDiv.className = "error-message";
-    errorDiv.textContent = error;
+    errorDiv.textContent = "⚠️ " + error;
     errorContainer.appendChild(errorDiv);
   });
 }
