@@ -1,0 +1,128 @@
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Menu Toggle Mobile (SINISTRA) -->
+    <button class="menu-toggle" id="menuToggle">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- User Info (CENTRO - scompare a 768px) - CLICKABLE -->
+    <div
+      class="navbar-user-info"
+      id="userProfileArea"
+      style="cursor: pointer"
+      title="Clicca per ricaricare"
+    >
+      <!-- Avatar con iniziale -->
+      <div class="user-avatar" id="userAvatar">
+        <span id="userInitial">M</span>
+      </div>
+      <div class="user-details">
+        <span class="user-name" id="userNameNavbar">Matteo Rossi</span>
+        <span class="user-role">Utente</span>
+      </div>
+    </div>
+
+    <!-- Logout (DESTRA) -->
+    <div class="navbar-right">
+      <button class="logout-btn" id="logoutBtn">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Disconnettiti</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== SCRIPT INLINE PER NAVBAR ===== -->
+<script>
+  // Snackbar function
+  function showSnackbar(message, type = "success") {
+    const snackbar = document.getElementById("snackbar");
+    if (snackbar) {
+      snackbar.textContent = message;
+      snackbar.className = `snackbar show snackbar--${type}`;
+      setTimeout(() => {
+        snackbar.classList.remove("show");
+      }, 3000);
+    }
+  }
+
+  // Load user data and update navbar
+  async function loadAndUpdateNavbar() {
+    try {
+      const response = await fetch("/users/me", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+
+        // Aggiorna nome e cognome nella navbar
+        const userNameNavbar = document.getElementById("userNameNavbar");
+        if (userNameNavbar) {
+          userNameNavbar.textContent = `${userData.nome} ${userData.cognome}`;
+        }
+
+        // Aggiorna avatar con INIZIALE del nome
+        const userInitial = document.getElementById("userInitial");
+        if (userInitial && userData.nome) {
+          userInitial.textContent = userData.nome.charAt(0).toUpperCase();
+        }
+      } else {
+        console.error("❌ Errore caricamento profilo:", response.status);
+      }
+    } catch (error) {
+      console.error("❌ Errore di connessione:", error);
+    }
+  }
+
+  // Logout function
+  async function logout() {
+    showSnackbar("Logout in corso...", "success");
+
+    try {
+      const response = await fetch("/auth/logout", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1500);
+      } else {
+        console.error("❌ Errore nel logout dal server");
+        showSnackbar("Errore nel logout", "error");
+      }
+    } catch (error) {
+      console.error("❌ Errore di connessione:", error);
+      showSnackbar("Errore di connessione", "error");
+    }
+  }
+
+  // Carica dati all'avvio della pagina
+  document.addEventListener("DOMContentLoaded", () => {
+    loadAndUpdateNavbar();
+
+    // Click su avatar/nome per ricaricare la pagina
+    const userProfileArea = document.getElementById("userProfileArea");
+    if (userProfileArea) {
+      userProfileArea.addEventListener("click", () => {
+        location.reload();
+      });
+    }
+
+    // Logout button listener
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", logout);
+    }
+  });
+</script>

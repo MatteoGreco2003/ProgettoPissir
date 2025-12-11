@@ -1,8 +1,9 @@
 // backend/controllers/usersController.js
 
 import User from "../models/User.js";
+import Ride from "../models/Ride.js";
 
-// GET /api/users/me
+// GET /users/me
 export const getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id_utente);
@@ -25,7 +26,7 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// PUT /api/users/me
+// PUT /users/me
 export const updateProfile = async (req, res) => {
   try {
     const { nome, cognome } = req.body;
@@ -52,6 +53,41 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Errore:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+// DELETE /users/me
+export const deleteAccount = async (req, res) => {
+  try {
+    const id_utente = req.user.id_utente;
+
+    // Controlla se ha corse attive
+    const activeRide = await Ride.findOne({
+      where: {
+        id_utente,
+        stato_corsa: "in_corso",
+      },
+    });
+
+    if (activeRide) {
+      return res.status(400).json({
+        error: "Non puoi eliminare il tuo account mentre hai una corsa attiva",
+      });
+    }
+
+    // Elimina l'utente
+    const user = await User.findByPk(id_utente);
+    await user.destroy();
+
+    //Pulisci il cookie del token
+    res.clearCookie("token");
+
+    res.status(200).json({
+      message: "Account eliminato con successo",
+    });
+  } catch (error) {
+    console.error("❌ Errore DELETE account:", error.message);
     res.status(500).json({ error: "Errore interno del server" });
   }
 };

@@ -8,6 +8,9 @@ import authRoutes from "./routes/auth.js";
 import usersRoutes from "./routes/users.js";
 import pagesRoutes from "./routes/pages.js";
 import vehicleRoutes from "./routes/vehicles.js";
+import parkingRoutes from "./routes/parking.js";
+import ridesRoutes from "./routes/rides.js";
+import transactionRoutes from "./routes/transaction.js";
 import "./models/associations.js"; //!dopo parking e vehicles
 import cookieParser from "cookie-parser";
 
@@ -56,6 +59,9 @@ app.use("/", pagesRoutes);
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/vehicles", vehicleRoutes);
+app.use("/parking", parkingRoutes);
+app.use("/rides", ridesRoutes);
+app.use("/transactions", transactionRoutes);
 
 // 404 Handler
 app.use((req, res) => {

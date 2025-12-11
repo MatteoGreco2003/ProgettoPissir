@@ -2,6 +2,9 @@
 
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
+import User from "./User.js";
+import Vehicle from "./Vehicle.js";
+import Parking from "./Parking.js";
 
 const Ride = sequelize.define(
   "Ride",
@@ -63,5 +66,26 @@ const Ride = sequelize.define(
     ],
   }
 );
+
+// ✅ ASSOCIAZIONI
+Ride.belongsTo(User, {
+  foreignKey: "id_utente",
+  as: "user",
+});
+
+Ride.belongsTo(Vehicle, {
+  foreignKey: "id_mezzo",
+  as: "vehicle",
+});
+
+Ride.belongsTo(Parking, {
+  foreignKey: "id_parcheggio_inizio",
+  as: "parkingInizio",
+});
+
+Ride.belongsTo(Parking, {
+  foreignKey: "id_parcheggio_fine",
+  as: "parkingFine",
+});
 
 export default Ride;

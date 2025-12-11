@@ -1,0 +1,124 @@
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+  <!-- Navigazione principale -->
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="nav-item active" data-page="homepage">
+      <i class="fas fa-home"></i>
+      <span>Homepage</span>
+    </a>
+    <a href="/profile" class="nav-item" data-page="profile">
+      <i class="fas fa-user"></i>
+      <span>Profilo Utente</span>
+    </a>
+    <a href="/credit" class="nav-item" data-page="credit">
+      <i class="fas fa-wallet"></i>
+      <span>Gestione Credito</span>
+    </a>
+  </nav>
+
+  <!-- Pulsante Elimina Profilo in fondo -->
+  <div class="sidebar-footer">
+    <button class="delete-profile-btn" id="deleteProfileBtn">
+      <i class="fas fa-trash"></i>
+      <span>Elimina Profilo</span>
+    </button>
+  </div>
+</aside>
+
+<!-- ===== SCRIPT INLINE PER SIDEBAR ===== -->
+<script>
+  // Snackbar function
+  function showSnackbar(message, type = "success") {
+    const snackbar = document.getElementById("snackbar");
+    if (snackbar) {
+      snackbar.textContent = message;
+      snackbar.className = `snackbar show snackbar--${type}`;
+      setTimeout(() => {
+        snackbar.classList.remove("show");
+      }, 3000);
+    }
+  }
+
+  // Open modal
+  function openDeleteModal() {
+    const modal = document.getElementById("deleteProfileModal");
+    if (modal) {
+      modal.classList.remove("hidden");
+    }
+  }
+
+  // Close modal
+  function closeDeleteModal() {
+    const modal = document.getElementById("deleteProfileModal");
+    if (modal) {
+      modal.classList.add("hidden");
+    }
+  }
+
+  // Delete profile function
+  async function confirmDeleteProfile() {
+    closeDeleteModal();
+    showSnackbar("Eliminazione profilo in corso...", "success");
+
+    try {
+      const response = await fetch("/users/me", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        showSnackbar("✅ Profilo eliminato con successo", "success");
+
+        window.location.href = "/";
+      } else {
+        const data = await response.json();
+        console.error("❌ Errore eliminazione profilo:", data);
+        showSnackbar(data.error || "Errore nell'eliminazione", "error");
+      }
+    } catch (error) {
+      console.error("❌ Errore di connessione:", error);
+      showSnackbar("Errore di connessione", "error");
+    }
+  }
+
+  // Setup delete profile button listener
+  document.addEventListener("DOMContentLoaded", () => {
+    const deleteBtn = document.getElementById("deleteProfileBtn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", openDeleteModal);
+    }
+
+    // Modal buttons
+    const modalCancel = document.getElementById("modalCancel");
+    const modalClose = document.getElementById("modalClose");
+    const modalConfirm = document.getElementById("modalConfirmDelete");
+
+    if (modalCancel) {
+      modalCancel.addEventListener("click", closeDeleteModal);
+    }
+
+    if (modalClose) {
+      modalClose.addEventListener("click", closeDeleteModal);
+    }
+
+    if (modalConfirm) {
+      modalConfirm.addEventListener("click", confirmDeleteProfile);
+    }
+
+    // Close modal quando clicchi su overlay
+    const modal = document.getElementById("deleteProfileModal");
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (
+          e.target === modal ||
+          e.target.classList.contains("modal-overlay")
+        ) {
+          closeDeleteModal();
+        }
+      });
+    }
+  });
+</script>
