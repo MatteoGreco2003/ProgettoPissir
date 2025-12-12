@@ -11,7 +11,9 @@ import vehicleRoutes from "./routes/vehicles.js";
 import parkingRoutes from "./routes/parking.js";
 import ridesRoutes from "./routes/rides.js";
 import transactionRoutes from "./routes/transaction.js";
-import "./models/associations.js"; //!dopo parking e vehicles
+import reportRoutes from "./routes/reports.js";
+import feedbackRoutes from "./routes/feedback.js";
+import "./models/associations.js"; //!dopo tutte (ne usi tanti)
 import cookieParser from "cookie-parser";
 
 // Carica variabili d'ambiente
@@ -62,6 +64,8 @@ app.use("/vehicles", vehicleRoutes);
 app.use("/parking", parkingRoutes);
 app.use("/rides", ridesRoutes);
 app.use("/transactions", transactionRoutes);
+app.use("/reports", reportRoutes);
+app.use("/feedback", feedbackRoutes);
 
 // 404 Handler
 app.use((req, res) => {

@@ -42,6 +42,13 @@ const User = sequelize.define(
       type: DataTypes.ENUM("attivo", "sospeso", "eliminato"),
       defaultValue: "attivo",
     },
+    role: {
+      type: DataTypes.STRING(50),
+      defaultValue: "user",
+      validate: {
+        isIn: [["user", "admin"]],
+      },
+    },
     data_registrazione: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

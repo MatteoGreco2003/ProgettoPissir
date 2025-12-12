@@ -94,10 +94,8 @@ function setupEventListeners() {
 // ===== DATA LOADING =====
 
 function loadHomepageData() {
-  console.log("📍 Caricamento dati homepage...");
   renderParkings(mockParkings);
   renderVehicles(mockVehicles);
-  console.log("✅ Dati homepage caricati!");
 }
 
 // ===== RENDERING =====

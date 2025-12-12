@@ -2,7 +2,7 @@
 <aside class="sidebar" id="sidebar">
   <!-- Navigazione principale -->
   <nav class="sidebar-nav">
-    <a href="/dashboard" class="nav-item active" data-page="homepage">
+    <a href="/home-utente" class="nav-item active" data-page="homepage">
       <i class="fas fa-home"></i>
       <span>Homepage</span>
     </a>
@@ -27,6 +27,25 @@
 
 <!-- ===== SCRIPT INLINE PER SIDEBAR ===== -->
 <script>
+  // ===== ACTIVE NAV ITEM MANAGEMENT =====
+  function setActiveNavItem() {
+    const currentPath = window.location.pathname;
+    const navItems = document.querySelectorAll(".nav-item");
+
+    navItems.forEach((item) => {
+      item.classList.remove("active");
+    });
+
+    // Mappa dei percorsi
+    if (currentPath === "/home-utente" || currentPath === "/") {
+      document.querySelector('[data-page="homepage"]')?.classList.add("active");
+    } else if (currentPath === "/profile") {
+      document.querySelector('[data-page="profile"]')?.classList.add("active");
+    } else if (currentPath === "/credit") {
+      document.querySelector('[data-page="credit"]')?.classList.add("active");
+    }
+  }
+
   // Snackbar function
   function showSnackbar(message, type = "success") {
     const snackbar = document.getElementById("snackbar");
@@ -69,23 +88,29 @@
         credentials: "include",
       });
 
+      const data = await response.json();
       if (response.ok) {
         showSnackbar("✅ Profilo eliminato con successo", "success");
 
-        window.location.href = "/";
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1500);
       } else {
-        const data = await response.json();
         console.error("❌ Errore eliminazione profilo:", data);
         showSnackbar(data.error || "Errore nell'eliminazione", "error");
       }
     } catch (error) {
       console.error("❌ Errore di connessione:", error);
-      showSnackbar("Errore di connessione", "error");
+      showSnackbar("Errore: " + error.message, "error");
     }
   }
 
-  // Setup delete profile button listener
+  // Setup event listeners
   document.addEventListener("DOMContentLoaded", () => {
+    // Imposta il nav item attivo
+    setActiveNavItem();
+
+    // Delete profile button
     const deleteBtn = document.getElementById("deleteProfileBtn");
     if (deleteBtn) {
       deleteBtn.addEventListener("click", openDeleteModal);

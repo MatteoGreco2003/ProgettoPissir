@@ -19,17 +19,14 @@ router.get("/reset-password", (req, res) => {
   res.render("reset-password");
 });
 
-// ✅ DASHBOARD UTENTE (protetto)
+// GET /home-utente - Dashboard utente (protetto)
 router.get("/home-utente", authMiddleware, (req, res) => {
   res.render("home-utente");
 });
 
-// ✅ PROFILO UTENTE (protetto)
+// GET /profile - Profilo utente (protetto)
 router.get("/profile", authMiddleware, (req, res) => {
-  res.render("user/profile", {
-    title: "Profilo - Mobishare",
-    user: req.user,
-  });
+  res.render("profile-utente");
 });
 
 // ✅ STORICO CORSE (protetto)

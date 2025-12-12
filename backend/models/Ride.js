@@ -49,7 +49,7 @@ const Ride = sequelize.define(
       type: DataTypes.STRING(50),
       defaultValue: "in_corso",
       validate: {
-        isIn: [["in_corso", "completata"]],
+        isIn: [["in_corso", "completata", "cancellata"]],
       },
     },
   },
@@ -66,26 +66,5 @@ const Ride = sequelize.define(
     ],
   }
 );
-
-// ✅ ASSOCIAZIONI
-Ride.belongsTo(User, {
-  foreignKey: "id_utente",
-  as: "user",
-});
-
-Ride.belongsTo(Vehicle, {
-  foreignKey: "id_mezzo",
-  as: "vehicle",
-});
-
-Ride.belongsTo(Parking, {
-  foreignKey: "id_parcheggio_inizio",
-  as: "parkingInizio",
-});
-
-Ride.belongsTo(Parking, {
-  foreignKey: "id_parcheggio_fine",
-  as: "parkingFine",
-});
 
 export default Ride;

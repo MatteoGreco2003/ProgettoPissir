@@ -1,5 +1,6 @@
 // backend/controllers/usersController.js
 
+import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import Ride from "../models/Ride.js";
 
@@ -19,6 +20,7 @@ export const getProfile = async (req, res) => {
       email: user.email,
       saldo: user.saldo,
       stato_account: user.stato_account,
+      data_registrazione: user.data_registrazione,
     });
   } catch (error) {
     console.error("❌ Errore:", error.message);
@@ -88,6 +90,43 @@ export const deleteAccount = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Errore DELETE account:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+// PUT /users/change-password
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ error: "Fornisci password attuale e nuova" });
+    }
+
+    const user = await User.findByPk(req.user.id_utente);
+    if (!user) {
+      return res.status(404).json({ error: "Utente non trovato" });
+    }
+
+    // Verifica password attuale
+    const isValidPassword = await bcrypt.compare(
+      currentPassword,
+      user.password_hash
+    );
+    if (!isValidPassword) {
+      return res.status(401).json({ error: "Password attuale non corretta" });
+    }
+
+    // Hash nuova password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    user.password_hash = hashedPassword;
+    await user.save();
+
+    res.json({ message: "Password modificata con successo" });
+  } catch (error) {
+    console.error("❌ Errore:", error.message);
     res.status(500).json({ error: "Errore interno del server" });
   }
 };

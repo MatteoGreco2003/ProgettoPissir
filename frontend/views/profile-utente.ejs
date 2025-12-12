@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profilo Utente</title>
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+    <link rel="stylesheet" href="/css/profile-utente.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <!-- ===== APP CONTAINER ===== -->
+    <div id="app">
+      <!-- ===== NAVBAR (IMPORTATO) ===== -->
+      <%- include('./components/navbar') %>
+
+      <!-- ===== SIDEBAR (IMPORTATO) ===== -->
+      <%- include('./components/sidebar') %>
+
+      <!-- ===== MAIN CONTENT ===== -->
+      <main class="main-content">
+        <div class="container">
+          <!-- ===== PROFILO UTENTE ===== -->
+          <section id="profile" class="page-section active">
+            <!-- ===== CARD INFORMAZIONI PERSONALI ===== -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-user-circle"></i>
+                  Informazioni Personali
+                </h2>
+                <button class="btn-modify" id="modifyProfileBtn">
+                  <i class="fas fa-edit"></i>
+                  <span>Modifica</span>
+                </button>
+              </div>
+              <div class="card-body">
+                <div class="info-grid">
+                  <!-- Nome e Cognome -->
+                  <div class="info-row">
+                    <div class="info-field">
+                      <label class="info-label">Nome</label>
+                      <div class="info-value" id="userNome">Matteo</div>
+                    </div>
+                    <div class="info-field">
+                      <label class="info-label">Cognome</label>
+                      <div class="info-value" id="userCognome">Rossi</div>
+                    </div>
+                  </div>
+
+                  <!-- Email -->
+                  <div class="info-row">
+                    <div class="info-field full-width">
+                      <label class="info-label">Email</label>
+                      <div class="info-value" id="userEmail">
+                        matteo@example.com
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== CARD SICUREZZA ===== -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-lock"></i>
+                  Sicurezza
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="security-section">
+                  <div class="security-item">
+                    <div class="security-info">
+                      <h3 class="security-title">Password</h3>
+                      <p class="security-description">
+                        Modifica la tua password periodicamente per mantenere
+                        l'account sicuro
+                      </p>
+                    </div>
+                    <button class="btn-security" id="modifyPasswordBtn">
+                      <i class="fas fa-key"></i>
+                      Modifica Password
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-user-circle"></i>
+                  Informazioni Account
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="info-row">
+                  <div class="info-field">
+                    <label class="info-label">Data Registrazione</label>
+                    <div class="info-value" id="userDataReg">09/12/2025</div>
+                  </div>
+                  <div class="info-field">
+                    <label class="info-label">Stato Account</label>
+                    <div class="info-value info-value-badge">
+                      <span class="status-badge status-attivo" id="userStatus"
+                        >Attivo</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== CARD CREDITO ===== -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-wallet"></i>
+                  Saldo Credito
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="balance-container">
+                  <div class="balance-amount" id="userBalance">€ 0,00</div>
+                  <p class="balance-description">
+                    Credito disponibile per le prenotazioni
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== SNACKBAR NOTIFICHE ===== -->
+    <div id="snackbar" class="snackbar"></div>
+
+    <!-- ===== MODAL ELIMINA PROFILO ===== -->
+    <div id="deleteProfileModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Elimina Profilo</h2>
+          <button class="modal-close" id="modalClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Sei sicuro di voler eliminare il tuo profilo?</p>
+          <p class="modal-warning">
+            <strong>Questa azione non può essere annullata.</strong>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" id="modalConfirmDelete">
+            Elimina Profilo
+          </button>
+          <button class="btn btn-secondary" id="modalCancel">Annulla</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL MODIFICA DATI PERSONALI ===== -->
+    <div id="modifyProfileModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Modifica dati personali</h2>
+          <button class="modal-close" id="modalProfileClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-description">
+            Aggiorna i tuoi dati personali.<br />
+            Le modifiche avranno effetto sul tuo account.
+          </p>
+          <form id="modifyProfileForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="inputNome" class="form-label">Nome</label>
+                <input
+                  type="text"
+                  id="inputNome"
+                  class="form-control"
+                  placeholder="Nome"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="inputCognome" class="form-label">Cognome</label>
+                <input
+                  type="text"
+                  id="inputCognome"
+                  class="form-control"
+                  placeholder="Cognome"
+                  required
+                />
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- ===== ERROR CONTAINER ===== -->
+        <div id="profileErrorContainer" class="error-messages"></div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="modalProfileSave">
+            Salva modifiche
+          </button>
+          <button class="btn btn-secondary" id="modalProfileCancel">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL MODIFICA PASSWORD ===== -->
+    <div id="modifyPasswordModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Modifica password</h2>
+          <button class="modal-close" id="modalPasswordClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-description">
+            Inserisci la tua password attuale e la nuova<br />
+            password che desideri impostare.
+          </p>
+          <form id="modifyPasswordForm">
+            <div class="form-group">
+              <label for="currentPassword" class="form-label">
+                Password attuale
+              </label>
+              <div class="password-input-wrapper">
+                <input
+                  type="password"
+                  id="currentPassword"
+                  class="form-control"
+                  placeholder="Password Attuale"
+                  required
+                />
+                <i class="fas fa-lock password-icon"></i>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword" class="form-label">Nuova password</label>
+              <div class="password-input-wrapper">
+                <input
+                  type="password"
+                  id="newPassword"
+                  class="form-control"
+                  placeholder="Nuova Password"
+                  required
+                />
+                <i class="fas fa-lock password-icon"></i>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword" class="form-label">
+                Conferma nuova password
+              </label>
+              <div class="password-input-wrapper">
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  class="form-control"
+                  placeholder="Conferma Nuova Password"
+                  required
+                />
+                <i class="fas fa-lock password-icon"></i>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- ===== ERROR CONTAINER ===== -->
+        <div id="passwordErrorContainer" class="error-messages"></div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="modalPasswordSave">
+            Salva nuova password
+          </button>
+          <button class="btn btn-secondary" id="modalPasswordCancel">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="/js/profile-utente.js"></script>
+  </body>
+</html>

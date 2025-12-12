@@ -34,6 +34,14 @@ export const register = async (req, res) => {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
+    // Determina ruolo in base all'email
+    let role = "user"; // Default: utente normale
+    if (email === process.env.ADMIN_EMAIL) {
+      role = "admin";
+    } else if (email === process.env.MANAGER_EMAIL) {
+      role = "manager";
+    }
+
     // Crea utente
     const user = await User.create({
       email,
@@ -42,12 +50,14 @@ export const register = async (req, res) => {
       password_hash: passwordHash,
       saldo: 0.0,
       stato_account: "attivo",
+      role: role,
     });
 
     res.status(201).json({
       message: "Registrazione completata con successo",
       user_id: user.id_utente,
       email: user.email,
+      role: user.role,
     });
   } catch (error) {
     console.error("❌ Errore registrazione:", error.message);
@@ -82,13 +92,16 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: "Credenziali non valide" });
     }
 
-    // Genera JWT
+    // MIGLIORATO: Genera JWT con role
     const token = jwt.sign(
       {
         id_utente: user.id_utente,
         email: user.email,
+        nome: user.nome,
+        cognome: user.cognome,
+        role: user.role, // ✅ NUOVO: Includi ruolo nel JWT
       },
-      process.env.JWT_SECRET || "your_secret_key",
+      process.env.JWT_SECRET || "SJKAHsudfiafU($BHdsaY*HJsBjhyrYU",
       { expiresIn: "24h" }
     );
 
@@ -115,6 +128,7 @@ export const login = async (req, res) => {
         saldo: user.saldo,
         stato_account: user.stato_account,
         isAdmin: isAdmin,
+        role: user.role,
       },
     });
   } catch (error) {

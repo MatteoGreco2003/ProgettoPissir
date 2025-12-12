@@ -6,6 +6,7 @@ import {
   getProfile,
   updateProfile,
   deleteAccount,
+  changePassword,
 } from "../controllers/usersController.js";
 
 const router = express.Router();
@@ -18,5 +19,8 @@ router.put("/me", verifyToken, updateProfile);
 
 // DELETE /users/me
 router.delete("/me", verifyToken, deleteAccount);
+
+// PUT /users/change-password
+router.put("/change-password", verifyToken, changePassword);
 
 export default router;
