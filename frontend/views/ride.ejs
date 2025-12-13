@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Corsa in Corso - MobiShare</title>
+    <link rel="stylesheet" href="/css/ride-ui.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="ride-container">
+      <!-- Header -->
+      <div class="ride-header">
+        <div class="ride-icon" id="vehicleIcon">🛴</div>
+        <div class="ride-title" id="vehicleTitle">Monopattino Elettrico</div>
+        <div class="ride-status">🟢 Corsa in Corso</div>
+      </div>
+
+      <!-- Vehicle Summary -->
+      <div class="ride-summary">
+        <div class="summary-row">
+          <span class="summary-label">Mezzo</span>
+          <span class="summary-value" id="summaryMezzo">MZ-001</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Tipo</span>
+          <span class="summary-value" id="summaryTipo">Monopattino</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Batteria</span>
+          <span class="summary-value" id="summaryBatteria">85%</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Partenza</span>
+          <span class="summary-value" id="summaryPartenza">Centro Città</span>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="timer-section">
+        <div class="timer-label">Tempo Trascorso</div>
+        <div class="timer" id="timerDisplay">00:00:00</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📍</div>
+          <div class="stat-value" id="distanceValue">0.0</div>
+          <div class="stat-label">km</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-value" id="speedValue">0</div>
+          <div class="stat-label">km/h</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔋</div>
+          <div class="stat-value" id="batteryValue">85%</div>
+          <div class="stat-label">Batteria</div>
+        </div>
+      </div>
+
+      <!-- Cost Display -->
+      <div class="cost-section">
+        <div class="cost-label">Costo Attuale</div>
+        <div class="cost-value" id="costValue">€0.00</div>
+      </div>
+
+      <!-- Warning -->
+      <div class="warning-box">
+        <i class="fas fa-info-circle"></i>
+        <span>Tariffa: €1,00 per i primi 30 minuti, poi €0,25 al minuto.</span>
+      </div>
+
+      <!-- Parking Selection -->
+      <div class="parking-section">
+        <label class="parking-label">Parcheggio di Arrivo</label>
+        <select class="parking-select" id="parkingSelect">
+          <option value="">-- Seleziona parcheggio --</option>
+        </select>
+      </div>
+
+      <!-- Error Box -->
+      <div id="rideError" class="error-box hidden"></div>
+
+      <!-- Action Buttons -->
+      <div class="actions">
+        <button class="btn btn-primary" id="endRideBtn">
+          <i class="fas fa-stop-circle"></i> Termina Corsa
+        </button>
+        <button class="btn btn-secondary" id="pauseRideBtn">
+          <i class="fas fa-pause"></i> Pausa
+        </button>
+      </div>
+    </div>
+
+    <!-- Snackbar -->
+    <div id="snackbar" class="snackbar"></div>
+
+    <script src="/js/ride-ui.js"></script>
+  </body>
+</html>

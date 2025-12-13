@@ -117,6 +117,53 @@
               </div>
             </div>
 
+            <!-- ===== CARD STATISTICHE D'USO ===== -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-chart-line"></i>
+                  Statistiche Account
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="stats-grid">
+                  <!-- Prima riga: Corse Totali e Spesa Totale -->
+                  <div class="stats-row">
+                    <div class="stat-card">
+                      <div class="stat-icon">
+                        <i class="fas fa-route"></i>
+                      </div>
+                      <div class="stat-content">
+                        <div class="stat-label">Corse Totali</div>
+                        <div class="stat-value" id="userTotalRides">0</div>
+                      </div>
+                    </div>
+
+                    <div class="stat-card">
+                      <div class="stat-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                      </div>
+                      <div class="stat-content">
+                        <div class="stat-label">Spesa Totale</div>
+                        <div class="stat-value" id="userTotalSpent">€ 0,00</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Seconda riga: Ultimo Mezzo Usato (full width) -->
+                  <div class="stat-card stat-card-full">
+                    <div class="stat-icon">
+                      <i class="fas fa-bicycle"></i>
+                    </div>
+                    <div class="stat-content">
+                      <div class="stat-label">Ultimo Mezzo Utilizzato</div>
+                      <div class="stat-value" id="userLastVehicle">N/A</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- ===== CARD CREDITO ===== -->
             <div class="card mb-6">
               <div class="card-header">

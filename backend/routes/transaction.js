@@ -5,6 +5,8 @@ import {
   getTransactionById,
   getCurrentBalance,
   getBalanceSummary,
+  requestReactivation,
+  approveReactivation,
 } from "../controllers/transactionsController.js";
 import { verifyToken } from "../middleware/auth.js";
 
@@ -15,5 +17,11 @@ router.get("/history", verifyToken, getTransactionHistory);
 router.get("/balance", verifyToken, getCurrentBalance);
 router.get("/summary", verifyToken, getBalanceSummary);
 router.get("/:transaction_id", verifyToken, getTransactionById);
+router.post("/request-reactivation", verifyToken, requestReactivation);
+router.patch(
+  "/approve-reactivation/:id_utente",
+  verifyToken,
+  approveReactivation
+);
 
 export default router;

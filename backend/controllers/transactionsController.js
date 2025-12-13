@@ -36,9 +36,9 @@ export const rechargeCredit = async (req, res) => {
     );
     user.saldo = nuovoSaldo;
 
-    // Se account era sospeso e ora ha credito, riattiva
-    if (user.stato_account === "sospeso" && user.saldo > 0) {
-      user.stato_account = "attivo";
+    // ✅ NUOVO: Se era sospeso, passa a "in_attesa_approvazione" (non attivo subito!)
+    if (user.stato_account === "sospeso") {
+      user.stato_account = "in_attesa_approvazione";
     }
 
     await user.save();
@@ -58,6 +58,10 @@ export const rechargeCredit = async (req, res) => {
       saldo_precedente: parseFloat(saldoPrecedente),
       saldo_attuale: nuovoSaldo,
       stato_account: user.stato_account,
+      avviso:
+        user.stato_account === "in_attesa_approvazione"
+          ? "Il tuo account è in attesa di approvazione dal gestore per la riapertura"
+          : null,
     });
   } catch (error) {
     console.error("❌ Errore RECHARGE credit:", error.message);
@@ -196,10 +200,96 @@ export const getBalanceSummary = async (req, res) => {
   }
 };
 
+// ✅ REQUEST ACCOUNT REACTIVATION - User richiede riapertura
+export const requestReactivation = async (req, res) => {
+  try {
+    const id_utente = req.user.id_utente;
+
+    const user = await User.findByPk(id_utente);
+    if (!user) {
+      return res.status(404).json({ error: "Utente non trovato" });
+    }
+
+    if (
+      user.stato_account !== "sospeso" &&
+      user.stato_account !== "in_attesa_approvazione"
+    ) {
+      return res.status(400).json({
+        error: "Il tuo account non è sospeso",
+      });
+    }
+
+    if (user.saldo < 0) {
+      return res.status(400).json({
+        error: "Devi ricaricare il credito prima di richiedere la riapertura",
+        debito_attuale: Math.abs(user.saldo),
+      });
+    }
+
+    // Cambia stato a "in_attesa_approvazione"
+    user.stato_account = "in_attesa_approvazione";
+    await user.save();
+
+    res.status(200).json({
+      message:
+        "Richiesta di riapertura inviata. In attesa di approvazione del gestore",
+      saldo_attuale: user.saldo,
+      stato_account: user.stato_account,
+    });
+  } catch (error) {
+    console.error("❌ Errore request reactivation:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+// ✅ APPROVE ACCOUNT REACTIVATION (ADMIN ONLY)
+export const approveReactivation = async (req, res) => {
+  try {
+    const { id_utente } = req.params;
+
+    // Verifica che sia admin
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        error: "Solo gli admin possono approvare le riaperture",
+      });
+    }
+
+    const user = await User.findByPk(id_utente);
+    if (!user) {
+      return res.status(404).json({ error: "Utente non trovato" });
+    }
+
+    if (user.stato_account !== "in_attesa_approvazione") {
+      return res.status(400).json({
+        error: "L'utente non è in attesa di approvazione",
+      });
+    }
+
+    // Riattiva account
+    user.stato_account = "attivo";
+    await user.save();
+
+    res.status(200).json({
+      message: "Account riattivato con successo",
+      id_utente: user.id_utente,
+      nome: user.nome,
+      cognome: user.cognome,
+      email: user.email,
+      saldo: user.saldo,
+      stato_account: user.stato_account,
+    });
+  } catch (error) {
+    console.error("❌ Errore approve reactivation:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 export default {
   rechargeCredit,
   getTransactionHistory,
   getTransactionById,
   getCurrentBalance,
   getBalanceSummary,
+  requestReactivation,
+  approveReactivation,
 };

@@ -34,19 +34,21 @@ const User = sequelize.define(
     saldo: {
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0.0,
-      validate: {
-        min: 0,
-      },
     },
     stato_account: {
-      type: DataTypes.ENUM("attivo", "sospeso", "eliminato"),
+      type: DataTypes.ENUM(
+        "attivo",
+        "sospeso",
+        "in_attesa_approvazione",
+        "eliminato"
+      ),
       defaultValue: "attivo",
     },
     role: {
       type: DataTypes.STRING(50),
       defaultValue: "user",
       validate: {
-        isIn: [["user", "admin"]],
+        isIn: [["user", "admin", "manager"]],
       },
     },
     data_registrazione: {
@@ -58,6 +60,15 @@ const User = sequelize.define(
       allowNull: true,
     },
     password_reset_expires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    // ✅ NUOVI CAMPI per la sospensione/riapertura account
+    data_sospensione: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    data_riapertura: {
       type: DataTypes.DATE,
       allowNull: true,
     },

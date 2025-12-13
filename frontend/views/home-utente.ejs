@@ -8,8 +8,16 @@
     <link rel="stylesheet" href="/css/home-utente.css" />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+    />
+    <!-- Leaflet JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   </head>
 
   <body>
@@ -26,17 +34,25 @@
         <div class="container">
           <!-- ===== HOMEPAGE ===== -->
           <section id="homepage" class="page-section active">
-            <h1 class="page-title">
-              <i class="fas fa-lock-open"></i>
-              Prenota un mezzo!
-            </h1>
+            <!-- ===== 1️⃣ MAPPA PARCHEGGI CON LEAFLET ===== -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-map"></i>
+                  Mappa Parcheggi
+                </h2>
+              </div>
+              <div class="card-body" style="padding: 0">
+                <div id="parkingMap"></div>
+              </div>
+            </div>
 
-            <!-- Mappa Parcheggi -->
+            <!-- ===== 1️⃣ MAPPA PARCHEGGI ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
                   <i class="fas fa-map-marker-alt"></i>
-                  Mappa Parcheggi
+                  Parcheggi
                 </h2>
               </div>
               <div class="card-body">
@@ -46,20 +62,56 @@
               </div>
             </div>
 
-            <!-- Tabs Filtro Mezzi -->
-            <div class="tabs-container mb-6">
-              <button class="tab-btn active" data-tab="all">Tutti</button>
-              <button class="tab-btn" data-tab="Elettrico">
-                E-Bike/Monopattini
-              </button>
-              <button class="tab-btn" data-tab="Muscolare">
-                Bici Muscolari
-              </button>
-            </div>
+            <!-- ===== 2️⃣ CARD VEICOLI CON FILTRI ===== -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-motorcycle"></i>
+                  Veicoli
+                </h2>
 
-            <!-- Lista Mezzi -->
-            <div class="vehicles-grid" id="vehiclesGrid">
-              <!-- Generato dinamicamente -->
+                <!-- ===== FILTRI INTERNI DELLA CARD ===== -->
+                <div class="vehicles-filter-container mb-6">
+                  <button class="filter-btn active" data-filter="all">
+                    <i class="fas fa-th"></i>
+                    Tutti
+                  </button>
+                  <button class="filter-btn" data-filter="biciclette-muscolari">
+                    <i class="fas fa-bicycle"></i>
+                    Biciclette Muscolari
+                  </button>
+                  <button class="filter-btn" data-filter="monopattini">
+                    <i class="fas fa-person-skating"></i>
+                    Monopattini Elettrici
+                  </button>
+                  <button class="filter-btn" data-filter="ebike">
+                    <i class="fas fa-bolt"></i>
+                    Biciclette Elettriche
+                  </button>
+                </div>
+
+                <!-- ===== SELECT FILTER (HIDDEN DI DEFAULT) ===== -->
+                <select id="filterSelect" class="filter-select hidden">
+                  <option value="all">Tutti</option>
+                  <option value="biciclette-muscolari">
+                    Biciclette Muscolari
+                  </option>
+                  <option value="monopattini">Monopattini Elettrici</option>
+                  <option value="ebike">Biciclette Elettriche</option>
+                </select>
+              </div>
+              <div class="card-body">
+                <!-- ===== LOADING SPINNER ===== -->
+                <div id="loadingSpinner" class="loading-spinner hidden">
+                  <div class="spinner"></div>
+                  <p>Caricamento mezzi...</p>
+                </div>
+
+                <!-- ===== VEHICLES GRID ===== -->
+                <div class="vehicles-grid" id="vehiclesGrid">
+                  <!-- Generato dinamicamente -->
+                </div>
+              </div>
             </div>
           </section>
         </div>
@@ -90,6 +142,56 @@
             Elimina Profilo
           </button>
           <button class="btn btn-secondary" id="modalCancel">Annulla</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL PRENOTAZIONE ===== -->
+    <div id="reservationModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Conferma Prenotazione</h2>
+          <button class="modal-close" id="modalClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="vehicle-summary">
+            <div class="summary-item">
+              <span class="summary-label">Mezzo:</span>
+              <span class="summary-value" id="summaryVehicleId">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Tipologia:</span>
+              <span class="summary-value" id="summaryVehicleType">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Batteria:</span>
+              <span class="summary-value" id="summaryBattery">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Parcheggio:</span>
+              <span class="summary-value" id="summaryParking">-</span>
+            </div>
+          </div>
+          <div class="warning-box">
+            <i class="fas fa-info-circle"></i>
+            <p>
+              Assicurati di avere saldo sufficiente. La tariffa è di €1,00 per i
+              primi 30 minuti.
+            </p>
+          </div>
+
+          <div id="reservationError" class="error-box hidden"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="confirmReservation">
+            Conferma
+          </button>
+          <button class="btn btn-secondary" id="cancelReservation">
+            Annulla
+          </button>
         </div>
       </div>
     </div>

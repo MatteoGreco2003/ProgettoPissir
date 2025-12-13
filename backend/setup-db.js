@@ -12,7 +12,7 @@ import "./models/associations.js";
 console.log("🔄 Sincronizzando models con database...");
 
 try {
-  await sequelize.sync({ alter: false });
+  await sequelize.sync({ alter: true });
 
   console.log("✅ Tutti i models sincronizzati!");
   console.log("📊 Tabelle create:");

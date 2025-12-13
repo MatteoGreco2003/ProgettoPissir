@@ -13,6 +13,8 @@ import ridesRoutes from "./routes/rides.js";
 import transactionRoutes from "./routes/transaction.js";
 import reportRoutes from "./routes/reports.js";
 import feedbackRoutes from "./routes/feedback.js";
+import initBatteryListener from "./mqtt/batteryListener.js";
+import initActiveBatteryDecrementer from "./mqtt/activeBatteryDecrementer.js";
 import "./models/associations.js"; //!dopo tutte (ne usi tanti)
 import cookieParser from "cookie-parser";
 
@@ -67,10 +69,10 @@ app.use("/transactions", transactionRoutes);
 app.use("/reports", reportRoutes);
 app.use("/feedback", feedbackRoutes);
 
-// 404 Handler
-app.use((req, res) => {
-  res.status(404).render("404", { title: "Pagina non trovata" });
-});
+// // 404 Handler
+// app.use((req, res) => {
+//   res.status(404).render("404", { title: "Pagina non trovata" });
+// });
 
 // Start server
 const PORT = process.env.PORT || 3000;
@@ -88,3 +90,11 @@ start().catch((err) => {
   console.error("Errore durante startup:", err);
   process.exit(1);
 });
+
+// Dopo che il server è avviato:
+initBatteryListener();
+console.log("🔋 Battery Listener avviato!");
+
+// Dopo che il server è avviato (automatico su tutte le corse attive):
+initActiveBatteryDecrementer();
+console.log("🔋 Active Battery Decrementer avviato!");

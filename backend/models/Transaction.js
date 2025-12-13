@@ -19,7 +19,7 @@ const Transaction = sequelize.define(
       type: DataTypes.STRING(50),
       allowNull: false,
       validate: {
-        isIn: [["ricarica", "pagamento_corsa"]],
+        isIn: [["ricarica", "pagamento_corsa", "debito_prossima_corsa"]],
       },
     },
     importo: {

@@ -103,6 +103,7 @@ async function loadUserProfile() {
     if (response.ok) {
       userData = await response.json();
       displayUserProfile();
+      loadRideStatistics();
     } else {
       console.error("❌ Errore caricamento profilo:", response.status);
       showSnackbar("Errore nel caricamento del profilo", "error");
@@ -136,10 +137,46 @@ function displayUserProfile() {
   const statusMap = {
     attivo: "Attivo",
     sospeso: "Sospeso",
+    in_attesa_approvazione: "In attesa di approvazione",
     eliminato: "Eliminato",
   };
   userStatus.textContent = statusMap[userData.stato_account] || "N/A";
   userStatus.className = `status-badge status-${userData.stato_account}`;
+}
+
+// ===== LOAD RIDE STATISTICS =====
+async function loadRideStatistics() {
+  try {
+    const response = await fetch("/rides/statistics", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const stats = await response.json();
+
+      const vehicleNameCapitalized =
+        stats.ultimo_mezzo === "N/A"
+          ? "N/A"
+          : stats.ultimo_mezzo.charAt(0).toUpperCase() +
+            stats.ultimo_mezzo.slice(1);
+
+      document.getElementById("userTotalRides").textContent =
+        stats.corse_totali;
+      document.getElementById("userLastVehicle").textContent =
+        vehicleNameCapitalized;
+      document.getElementById(
+        "userTotalSpent"
+      ).textContent = `€ ${stats.spesa_totale.toFixed(2)}`;
+    } else {
+      console.warn("⚠️ Errore caricamento statistiche");
+    }
+  } catch (error) {
+    console.error("❌ Errore statistiche:", error);
+  }
 }
 
 // ===== AGGIORNA NAVBAR =====
