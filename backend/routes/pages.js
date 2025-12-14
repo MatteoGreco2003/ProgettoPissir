@@ -29,14 +29,13 @@ router.get("/profile", authMiddleware, (req, res) => {
   res.render("profile-utente");
 });
 
-// ✅ STORICO CORSE (protetto)
-router.get("/rides-history", authMiddleware, (req, res) => {
-  res.render("user/rides-history", {
-    title: "Storico Corse - Mobishare",
-    user: req.user,
-  });
+// ✅ GET /ride - Pagina corsa (protetto)
+router.get("/ride", authMiddleware, (req, res) => {
+  const { ride_id } = req.query;
+  res.render("ride", { rideId: ride_id });
 });
 
+/*
 // ✅ CORSA ATTIVA (protetto)
 router.get("/active-ride", authMiddleware, (req, res) => {
   res.render("user/active-ride", {
@@ -101,6 +100,6 @@ router.get("/manager/reports", authMiddleware, (req, res) => {
     title: "Segnalazioni - Mobishare",
     user: req.user,
   });
-});
+});*/
 
 export default router;
