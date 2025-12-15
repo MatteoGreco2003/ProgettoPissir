@@ -3,7 +3,22 @@ import User from "../models/User.js";
 import Vehicle from "../models/Vehicle.js";
 import Parking from "../models/Parking.js";
 import Transaction from "../models/Transaction.js";
+import PuntiFedelta from "../models/LoyaltyPoints.js";
 import mqtt from "mqtt";
+
+// Helper: Determina la tariffa base in base al tipo di mezzo
+const getTariffaBaseByMezzo = (tipo_mezzo) => {
+  switch (tipo_mezzo) {
+    case "bicicletta_muscolare":
+      return 0.15; // €0.15 per minuto (la più economica)
+    case "bicicletta_elettrica":
+      return 0.25; // €0.25 per minuto
+    case "monopattino":
+      return 0.2; // €0.20 per minuto
+    default:
+      return 0.25; // Default
+  }
+};
 
 // ✅ START RIDE - Inizio corsa con sblocco MQTT
 export const startRide = async (req, res) => {
@@ -174,11 +189,14 @@ export const checkPayment = async (req, res) => {
       (dataFine - ride.data_ora_inizio) / (1000 * 60)
     );
 
+    // Determina la tariffa in base al tipo di mezzo
+    const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
+
     let costo;
     if (durataMinuti <= 30) {
       costo = 1.0;
     } else {
-      costo = 1.0 + (durataMinuti - 30) * 0.25;
+      costo = 1.0 + (durataMinuti - 30) * tariffa;
     }
 
     // 5️⃣ Recupera saldo utente
@@ -253,16 +271,20 @@ export const endRideWithPayment = async (req, res) => {
       (dataFine - ride.data_ora_inizio) / (1000 * 60)
     );
 
+    // Determina la tariffa in base al tipo di mezzo
+    const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
+
     let costo;
     if (durataMinuti <= 30) {
       costo = 1.0;
     } else {
-      costo = 1.0 + (durataMinuti - 30) * 0.25;
+      costo = 1.0 + (durataMinuti - 30) * tariffa;
     }
 
     // 6️⃣ Recupera utente
     const user = await User.findByPk(id_utente);
     let saldoDisponibile = parseFloat(user.saldo);
+    let punti_utilizzati = 0;
 
     // 7️⃣ Se l'utente chiede di ricaricare, aggiungi l'importo
     if (importo_ricarica && importo_ricarica > 0) {
@@ -275,6 +297,17 @@ export const endRideWithPayment = async (req, res) => {
         importo: importo_ricarica,
         descrizione: "Ricarica per pagamento corsa",
       });
+    }
+
+    // 7️⃣B Se l'utente vuole usare punti come sconto
+    const { usa_punti } = req.body; // Boolean dal frontend
+    if (usa_punti && user.punti > 0) {
+      // 1 punto = €0.01 di sconto
+      const sconto_punti = user.punti * 0.05;
+      punti_utilizzati = user.punti;
+
+      saldoDisponibile += sconto_punti;
+      user.punti = 0; // Resetta i punti dopo l'uso
     }
 
     // 8️⃣ Verifica se ha abbastanza per pagare
@@ -324,6 +357,36 @@ export const endRideWithPayment = async (req, res) => {
       id_corsa: ride.id_corsa,
       descrizione: `Pagamento corsa: ${durataMinuti} minuti`,
     });
+
+    //  Calcola e salva punti fedeltà se è bicicletta muscolare
+    if (ride.vehicle.tipo_mezzo === "bicicletta_muscolare") {
+      const punti_guadagnati = Math.floor(durataMinuti / 5); // 1 punto ogni 5 minuti
+
+      user.punti += punti_guadagnati;
+      await user.save();
+
+      // Traccia l'operazione nella tabella punti_fedelta
+      await PuntiFedelta.create({
+        id_utente,
+        id_corsa: ride.id_corsa,
+        tipo_operazione: "guadagnati",
+        punti_importo: punti_guadagnati,
+        descrizione: `Punti guadagnati da corsa in bicicletta muscolare (${durataMinuti} min)`,
+      });
+    }
+
+    // Se ha usato punti, traccia l'utilizzo
+    if (punti_utilizzati > 0) {
+      await PuntiFedelta.create({
+        id_utente,
+        id_corsa: ride.id_corsa,
+        tipo_operazione: "utilizzati",
+        punti_importo: punti_utilizzati,
+        descrizione: `Punti utilizzati come sconto (€${(
+          punti_utilizzati * 0.05
+        ).toFixed(2)})`,
+      });
+    }
 
     // 1️⃣1️⃣ MQTT Lock
     try {
@@ -423,11 +486,14 @@ export const endRideWithDebt = async (req, res) => {
       (dataFine - ride.data_ora_inizio) / (1000 * 60)
     );
 
+    // Determina la tariffa in base al tipo di mezzo
+    const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
+
     let costo;
     if (durataMinuti <= 30) {
       costo = 1.0;
     } else {
-      costo = 1.0 + (durataMinuti - 30) * 0.25;
+      costo = 1.0 + (durataMinuti - 30) * tariffa;
     }
 
     // 6️⃣ Recupera utente
@@ -444,6 +510,7 @@ export const endRideWithDebt = async (req, res) => {
     user.saldo = saldoNuovo;
     user.stato_account = "sospeso"; // Account sospeso immediatamente
     user.data_sospensione = new Date();
+    user.numero_sospensioni = (user.numero_sospensioni || 0) + 1; // aggiorna counter sospensioni
     await user.save();
 
     // 9️⃣ Completa la ride

@@ -134,18 +134,19 @@ export const apiAuthMiddleware = (req, res, next) => {
 };
 
 /**
- * Middleware per verificare se utente è gestore/admin
- * Usa il campo "role" decodificato dal JWT
+ * Middleware per verificare se utente è admin/gestore
  */
-export const isManager = (req, res, next) => {
+export const isAdmin = (req, res, next) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: "Non autenticato" });
     }
 
-    // Controlla se il ruolo è manager o admin
-    if (req.user.role !== "manager" && req.user.role !== "admin") {
-      return res.status(403).json({ error: "Accesso negato: solo gestori" });
+    // Controlla se il ruolo è admin
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ error: "Accesso negato: solo amministratori" });
     }
 
     next();

@@ -63,7 +63,7 @@ const User = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
-    // ✅ NUOVI CAMPI per la sospensione/riapertura account
+    // NUOVI CAMPI per la sospensione/riapertura account
     data_sospensione: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -71,6 +71,22 @@ const User = sequelize.define(
     data_riapertura: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    // NUOVO CAMPO per punti fedeltà
+    punti: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        min: 0,
+      },
+    },
+    // campo per tracciare affidabilità di un utente
+    numero_sospensioni: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        min: 0,
+      },
     },
   },
   {

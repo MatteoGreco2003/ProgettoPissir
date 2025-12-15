@@ -15,6 +15,7 @@ import reportRoutes from "./routes/reports.js";
 import feedbackRoutes from "./routes/feedback.js";
 import initBatteryListener from "./mqtt/batteryListener.js";
 import initActiveBatteryDecrementer from "./mqtt/activeBatteryDecrementer.js";
+import statisticsRoutes from "./routes/statistics.js";
 import "./models/associations.js"; //!dopo tutte (ne usi tanti)
 import cookieParser from "cookie-parser";
 
@@ -68,6 +69,7 @@ app.use("/rides", ridesRoutes);
 app.use("/transactions", transactionRoutes);
 app.use("/reports", reportRoutes);
 app.use("/feedback", feedbackRoutes);
+app.use("/statistics", statisticsRoutes);
 
 // // 404 Handler
 // app.use((req, res) => {

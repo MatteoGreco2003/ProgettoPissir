@@ -56,7 +56,7 @@ router.get("/manager", authMiddleware, (req, res) => {
   res.render("manager/dashboard", {
     title: "Dashboard Manager - Mobishare",
     user: req.user,
-    isManager: true,
+    isAdmin: true,
   });
 });
 

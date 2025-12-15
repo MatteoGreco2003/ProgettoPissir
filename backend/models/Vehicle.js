@@ -15,7 +15,7 @@ const Vehicle = sequelize.define(
       type: DataTypes.STRING(50),
       allowNull: false,
       validate: {
-        isIn: [["monopattino", "bicicletta"]],
+        isIn: [["monopattino", "bicicletta_muscolare", "bicicletta_elettrica"]],
       },
     },
     id_parcheggio: {
