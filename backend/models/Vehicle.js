@@ -26,7 +26,7 @@ const Vehicle = sequelize.define(
       type: DataTypes.STRING(50),
       defaultValue: "disponibile",
       validate: {
-        isIn: [["disponibile", "in_uso", "in_manutenzione"]],
+        isIn: [["disponibile", "in_uso", "in_manutenzione", "non_prelevabile"]],
       },
     },
     stato_batteria: {

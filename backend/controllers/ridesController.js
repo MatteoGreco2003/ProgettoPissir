@@ -35,6 +35,17 @@ export const startRide = async (req, res) => {
       });
     }
 
+    // 2️⃣ Verifica saldo minimo (almeno 1.00€)
+    const saldoNumero = parseFloat(user.saldo);
+    if (saldoNumero < 1.0) {
+      return res.status(402).json({
+        error:
+          "Saldo insufficiente. Devi avere almeno 1.00€ per iniziare una corsa",
+        saldo_attuale: saldoNumero,
+        saldo_minimo_richiesto: 1.0,
+      });
+    }
+
     // 3️⃣ Controlla se utente ha già una corsa attiva
     const activeRide = await Ride.findOne({
       where: { id_utente, stato_corsa: "in_corso" },
@@ -59,6 +70,15 @@ export const startRide = async (req, res) => {
     if (vehicle.stato !== "disponibile") {
       return res.status(400).json({
         error: `Mezzo non disponibile. Stato: ${vehicle.stato}`,
+      });
+    }
+
+    // 4️⃣B NUOVO - Verifica batteria minima (almeno 20%)
+    if (vehicle.stato_batteria < 20) {
+      return res.status(400).json({
+        error: "Mezzo non disponibile. Batteria insufficiente",
+        batteria_attuale: vehicle.stato_batteria,
+        batteria_minima_richiesta: 20,
       });
     }
 
@@ -278,9 +298,16 @@ export const endRideWithPayment = async (req, res) => {
     ride.stato_corsa = "completata";
     await ride.save();
 
-    // Aggiorna mezzo
+    // 🔟 Aggiorna mezzo
     const vehicle = ride.vehicle;
-    vehicle.stato = "disponibile";
+
+    // Controllo batteria: se < 20% → non prelevabile
+    if (vehicle.stato_batteria < 20) {
+      vehicle.stato = "non prelevabile";
+    } else {
+      vehicle.stato = "disponibile";
+    }
+
     vehicle.id_parcheggio = id_parcheggio_fine;
     await vehicle.save();
 
@@ -298,7 +325,7 @@ export const endRideWithPayment = async (req, res) => {
       descrizione: `Pagamento corsa: ${durataMinuti} minuti`,
     });
 
-    // 🔟 MQTT Lock
+    // 1️⃣1️⃣ MQTT Lock
     try {
       const mqttClient = mqtt.connect(
         process.env.MQTT_BROKER_URL || "mqtt://localhost:1883"
@@ -429,7 +456,14 @@ export const endRideWithDebt = async (req, res) => {
 
     // 🔟 Aggiorna mezzo
     const vehicle = ride.vehicle;
-    vehicle.stato = "disponibile";
+
+    // Controllo batteria: se < 20% → non prelevabile
+    if (vehicle.stato_batteria < 20) {
+      vehicle.stato = "non_prelevabile";
+    } else {
+      vehicle.stato = "disponibile";
+    }
+
     vehicle.id_parcheggio = id_parcheggio_fine;
     await vehicle.save();
 
