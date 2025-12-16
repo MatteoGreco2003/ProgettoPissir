@@ -21,6 +21,7 @@ export const getProfile = async (req, res) => {
       saldo: user.saldo,
       stato_account: user.stato_account,
       data_registrazione: user.data_registrazione,
+      punti: user.punti || 0,
     });
   } catch (error) {
     console.error("❌ Errore:", error.message);

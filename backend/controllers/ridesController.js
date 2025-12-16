@@ -634,7 +634,11 @@ export const getActiveRide = async (req, res) => {
     });
 
     if (!ride) {
-      return res.status(404).json({ error: "Nessuna corsa attiva" });
+      return res.status(200).json({
+        success: true,
+        activeRide: null,
+        message: "Nessuna corsa attiva",
+      });
     }
 
     // Calcola durata corrente in minuti

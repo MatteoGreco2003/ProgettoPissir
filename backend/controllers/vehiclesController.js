@@ -66,13 +66,24 @@ export const getVehicleById = async (req, res) => {
 // ✅ CREATE VEHICLE (solo admin/gestore)
 export const createVehicle = async (req, res) => {
   try {
-    const { tipo_mezzo, id_parcheggio, tariffa_minuto, codice_identificativo } =
-      req.body;
+    const { tipo_mezzo, id_parcheggio, codice_identificativo } = req.body;
 
     // Validazione
-    if (!tipo_mezzo || !id_parcheggio || !tariffa_minuto) {
+    if (!tipo_mezzo || !id_parcheggio) {
       return res.status(400).json({
-        error: "tipo_mezzo, id_parcheggio e tariffa_minuto sono obbligatori",
+        error: "tipo_mezzo e id_parcheggio sono obbligatori",
+      });
+    }
+
+    // Validazione tipo_mezzo
+    const tipi_validi = [
+      "monopattino",
+      "bicicletta_muscolare",
+      "bicicletta_elettrica",
+    ];
+    if (!tipi_validi.includes(tipo_mezzo)) {
+      return res.status(400).json({
+        error: `Tipo mezzo non valido. Validi: ${tipi_validi.join(", ")}`,
       });
     }
 
@@ -94,10 +105,24 @@ export const createVehicle = async (req, res) => {
       }
     }
 
+    // ✅ DETERMINA TARIFFA AUTOMATICA in base al tipo
+    let tariffa_minuto;
+    switch (tipo_mezzo) {
+      case "bicicletta_muscolare":
+        tariffa_minuto = 0.15;
+        break;
+      case "bicicletta_elettrica":
+        tariffa_minuto = 0.25;
+        break;
+      case "monopattino":
+        tariffa_minuto = 0.2;
+        break;
+    }
+
     const vehicle = await Vehicle.create({
       tipo_mezzo,
       id_parcheggio,
-      tariffa_minuto,
+      tariffa_minuto, // ✅ Impostato automaticamente
       codice_identificativo,
       stato: "disponibile",
       stato_batteria: 100,
@@ -106,6 +131,7 @@ export const createVehicle = async (req, res) => {
     res.status(201).json({
       message: "Mezzo creato con successo",
       vehicle,
+      tariffa_impostata: `€${tariffa_minuto}/min`,
     });
   } catch (error) {
     console.error("❌ Errore CREATE vehicle:", error.message);
@@ -117,7 +143,7 @@ export const createVehicle = async (req, res) => {
 export const updateVehicle = async (req, res) => {
   try {
     const { id } = req.params;
-    const { tipo_mezzo, id_parcheggio, stato, tariffa_minuto } = req.body;
+    const { tipo_mezzo, id_parcheggio, stato, stato_batteria } = req.body;
 
     const vehicle = await Vehicle.findByPk(id);
     if (!vehicle) {
@@ -132,17 +158,64 @@ export const updateVehicle = async (req, res) => {
       }
     }
 
-    // Update solo i campi forniti
-    if (tipo_mezzo) vehicle.tipo_mezzo = tipo_mezzo;
+    // Validazione tipo_mezzo se viene cambiato
+    if (tipo_mezzo) {
+      const tipi_validi = [
+        "monopattino",
+        "bicicletta_muscolare",
+        "bicicletta_elettrica",
+      ];
+      if (!tipi_validi.includes(tipo_mezzo)) {
+        return res.status(400).json({
+          error: `Tipo mezzo non valido. Validi: ${tipi_validi.join(", ")}`,
+        });
+      }
+    }
+
+    // Update campi base
+    if (tipo_mezzo) {
+      vehicle.tipo_mezzo = tipo_mezzo;
+
+      // ✅ AGGIORNA TARIFFA AUTOMATICAMENTE se tipo_mezzo cambia
+      switch (tipo_mezzo) {
+        case "bicicletta_muscolare":
+          vehicle.tariffa_minuto = 0.15;
+          break;
+        case "bicicletta_elettrica":
+          vehicle.tariffa_minuto = 0.25;
+          break;
+        case "monopattino":
+          vehicle.tariffa_minuto = 0.2;
+          break;
+      }
+    }
+
     if (id_parcheggio) vehicle.id_parcheggio = id_parcheggio;
     if (stato) vehicle.stato = stato;
-    if (tariffa_minuto) vehicle.tariffa_minuto = tariffa_minuto;
+
+    // ✅ Batteria solo per mezzi elettrici
+    if (stato_batteria !== undefined) {
+      if (vehicle.tipo_mezzo === "bicicletta_muscolare") {
+        return res.status(400).json({
+          error: "La bicicletta muscolare non ha batteria",
+        });
+      }
+
+      if (stato_batteria < 0 || stato_batteria > 100) {
+        return res.status(400).json({
+          error: "Batteria deve essere tra 0 e 100",
+        });
+      }
+
+      vehicle.stato_batteria = stato_batteria;
+    }
 
     await vehicle.save();
 
     res.status(200).json({
       message: "Mezzo aggiornato con successo",
       vehicle,
+      tariffa_impostata: `€${vehicle.tariffa_minuto}/min`,
     });
   } catch (error) {
     console.error("❌ Errore UPDATE vehicle:", error.message);
@@ -150,7 +223,7 @@ export const updateVehicle = async (req, res) => {
   }
 };
 
-// ✅ DELETE VEHICLE (solo admin/gestore)
+// ✅ DELETE VEHICLE (hard delete - solo admin/gestore)
 export const deleteVehicle = async (req, res) => {
   try {
     const { id } = req.params;
@@ -162,7 +235,10 @@ export const deleteVehicle = async (req, res) => {
 
     await vehicle.destroy();
 
-    res.status(204).send();
+    res.status(200).json({
+      message: "Mezzo eliminato con successo",
+      id_mezzo: id,
+    });
   } catch (error) {
     console.error("❌ Errore DELETE vehicle:", error.message);
     res.status(500).json({ error: "Errore interno del server" });

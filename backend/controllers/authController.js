@@ -81,11 +81,6 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: "Credenziali non valide" });
     }
 
-    // Controlla account sospeso
-    if (user.stato_account === "sospeso") {
-      return res.status(403).json({ error: "Account sospeso" });
-    }
-
     // Verifica password
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
     if (!passwordMatch) {

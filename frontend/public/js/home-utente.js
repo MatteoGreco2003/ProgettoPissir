@@ -9,11 +9,12 @@ let state = {
   isLoading: false,
   parkings: [],
   vehicles: [],
-  activeRideId: null, // ✅ NUOVO
+  activeRideId: null,
   user: {
-    credito: 15.5,
-    id: 1,
-    stato: "attivo", // ✅ NUOVO - 'attivo' o 'sospeso'
+    credito: 0,
+    id: null,
+    stato: "attivo",
+    punti: 0, // ✅ AGGIUNTO
   },
   map: null,
   markers: {},
@@ -37,8 +38,7 @@ let refreshInterval = null;
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   initMap();
-  loadHomepageData();
-  startAutoRefresh(10000); // Aggiorna ogni 10 secondi
+  loadUserProfile(); // ✅ CARICA DATI UTENTE PRIMA DI TUTTO
 });
 
 // ===== STOP REFRESH QUANDO CHIUDI LA PAGINA =====
@@ -46,8 +46,51 @@ window.addEventListener("beforeunload", () => {
   stopAutoRefresh();
 });
 
+// ===== CARICA PROFILO UTENTE DAL BACKEND =====
+async function loadUserProfile() {
+  try {
+    const response = await fetch("/users/me", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const userData = await response.json();
+      state.user = {
+        credito: parseFloat(userData.saldo || 0),
+        id: userData.id_utente,
+        stato: userData.stato_account || "attivo",
+        punti: userData.punti || 0,
+      };
+
+      loadHomepageData(); // ✅ Carica dati dopo aver preso l'utente
+    } else {
+      console.error("❌ Errore caricamento profilo:", response.status);
+      showSnackbar("❌ Errore nel caricamento del profilo", "error");
+    }
+  } catch (error) {
+    console.error("❌ Errore di connessione:", error);
+    showSnackbar("❌ Errore di connessione", "error");
+  }
+}
+
 // ===== EVENT LISTENERS =====
 function setupEventListeners() {
+  // Toggle sidebar on mobile
+  menuToggle.addEventListener("click", () => {
+    sidebar.classList.toggle("active");
+  });
+
+  // Close sidebar when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+      sidebar.classList.remove("active");
+    }
+  });
+
   // ✅ Filter buttons (filtro mezzi nella card)
   filterButtons.forEach((btn) => {
     btn.addEventListener("click", filterVehiclesByType);
@@ -119,6 +162,7 @@ function loadHomepageData() {
       renderParkings(state.parkings);
       renderVehicles(state.vehicles);
       showLoading(false);
+      startAutoRefresh(30000); // ✅ SPOSTA QUI
     })
     .catch((error) => {
       console.error("❌ Errore caricamento dati:", error);
@@ -128,7 +172,7 @@ function loadHomepageData() {
 }
 
 // ===== AUTO REFRESH DATI =====
-function startAutoRefresh(interval = 10000) {
+function startAutoRefresh(interval = 30000) {
   refreshInterval = setInterval(() => {
     const hasActiveRide = state.vehicles.some((v) => v.stato === "in_uso");
 
@@ -325,7 +369,7 @@ function createParkingPopup(parking, vehicles) {
           <span><strong>Disponibili:</strong> ${disponibili}</span>
         </div>
       </div>
-      <div style="max-height: 250px; overflow-y: auto;">
+      <div>
         <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px; color: #666;">
           Mezzi in parcheggio:
         </div>
@@ -397,7 +441,7 @@ function createVehicleCard(vehicle) {
   if (vehicle.tipo_mezzo === "monopattino") {
     vehicleIcon = "fas fa-person-skating";
     vehicleLabel = "Monopattino Elettrico";
-  } else if (vehicle.tipo_mezzo === "ebike") {
+  } else if (vehicle.tipo_mezzo === "bicicletta_elettrica") {
     vehicleIcon = "fas fa-bolt";
     vehicleLabel = "Bicicletta Elettrica";
   }
@@ -415,6 +459,15 @@ function createVehicleCard(vehicle) {
     (p) => p.id_parcheggio === vehicle.id_parcheggio
   );
 
+  // ✅ NUOVO: Nascondi batteria se bicicletta muscolare
+  const showBattery = vehicle.tipo_mezzo !== "bicicletta_muscolare";
+  const batteryHTML = showBattery
+    ? `<div class="vehicle-battery ${batteryClass}">
+        <i class="fas fa-bolt"></i>
+        ${vehicle.stato_batteria}%
+      </div>`
+    : "";
+
   card.innerHTML = `
     <div class="vehicle-header">
       <i class="vehicle-icon ${vehicleIcon} ${
@@ -424,10 +477,7 @@ function createVehicleCard(vehicle) {
         <div class="vehicle-id">${vehicle.codice_identificativo}</div>
         <div class="vehicle-type">${vehicleLabel}</div>
       </div>
-      <div class="vehicle-battery ${batteryClass}">
-        <i class="fas fa-bolt"></i>
-        ${vehicle.stato_batteria}%
-      </div>
+      ${batteryHTML}
     </div>
     <div class="vehicle-details">
       <div class="detail-row">
@@ -484,28 +534,33 @@ function getVehiclesByType(filter) {
   }
 
   return state.vehicles.filter((v) => {
-    if (filter === "biciclette-muscolari") return v.tipo_mezzo === "bicicletta";
+    if (filter === "bicicletta_muscolare")
+      return v.tipo_mezzo === "bicicletta_muscolare";
     if (filter === "monopattini") return v.tipo_mezzo === "monopattino";
-    if (filter === "ebike") return v.tipo_mezzo === "ebike";
+    if (filter === "bicicletta_elettrica")
+      return v.tipo_mezzo === "bicicletta_elettrica";
     return true;
   });
 }
 
 // ===== LOGIC - 4️⃣ PRENOTAZIONE =====
-function reserveVehicle(vehicle) {
+async function reserveVehicle(vehicle) {
   // ✅ Gate 1: Verifica credito
   if (state.user.credito < 1) {
     showSnackbar("❌ Credito insufficiente! Ricarica il tuo saldo.", "error");
     return;
   }
 
-  // ✅ Gate 2: Verifica corsa attiva
-  const activeRide = getActiveRide();
+  // ✅ Gate 2: Verifica stato account
+  if (state.user.stato !== "attivo") {
+    showSnackbar("❌ Account sospeso! Ricaricare il saldo e attendi.", "error");
+    return;
+  }
+
+  // ✅ Gate 3: Verifica corsa attiva
+  const activeRide = await getActiveRide();
   if (activeRide) {
-    showSnackbar(
-      "❌ Hai già una corsa in corso! Termina prima di prenotare.",
-      "error"
-    );
+    showSnackbar("❌ Hai già una corsa attiva! Termina quella prima.", "error");
     return;
   }
 
@@ -514,9 +569,35 @@ function reserveVehicle(vehicle) {
   openReservationModal(vehicle);
 }
 
-function getActiveRide() {
-  // TODO: Controllare dal backend se c'è una corsa attiva
-  return false;
+// ✅ AGGIORNA: Verifica se c'è una corsa attiva dal backend
+async function getActiveRide() {
+  try {
+    const response = await fetch("/rides/active", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+
+      // ✅ NUOVO: Controlla il campo activeRide, non l'intero oggetto
+      if (data.activeRide) {
+        return data.activeRide; // Ritorna solo il ride
+      } else {
+        return null;
+      }
+    }
+
+    // Se errore del server
+    console.error("❌ Errore backend:", response.status);
+    return null;
+  } catch (error) {
+    console.error("❌ Errore connessione:", error);
+    return null;
+  }
 }
 
 // ===== MODAL HANDLING =====
@@ -530,7 +611,7 @@ function openReservationModal(vehicle) {
   document.getElementById("summaryVehicleType").textContent =
     vehicle.tipo_mezzo === "monopattino"
       ? "Monopattino Elettrico"
-      : vehicle.tipo_mezzo === "ebike"
+      : vehicle.tipo_mezzo === "bicicletta_elettrica"
       ? "Bicicletta Elettrica"
       : "Bicicletta Muscolare";
   document.getElementById(
@@ -550,24 +631,6 @@ function closeReservationModal() {
 function confirmReservation() {
   if (!state.selectedVehicle) return;
 
-  // ✅ Nascondi div errore se c'era
-  const errorDiv = document.getElementById("reservationError");
-  if (errorDiv) {
-    errorDiv.classList.add("hidden");
-  }
-
-  // ✅ GATE 1: Verifica stato account
-if (state.user.stato !== "attivo") {
-  showReservationError("Il tuo account non è in stato attivo");
-  return;
-}
-
-// ✅ GATE 2: Verifica saldo
-if (state.user.credito < 1) {
-  showReservationError(`Saldo insufficiente.`);
-  return;
-}
-
   // ✅ Disabilita il bottone durante il caricamento
   const confirmBtn = document.getElementById("confirmReservation");
   confirmBtn.disabled = true;
@@ -579,6 +642,7 @@ if (state.user.credito < 1) {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify({
       id_mezzo: state.selectedVehicle.id_mezzo,
     }),

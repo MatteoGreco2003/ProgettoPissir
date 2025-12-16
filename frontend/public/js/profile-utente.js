@@ -12,6 +12,7 @@ const userNome = document.getElementById("userNome");
 const userCognome = document.getElementById("userCognome");
 const userEmail = document.getElementById("userEmail");
 const userDataReg = document.getElementById("userDataReg");
+const balanceContainer = document.querySelector(".balance-container");
 const userBalance = document.getElementById("userBalance");
 const userStatus = document.getElementById("userStatus");
 
@@ -33,6 +34,12 @@ const modalPasswordSave = document.getElementById("modalPasswordSave");
 let currentPassword = document.getElementById("currentPassword");
 let newPassword = document.getElementById("newPassword");
 let confirmPassword = document.getElementById("confirmPassword");
+
+// Loyalty points elements
+const userLoyaltyPoints = document.getElementById("userLoyaltyPoints");
+const userLoyaltyValue = document.getElementById("userLoyaltyValue");
+const loyaltyProgressBar = document.getElementById("loyaltyProgressBar");
+const loyaltyProgressText = document.getElementById("loyaltyProgressText");
 
 // ===== USER DATA (GLOBALE) =====
 let userData = null;
@@ -131,7 +138,48 @@ function displayUserProfile() {
   userDataReg.textContent = dataFormattata;
 
   // Saldo
-  userBalance.textContent = `€ ${parseFloat(userData.saldo || 0).toFixed(2)}`;
+  const saldo = parseFloat(userData.saldo || 0);
+  userBalance.textContent = `€ ${saldo.toFixed(2)}`;
+
+  // Reset classi stato saldo sul contenitore
+  balanceContainer.classList.remove(
+    "balance-container--danger",
+    "balance-container--warning",
+    "balance-container--ok"
+  );
+
+  // Rimuovi eventuali classi precedenti
+  userBalance.classList.remove(
+    "balance-amount--danger",
+    "balance-amount--warning",
+    "balance-amount--ok"
+  );
+
+  if (saldo <= 0) {
+    balanceContainer.classList.add("balance-container--danger");
+    userBalance.classList.add("balance-amount--danger");
+  } else if (saldo > 0 && saldo <= 1) {
+    balanceContainer.classList.add("balance-container--warning");
+    userBalance.classList.add("balance-amount--warning");
+  } else {
+    balanceContainer.classList.add("balance-container--ok");
+    userBalance.classList.add("balance-amount--ok");
+  }
+
+  // ✅ NUOVO: PUNTI FEDELTÀ
+  const punti = userData.punti || 0;
+  userLoyaltyPoints.textContent = punti;
+
+  // 1 punto = €0.05 di sconto
+  const valoreSconto = punti * 0.05;
+  userLoyaltyValue.textContent = `€ ${valoreSconto.toFixed(2)}`;
+
+  // Progress bar verso 100 punti (€5,00)
+  const percentuale = Math.min((punti / 100) * 100, 100);
+  loyaltyProgressBar.style.width = `${percentuale}%`;
+
+  const puntiRimanenti = Math.max(100 - punti, 0);
+  loyaltyProgressText.textContent = `${punti} / 100 punti verso € 5,00 di sconto`;
 
   // Stato account
   const statusMap = {
@@ -171,6 +219,10 @@ async function loadRideStatistics() {
       document.getElementById(
         "userTotalSpent"
       ).textContent = `€ ${stats.spesa_totale.toFixed(2)}`;
+
+      document.getElementById("userTotalKm").textContent = `${(
+        stats.km_totali ?? 0
+      ).toFixed(1)} km`;
     } else {
       console.warn("⚠️ Errore caricamento statistiche");
     }

@@ -7,6 +7,7 @@ import Ride from "./models/Ride.js";
 import Transaction from "./models/Transaction.js";
 import Report from "./models/Report.js";
 import Feedback from "./models/Feedback.js";
+import PuntiFedelta from "./models/LoyaltyPoints.js";
 import "./models/associations.js";
 
 console.log("🔄 Sincronizzando models con database...");
@@ -23,6 +24,7 @@ try {
   console.log("  - storico_transazioni");
   console.log("  - segnalazioni_malfunzionamento");
   console.log("  - feedback");
+  console.log("  - punti_fedelta");
 
   process.exit(0);
 } catch (error) {

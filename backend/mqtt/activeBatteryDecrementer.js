@@ -42,13 +42,15 @@ export const initActiveBatteryDecrementer = () => {
 
           client.publish(`Vehicles/${vehicle.id_mezzo}/battery`, message);
           console.log(
-            `⚡ Mezzo ${vehicle.id_mezzo} (corsa ${ride.id_corsa}): ${newBattery}%`
+            `⚡ Mezzo ${vehicle.id_mezzo} (corsa ${
+              ride.id_corsa
+            }): ${newBattery.toFixed(2)}%`
           );
         }
       } catch (error) {
         console.error("❌ Errore decremento batteria:", error.message);
       }
-    }, 10000); // Ogni 10 secondi
+    }, 60000); // Ogni 10 secondi
   });
 
   client.on("error", (err) => {

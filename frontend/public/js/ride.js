@@ -58,28 +58,30 @@ function loadRideData() {
 function updateRideUI(ride) {
   const vehicle = ride.vehicle;
 
-  const vehicleIcons = {
-    bicicletta: "🚲",
-    monopattino: "🛴",
-    ebike: "⚡🚲",
-  };
-
-  document.getElementById("vehicleIcon").textContent =
-    vehicleIcons[vehicle.tipo_mezzo] || "🛴";
   document.getElementById("vehicleTitle").textContent = vehicle.tipo_mezzo
     .replace(/_/g, " ")
     .toUpperCase();
 
   document.getElementById("summaryMezzo").textContent =
     vehicle.codice_identificativo || "N/A";
-  document.getElementById("summaryTipo").textContent =
-    vehicle.tipo_mezzo.toUpperCase();
+  document.getElementById("summaryTipo").textContent = vehicle.tipo_mezzo
+    .replace(/_/g, " ")
+    .toUpperCase();
   document.getElementById("summaryBatteria").textContent =
     vehicle.stato_batteria + "%";
   document.getElementById("summaryPartenza").textContent =
     ride.parkingInizio?.nome || "N/A";
 
   batteryValue.textContent = vehicle.stato_batteria + "%";
+
+  // Aggiorna il warning box con la tariffa corretta
+  const tariffaOraria = getTariffaOraria(vehicle.tipo_mezzo);
+  const warningBox = document.querySelector(".warning-box span");
+  if (warningBox) {
+    warningBox.textContent = `Tariffa: €1,00 per i primi 30 minuti, poi €${tariffaOraria.toFixed(
+      2
+    )} al minuto.`;
+  }
 }
 
 // ===== LOAD PARKINGS =====
@@ -135,10 +137,12 @@ function calculateCost() {
   const minutes = Math.floor(rideState.elapsedSeconds / 60);
   let cost = 0;
 
+  const tariffaOraria = getTariffaOraria(rideState.vehicleData.tipo_mezzo);
+
   if (minutes <= 30) {
     cost = 1.0;
   } else {
-    cost = 1.0 + (minutes - 30) * 0.25;
+    cost = 1.0 + (minutes - 30) * tariffaOraria;
   }
 
   costValue.textContent = `€${cost.toFixed(2)}`;

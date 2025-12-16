@@ -212,15 +212,38 @@ body {
 /* ===== BALANCE SECTION ===== */
 .balance-container {
   padding: 20px;
+  border-radius: 12px;
+  border: 1px solid;
+  text-align: center;
+  transition: all 250ms ease;
+}
+
+/* Stati dinamici per il saldo */
+.balance-container--danger {
+  background: linear-gradient(
+    135deg,
+    rgba(192, 21, 47, 0.08),
+    rgba(192, 21, 47, 0.02)
+  );
+  border-color: rgba(192, 21, 47, 0.35);
+}
+
+.balance-container--warning {
+  background: linear-gradient(
+    135deg,
+    rgba(230, 129, 97, 0.1),
+    rgba(230, 129, 97, 0.03)
+  );
+  border-color: rgba(230, 129, 97, 0.35);
+}
+
+.balance-container--ok {
   background: linear-gradient(
     135deg,
     rgba(33, 128, 141, 0.08),
     rgba(33, 128, 141, 0.03)
   );
-  border-radius: 12px;
-  border: 1px solid rgba(33, 128, 141, 0.15);
-  text-align: center;
-  transition: all 250ms ease;
+  border-color: rgba(33, 128, 141, 0.15);
 }
 
 .balance-container:hover {
@@ -233,6 +256,19 @@ body {
   font-weight: 700;
   color: var(--primary-teal);
   letter-spacing: -1px;
+}
+
+/* ===== BALANCE COLORS DINAMICI ===== */
+.balance-amount--danger {
+  color: #c0152f; /* rosso */
+}
+
+.balance-amount--warning {
+  color: #e68161; /* arancione */
+}
+
+.balance-amount--ok {
+  color: #21808d; /* verdino (già in palette) */
 }
 
 .balance-description {
@@ -567,7 +603,7 @@ body {
 
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
@@ -634,6 +670,147 @@ body {
   word-break: break-word;
   letter-spacing: -0.5px;
 }
+/* ===== LOYALTY POINTS SECTION ===== */
+.loyalty-container {
+  background: linear-gradient(
+    135deg,
+    rgba(33, 128, 141, 0.05),
+    rgba(33, 128, 141, 0.02)
+  );
+  border-radius: 12px;
+  border: 1px solid rgba(33, 128, 141, 0.15);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.loyalty-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(33, 128, 141, 0.1),
+    rgba(33, 128, 141, 0.04)
+  );
+  border-radius: 12px;
+  border: 1px solid rgba(33, 128, 141, 0.25);
+}
+
+.loyalty-number {
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--primary-teal);
+  letter-spacing: -1px;
+}
+
+.loyalty-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--light-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.loyalty-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+}
+
+.loyalty-description {
+  font-size: 13px;
+  color: var(--light-text);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.loyalty-discount {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(33, 128, 141, 0.08),
+    rgba(33, 128, 141, 0.03)
+  );
+  border-radius: 8px;
+  border: 1px solid rgba(33, 128, 141, 0.15);
+}
+
+.discount-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--light-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.discount-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-teal);
+}
+
+.loyalty-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 12px;
+  background-color: rgba(33, 128, 141, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(33, 128, 141, 0.2);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--primary-teal),
+    var(--primary-teal-dark)
+  );
+  border-radius: 12px;
+  width: 0%;
+  transition: width 500ms ease;
+  box-shadow: 0 0 8px rgba(33, 128, 141, 0.4);
+}
+
+.progress-text {
+  font-size: 12px;
+  color: var(--light-text);
+  margin: 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.loyalty-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background-color: rgba(33, 128, 141, 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(33, 128, 141, 0.15);
+  font-size: 12px;
+  color: var(--light-text);
+}
+
+.loyalty-footer i {
+  color: var(--primary-teal);
+  font-size: 14px;
+}
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
@@ -687,7 +864,7 @@ body {
   }
 
   .stats-row {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
   }
 
@@ -823,6 +1000,23 @@ body {
 
   .stat-value {
     font-size: 18px;
+  }
+
+  .loyalty-container {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .loyalty-number {
+    font-size: 42px;
+  }
+
+  .discount-value {
+    font-size: 18px;
+  }
+
+  .loyalty-description {
+    font-size: 12px;
   }
 }
 

@@ -4,7 +4,7 @@ import Ride from "../models/Ride.js";
 import Vehicle from "../models/Vehicle.js";
 import Parking from "../models/Parking.js";
 import User from "../models/User.js";
-import { sequelize } from "../config/database.js";
+//import { sequelize } from "../config/database.js";
 import { Op } from "sequelize";
 
 // ✅ STATISTICHE PARCHEGGI - Disponibilità mezzi

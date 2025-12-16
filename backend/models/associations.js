@@ -36,9 +36,11 @@ Ride.belongsTo(User, {
   as: "user",
 });
 
+// ✅ AGGIORNATO: Vehicle può essere cancellato senza problemi
 Ride.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
+  onDelete: "SET NULL", // ✅ id_mezzo diventa NULL se Vehicle è cancellato
 });
 
 Ride.belongsTo(Parking, {
@@ -60,6 +62,7 @@ Feedback.belongsTo(User, {
 Feedback.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
+  onDelete: "SET NULL", // ✅ id_mezzo diventa NULL se Vehicle è cancellato
 });
 
 export { Vehicle, Parking, User, Report, Ride };

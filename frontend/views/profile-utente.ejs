@@ -148,6 +148,16 @@
                         <div class="stat-value" id="userTotalSpent">€ 0,00</div>
                       </div>
                     </div>
+
+                    <div class="stat-card">
+                      <div class="stat-icon">
+                        <i class="fas fa-road"></i>
+                      </div>
+                      <div class="stat-content">
+                        <div class="stat-label">Km Totali</div>
+                        <div class="stat-value" id="userTotalKm">0 km</div>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- Seconda riga: Ultimo Mezzo Usato (full width) -->
@@ -178,6 +188,60 @@
                   <p class="balance-description">
                     Credito disponibile per le prenotazioni
                   </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== CARD PUNTI FEDELTÀ ===== -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-star"></i>
+                  Punti Fedeltà
+                </h2>
+              </div>
+              <div class="card-body">
+                <div class="loyalty-container">
+                  <!-- Numero punti grande -->
+                  <div class="loyalty-score">
+                    <span class="loyalty-number" id="userLoyaltyPoints">0</span>
+                    <span class="loyalty-label">punti</span>
+                  </div>
+
+                  <!-- Info sconto -->
+                  <div class="loyalty-info">
+                    <p class="loyalty-description">
+                      Guadagna punti con le corse in bicicletta muscolare
+                    </p>
+                    <div class="loyalty-discount">
+                      <span class="discount-label">Valore sconto:</span>
+                      <span class="discount-value" id="userLoyaltyValue"
+                        >€ 0,00</span
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Progress bar verso il prossimo traguardo -->
+                  <div class="loyalty-progress">
+                    <div class="progress-bar-container">
+                      <div
+                        class="progress-bar-fill"
+                        id="loyaltyProgressBar"
+                      ></div>
+                    </div>
+                    <p class="progress-text" id="loyaltyProgressText">
+                      0 / 100 punti verso € 5,00 di sconto
+                    </p>
+                  </div>
+
+                  <!-- Bottone info -->
+                  <div class="loyalty-footer">
+                    <i class="fas fa-info-circle"></i>
+                    <span
+                      >Usa i tuoi punti al termine di una corsa per avere uno
+                      sconto</span
+                    >
+                  </div>
                 </div>
               </div>
             </div>
