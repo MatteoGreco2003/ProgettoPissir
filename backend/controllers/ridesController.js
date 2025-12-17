@@ -20,6 +20,26 @@ const getTariffaBaseByMezzo = (tipo_mezzo) => {
   }
 };
 
+// Helper: Determina la velocità media in base al tipo di mezzo
+const getVelocitaMediaByMezzo = (tipo_mezzo) => {
+  switch (tipo_mezzo) {
+    case "bicicletta_muscolare":
+      return 15; // km/h
+    case "bicicletta_elettrica":
+      return 25; // km/h
+    case "monopattino":
+      return 20; // km/h
+    default:
+      return 15; // Default
+  }
+};
+
+// Helper: Calcola km percorsi
+const calcolaKmPercorsi = (durataMinuti, tipo_mezzo) => {
+  const velocitaMedia = getVelocitaMediaByMezzo(tipo_mezzo);
+  return (durataMinuti / 60) * velocitaMedia;
+};
+
 // ✅ START RIDE - Inizio corsa con sblocco MQTT
 export const startRide = async (req, res) => {
   try {
@@ -164,12 +184,10 @@ export const checkPayment = async (req, res) => {
       return res.status(400).json({ error: "ride_id è obbligatorio" });
     }
 
-    // 1️⃣ Verifica corsa esiste
-    const ride = await Ride.findByPk(ride_id);
-
-    if (!ride) {
-      return res.status(404).json({ error: "Corsa non trovata" });
-    }
+    // 1️⃣ Verifica corsa esiste (CON INCLUDE!)
+    const ride = await Ride.findByPk(ride_id, {
+      include: [{ model: Vehicle, as: "vehicle" }],
+    });
 
     // 2️⃣ Verifica che la corsa appartiene all'utente
     if (ride.id_utente !== id_utente) {
@@ -322,12 +340,15 @@ export const endRideWithPayment = async (req, res) => {
     }
 
     // 9️⃣ PAGAMENTO CONFERMATO - Aggiorna tutto
+    // Calcola km percorsi
+    const kmPercorsi = calcolaKmPercorsi(durataMinuti, ride.vehicle.tipo_mezzo);
 
     // Completa la ride
     ride.id_parcheggio_fine = id_parcheggio_fine;
     ride.data_ora_fine = dataFine;
     ride.durata_minuti = durataMinuti;
     ride.costo = costo;
+    ride.km_percorsi = kmPercorsi;
     ride.stato_corsa = "completata";
     await ride.save();
 
@@ -336,7 +357,7 @@ export const endRideWithPayment = async (req, res) => {
 
     // Controllo batteria: se < 20% → non prelevabile
     if (vehicle.stato_batteria < 20) {
-      vehicle.stato = "non prelevabile";
+      vehicle.stato = "non_prelevabile";
     } else {
       vehicle.stato = "disponibile";
     }
@@ -514,10 +535,14 @@ export const endRideWithDebt = async (req, res) => {
     await user.save();
 
     // 9️⃣ Completa la ride
+    // Calcola km percorsi
+    const kmPercorsi = calcolaKmPercorsi(durataMinuti, ride.vehicle.tipo_mezzo);
+
     ride.id_parcheggio_fine = id_parcheggio_fine;
     ride.data_ora_fine = dataFine;
     ride.durata_minuti = durataMinuti;
     ride.costo = costo;
+    ride.km_percorsi = kmPercorsi;
     ride.stato_corsa = "completata";
     await ride.save();
 
@@ -646,12 +671,19 @@ export const getActiveRide = async (req, res) => {
       (new Date() - ride.data_ora_inizio) / (1000 * 60)
     );
 
+    // Usa la stessa tariffa di checkPayment
+    const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
+    const kmPercorsi = calcolaKmPercorsi(
+      durataCorrenteMinuti,
+      ride.vehicle.tipo_mezzo
+    );
+
     // Stima costo
     let costStimato;
     if (durataCorrenteMinuti <= 30) {
       costStimato = 1.0;
     } else {
-      costStimato = 1.0 + (durataCorrenteMinuti - 30) * 0.25;
+      costStimato = 1.0 + (durataCorrenteMinuti - 30) * tariffa;
     }
 
     res.status(200).json({
@@ -660,6 +692,7 @@ export const getActiveRide = async (req, res) => {
       tipo_mezzo: ride.vehicle.tipo_mezzo,
       data_ora_inizio: ride.data_ora_inizio,
       durata_corrente_minuti: durataCorrenteMinuti,
+      km_percorsi: parseFloat(kmPercorsi.toFixed(2)),
       costo_stimato: parseFloat(costStimato.toFixed(2)),
       parcheggio_inizio: ride.parkingInizio.nome,
       tariffa_minuto: ride.vehicle.tariffa_minuto,

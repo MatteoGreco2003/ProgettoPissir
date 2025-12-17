@@ -52,6 +52,11 @@ const Ride = sequelize.define(
         isIn: [["in_corso", "completata", "cancellata"]],
       },
     },
+    km_percorsi: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+      comment: "Km percorsi durante la corsa",
+    },
   },
   {
     tableName: "storico_corse",

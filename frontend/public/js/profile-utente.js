@@ -206,16 +206,12 @@ async function loadRideStatistics() {
     if (response.ok) {
       const stats = await response.json();
 
-      const vehicleNameCapitalized =
-        stats.ultimo_mezzo === "N/A"
-          ? "N/A"
-          : stats.ultimo_mezzo.charAt(0).toUpperCase() +
-            stats.ultimo_mezzo.slice(1);
+      const vehicleNameFormatted = formatVehicleName(stats.ultimo_mezzo);
 
       document.getElementById("userTotalRides").textContent =
         stats.corse_totali;
       document.getElementById("userLastVehicle").textContent =
-        vehicleNameCapitalized;
+        vehicleNameFormatted;
       document.getElementById(
         "userTotalSpent"
       ).textContent = `€ ${stats.spesa_totale.toFixed(2)}`;
@@ -560,4 +556,18 @@ function showSnackbar(message, type = "success") {
   setTimeout(() => {
     snackbarElement.classList.remove("show");
   }, 3000);
+}
+
+function formatVehicleName(tipoMezzo) {
+  if (tipoMezzo === "N/A" || !tipoMezzo) {
+    return "Nessuno";
+  }
+
+  const vehicleNames = {
+    monopattino: "Monopattino Elettrico",
+    bicicletta_muscolare: "Bicicletta Muscolare",
+    bicicletta_elettrica: "Bicicletta Elettrica",
+  };
+
+  return vehicleNames[tipoMezzo] || tipoMezzo;
 }

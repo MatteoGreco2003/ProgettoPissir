@@ -9,6 +9,7 @@ let rideState = {
   isPaused: false,
   selectedParkingEnd: null,
   timerInterval: null,
+  mqttClient: null, // ✅ NUOVO: Cliente MQTT
 };
 
 // ===== DOM ELEMENTS =====
@@ -23,6 +24,113 @@ const speedValue = document.getElementById("speedValue");
 const batteryValue = document.getElementById("batteryValue");
 const errorDiv = document.getElementById("rideError");
 
+// ===== TARIFFE PER TIPO MEZZO =====
+function getTariffaOraria(tipoMezzo) {
+  const tariffe = {
+    bicicletta_muscolare: 0.15,
+    monopattino: 0.2,
+    bicicletta_elettrica: 0.25,
+  };
+  return tariffe[tipoMezzo] || 0.2;
+}
+
+// ===== MQTT CLIENT INITIALIZATION =====
+// ✅ NUOVO: Inizializza cliente MQTT
+function initMQTTClient() {
+  if (typeof Paho === "undefined") {
+    console.warn(
+      "⚠️ Libreria MQTT non caricata. Aggiorna la batteria tramite polling."
+    );
+    return;
+  }
+
+  const brokerUrl = "ws://localhost:9001"; // ✅ WebSocket MQTT
+  const clientId = `mobishare-${Date.now()}`;
+
+  try {
+    const broker = brokerUrl.replace("ws://", "").split(":")[0];
+    const port = parseInt(brokerUrl.split(":")[1]) || 9001;
+
+    rideState.mqttClient = new Paho.MQTT.Client(broker, port, clientId);
+
+    rideState.mqttClient.onConnectionLost = onConnectionLost;
+    rideState.mqttClient.onMessageArrived = onMessageArrived;
+
+    rideState.mqttClient.connect({
+      onSuccess: onMQTTConnected,
+      onFailure: onMQTTConnectionFailed,
+      useSSL: false,
+    });
+
+    console.log("🔌 Tentando connessione MQTT...");
+  } catch (error) {
+    console.warn("⚠️ Errore MQTT init:", error.message);
+  }
+}
+
+// Callback: connessione riuscita
+function onMQTTConnected() {
+  console.log("✅ MQTT Connesso!");
+
+  if (rideState.vehicleData) {
+    const batteryTopic = `Vehicles/${rideState.vehicleData.id_mezzo}/battery`;
+    rideState.mqttClient.subscribe(batteryTopic);
+    console.log(`📡 Iscritto a: ${batteryTopic}`);
+  }
+}
+
+// Callback: connessione persa
+function onConnectionLost(responseObject) {
+  if (responseObject.errorCode !== 0) {
+    console.warn("⚠️ MQTT Disconnesso:", responseObject.errorMessage);
+  }
+}
+
+// Callback: messaggio ricevuto
+function onMessageArrived(message) {
+  try {
+    const payload = JSON.parse(message.payloadString);
+    console.log("📩 MQTT Message:", payload);
+
+    // ✅ Aggiorna la batteria dal messaggio MQTT
+    if (payload.level !== undefined) {
+      const newBattery = payload.level;
+
+      document.getElementById("summaryBatteria").textContent = `${newBattery}%`;
+      batteryValue.textContent = `${newBattery}%`;
+
+      if (rideState.vehicleData) {
+        rideState.vehicleData.stato_batteria = newBattery;
+      }
+
+      animateBatteryUpdate(newBattery);
+
+      console.log(`⚡ Batteria aggiornata: ${newBattery}%`);
+    }
+  } catch (error) {
+    console.error("❌ Errore parsing MQTT message:", error);
+  }
+}
+
+function onMQTTConnectionFailed(responseObject) {
+  console.warn("⚠️ MQTT Connection Failed:", responseObject.errorMessage);
+  console.info("💡 Fallback: Continuerò con polling locale della batteria");
+}
+
+// ✅ NUOVO: Animazione visiva quando batteria cambia
+function animateBatteryUpdate(newBattery) {
+  const batteryElement = document.getElementById("batteryValue");
+  batteryElement.style.transition = "color 0.3s ease";
+
+  if (newBattery < 20) {
+    batteryElement.style.color = "#ef4444"; // Rosso
+  } else if (newBattery < 50) {
+    batteryElement.style.color = "#f97316"; // Arancione
+  } else {
+    batteryElement.style.color = "#22c55e"; // Verde
+  }
+}
+
 // ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
   if (!rideState.rideId) {
@@ -32,9 +140,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadRideData();
   loadParkings();
-  startTimer();
   setupEventListeners();
-  simulateRideData();
+
+  // ✅ NUOVO: Connetti MQTT subito
+  initMQTTClient();
+
+  setTimeout(() => {
+    startTimer();
+    simulateRideData();
+  }, 500);
+});
+
+// ===== CLEANUP quando chiudi la pagina =====
+window.addEventListener("beforeunload", () => {
+  if (rideState.mqttClient && rideState.mqttClient.isConnected()) {
+    rideState.mqttClient.disconnect();
+    console.log("🔌 MQTT Disconnesso");
+  }
 });
 
 // ===== LOAD RIDE DATA =====
@@ -74,7 +196,6 @@ function updateRideUI(ride) {
 
   batteryValue.textContent = vehicle.stato_batteria + "%";
 
-  // Aggiorna il warning box con la tariffa corretta
   const tariffaOraria = getTariffaOraria(vehicle.tipo_mezzo);
   const warningBox = document.querySelector(".warning-box span");
   if (warningBox) {
@@ -134,6 +255,10 @@ function updateTimerDisplay() {
 
 // ===== COST CALCULATION =====
 function calculateCost() {
+  if (!rideState.vehicleData) {
+    return;
+  }
+
   const minutes = Math.floor(rideState.elapsedSeconds / 60);
   let cost = 0;
 
@@ -148,7 +273,7 @@ function calculateCost() {
   costValue.textContent = `€${cost.toFixed(2)}`;
 }
 
-// ===== SIMULATE RIDE DATA (Demo) =====
+// ===== SIMULATE RIDE DATA (Demo) - Con fallback se MQTT non disponibile =====
 function simulateRideData() {
   setInterval(() => {
     if (!rideState.isPaused && rideState.vehicleData) {
@@ -160,13 +285,15 @@ function simulateRideData() {
       const speed = Math.floor(Math.random() * 10) + 15;
       speedValue.textContent = speed;
 
-      // Simula batteria (0.1% ogni 5 secondi)
-      const batteryLoss = (rideState.elapsedSeconds / 5) * 0.1;
-      const remainingBattery = Math.max(
-        0,
-        rideState.vehicleData.stato_batteria - batteryLoss
-      );
-      batteryValue.textContent = remainingBattery.toFixed(1) + "%";
+      // ✅ AGGIORNATO: Decrementa batteria SOLO se MQTT non è disponibile
+      if (!rideState.mqttClient || !rideState.mqttClient.isConnected()) {
+        const batteryLoss = (rideState.elapsedSeconds / 60) * 1; // 1% al minuto
+        const remainingBattery = Math.max(
+          0,
+          rideState.vehicleData.stato_batteria - batteryLoss
+        );
+        batteryValue.textContent = remainingBattery.toFixed(1) + "%";
+      }
     }
   }, 1000);
 }
@@ -196,7 +323,6 @@ function togglePause() {
 
 // ===== END RIDE =====
 function endRide() {
-  // Validazione
   if (!rideState.selectedParkingEnd) {
     showError(
       "❌ Errore",
@@ -208,15 +334,12 @@ function endRide() {
   endRideBtn.disabled = true;
   endRideBtn.textContent = "Elaborazione...";
 
-  // 1️⃣ CHECK PAYMENT
   fetch(`/rides/${rideState.rideId}/check-payment`)
     .then((res) => res.json())
     .then((checkData) => {
-      // 2️⃣ Se saldo sufficiente → endWithPayment
       if (checkData.saldo_sufficiente) {
         return endRideWithPayment(checkData.costo);
       } else {
-        // Se saldo insufficiente → endWithDebt
         return endRideWithDebt(checkData);
       }
     })
@@ -241,6 +364,9 @@ function endRideWithPayment(cost) {
     .then((data) => {
       showSnackbar("✅ Corsa terminata! Pagamento confermato.", "success");
       clearInterval(rideState.timerInterval);
+      if (rideState.mqttClient && rideState.mqttClient.isConnected()) {
+        rideState.mqttClient.disconnect();
+      }
       setTimeout(() => {
         window.location.href = "/home";
       }, 2000);
@@ -254,7 +380,6 @@ function endRideWithPayment(cost) {
 }
 
 function endRideWithDebt(checkData) {
-  // Mostra dialog per ricarica
   const importo = Math.ceil(checkData.importo_mancante * 100) / 100;
 
   showError(
@@ -266,7 +391,6 @@ function endRideWithDebt(checkData) {
     )}. È possibile completare la corsa creando un debito oppure ricaricare ora.`
   );
 
-  // TODO: Implementare logica di ricarica o debito
   endRideBtn.disabled = false;
   endRideBtn.textContent = "Termina Corsa";
 }

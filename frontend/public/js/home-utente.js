@@ -101,9 +101,15 @@ function setupEventListeners() {
   if (filterSelect) {
     filterSelect.addEventListener("change", (e) => {
       state.currentFilter = e.target.value;
+      updateFilterUI();
       renderVehicles(state.vehicles);
     });
   }
+
+  // ✅ NUOVO: Window resize listener per sincronizzare filtri
+  window.addEventListener("resize", () => {
+    syncFilterUI();
+  });
 
   // ✅ AGGIORNATO: Modal buttons per reservation
   const reservationModalClose = reservationModal.querySelector(".modal-close");
@@ -120,6 +126,31 @@ function setupEventListeners() {
       closeReservationModal();
     }
   });
+}
+
+// ===== SINCRONIZZAZIONE FILTRI TRA SELECT E BUTTONS =====
+
+// ✅ NUOVO: Aggiorna sia i button che il select in base a state.currentFilter
+function updateFilterUI() {
+  // Aggiorna i button
+  filterButtons.forEach((btn) => {
+    if (btn.getAttribute("data-filter") === state.currentFilter) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+  // Aggiorna il select
+  const filterSelect = document.getElementById("filterSelect");
+  if (filterSelect) {
+    filterSelect.value = state.currentFilter;
+  }
+}
+
+// ✅ NUOVO: Sincronizza quando cambia la larghezza dello schermo
+function syncFilterUI() {
+  updateFilterUI();
 }
 
 // ===== MAP INITIALIZATION =====
@@ -162,7 +193,7 @@ function loadHomepageData() {
       renderParkings(state.parkings);
       renderVehicles(state.vehicles);
       showLoading(false);
-      startAutoRefresh(30000); // ✅ SPOSTA QUI
+      startAutoRefresh(15000); // ✅ SPOSTA QUI
     })
     .catch((error) => {
       console.error("❌ Errore caricamento dati:", error);
@@ -172,17 +203,19 @@ function loadHomepageData() {
 }
 
 // ===== AUTO REFRESH DATI =====
-function startAutoRefresh(interval = 30000) {
+function startAutoRefresh(interval = 15000) {
+  // ✅ Abbassato a 15 sec
   refreshInterval = setInterval(() => {
     const hasActiveRide = state.vehicles.some((v) => v.stato === "in_uso");
 
     if (hasActiveRide) {
       refreshVehicleData();
+      refreshUserCredit(); // ✅ NUOVO: Aggiorna credito
     } else {
       stopAutoRefresh();
       setTimeout(() => {
         startAutoRefresh(interval);
-      }, 15000);
+      }, 10000); // Pausa più breve
     }
   }, interval);
 }
@@ -194,18 +227,39 @@ function stopAutoRefresh() {
   }
 }
 
-function refreshVehicleData() {
-  fetch("/vehicles/data")
-    .then((res) => res.json())
-    .then((data) => {
-      state.vehicles = data.vehicles || [];
-      renderVehicles(state.vehicles);
-      renderParkingsOnMap(state.parkings);
+// ✅ NUOVO: Refresh credito utente
+async function refreshUserCredit() {
+  try {
+    const response = await fetch("/users/me", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
 
-      const hasActiveRide = state.vehicles.some((v) => v.stato === "in_uso");
-      if (!hasActiveRide) {
-        stopAutoRefresh();
-      }
+    if (response.ok) {
+      const userData = await response.json();
+      state.user.credito = parseFloat(userData.saldo || 0);
+      state.user.stato = userData.stato_account || "attivo";
+      // ✅ Aggiorna anche la navbar se mostra il credito
+    }
+  } catch (error) {
+    console.error("❌ Errore refresh credito:", error);
+  }
+}
+
+function refreshVehicleData() {
+  // ✅ Carica ENTRAMBI gli endpoint
+  Promise.all([
+    fetch("/vehicles/data").then((res) => res.json()),
+    fetch("/parking/data").then((res) => res.json()),
+  ])
+    .then(([vehiclesData, parkingsData]) => {
+      state.vehicles = vehiclesData.vehicles || [];
+      state.parkings = parkingsData.parkings || []; // ✅ Ora funziona!
+
+      renderVehicles(state.vehicles);
+      renderParkings(state.parkings);
+      renderParkingsOnMap(state.parkings);
     })
     .catch((error) => {
       console.error("❌ Errore refresh dati:", error);
@@ -266,7 +320,7 @@ function renderParkingsOnMap(parkings) {
     const popupContent = createParkingPopup(parking, vehiclesInParking);
     marker.bindPopup(popupContent, {
       maxWidth: 300,
-      maxHeight: 400,
+      maxHeight: 200,
     });
 
     // Salva riferimento marker
@@ -384,6 +438,7 @@ function getVehicleStatusClass(stato) {
     disponibile: "status-available",
     in_uso: "status-in-use",
     in_manutenzione: "status-maintenance",
+    non_prelevabile: "status-unavailable",
   };
   return statusMap[stato] || "status-available";
 }
@@ -492,6 +547,8 @@ function createVehicleCard(vehicle) {
               ? "🟢 Disponibile"
               : vehicle.stato === "in_uso"
               ? "🔵 In uso"
+              : vehicle.stato === "non_prelevabile"
+              ? "🟠 Non prelevabile"
               : "🟠 Manutenzione"
           }
         </span>
@@ -525,6 +582,8 @@ function filterVehiclesByType(event) {
   state.currentFilter = event.target
     .closest(".filter-btn")
     .getAttribute("data-filter");
+
+  updateFilterUI();
   renderVehicles(state.vehicles);
 }
 
@@ -574,25 +633,27 @@ async function getActiveRide() {
   try {
     const response = await fetch("/rides/active", {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
     });
 
-    if (response.ok) {
-      const data = await response.json();
-
-      // ✅ NUOVO: Controlla il campo activeRide, non l'intero oggetto
-      if (data.activeRide) {
-        return data.activeRide; // Ritorna solo il ride
-      } else {
-        return null;
-      }
+    if (!response.ok) {
+      console.error("❌ Errore backend:", response.status);
+      return null;
     }
 
-    // Se errore del server
-    console.error("❌ Errore backend:", response.status);
+    const data = await response.json();
+
+    // Caso 1: struttura vecchia { success, activeRide, ... }
+    if ("activeRide" in data) {
+      return data.activeRide;
+    }
+
+    // Caso 2: struttura attuale: se c'è id_corsa la corsa è attiva
+    if (data.id_corsa) {
+      return data; // qualsiasi valore truthy va bene
+    }
+
     return null;
   } catch (error) {
     console.error("❌ Errore connessione:", error);
@@ -740,6 +801,7 @@ function formatVehicleStatus(stato) {
     disponibile: "Disponibile",
     in_uso: "In uso",
     in_manutenzione: "In manutenzione",
+    non_prelevabile: "Non prelevabile",
   };
   return statusMap[stato] || stato;
 }
