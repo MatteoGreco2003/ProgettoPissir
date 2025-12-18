@@ -49,6 +49,39 @@ export const initActiveBatteryDecrementer = () => {
           console.log(
             `⚡ Mezzo ${vehicle.id_mezzo} (corsa ${ride.id_corsa}): ${newBattery}%`
           );
+
+          // ⚠️ AVVISI BATTERIA
+          if (newBattery < 20 && newBattery >= 10) {
+            const warningMessage = JSON.stringify({
+              id_mezzo: vehicle.id_mezzo,
+              id_corsa: ride.id_corsa,
+              id_utente: ride.id_utente,
+              tipo: "batteria_bassa",
+              batteria: newBattery,
+              messaggio: "Batteria bassa! Raggiungi il parcheggio più vicino",
+              timestamp: new Date().toISOString(),
+            });
+            client.publish(`Alerts/${ride.id_utente}/battery`, warningMessage);
+            console.warn(
+              `⚠️ ALERT BATTERIA BASSA - Utente ${ride.id_utente}, Mezzo ${vehicle.id_mezzo}: ${newBattery}%`
+            );
+          }
+
+          if (newBattery < 10) {
+            const criticalMessage = JSON.stringify({
+              id_mezzo: vehicle.id_mezzo,
+              id_corsa: ride.id_corsa,
+              id_utente: ride.id_utente,
+              tipo: "batteria_critica",
+              batteria: newBattery,
+              messaggio: "🔴 BATTERIA CRITICA! Termina immediatamente la corsa",
+              timestamp: new Date().toISOString(),
+            });
+            client.publish(`Alerts/${ride.id_utente}/battery`, criticalMessage);
+            console.error(
+              `🔴 ALERT CRITICO - Utente ${ride.id_utente}, Mezzo ${vehicle.id_mezzo}: ${newBattery}%`
+            );
+          }
         }
       } catch (error) {
         console.error("❌ Errore decremento batteria:", error.message);
