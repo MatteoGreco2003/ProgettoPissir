@@ -268,8 +268,11 @@ export const endRideWithPayment = async (req, res) => {
       return res.status(403).json({ error: "Questa corsa non ti appartiene" });
     }
 
-    // 3️⃣ Verifica che la corsa è ancora in corso
-    if (ride.stato_corsa !== "in_corso") {
+    // 3️⃣ Verifica che la corsa è ancora in corso (O sospesa per batteria)
+    if (
+      ride.stato_corsa !== "in_corso" &&
+      ride.stato_corsa !== "sospesa_batteria_esaurita"
+    ) {
       return res.status(400).json({
         error: `Corsa non è in corso. Stato: ${ride.stato_corsa}`,
       });
@@ -499,8 +502,11 @@ export const endRideWithDebt = async (req, res) => {
       return res.status(403).json({ error: "Questa corsa non ti appartiene" });
     }
 
-    // 3️⃣ Verifica che la corsa è ancora in corso
-    if (ride.stato_corsa !== "in_corso") {
+    // 3️⃣ Verifica che la corsa è ancora in corso (O sospesa per batteria)
+    if (
+      ride.stato_corsa !== "in_corso" &&
+      ride.stato_corsa !== "sospesa_batteria_esaurita"
+    ) {
       return res.status(400).json({
         error: `Corsa non è in corso. Stato: ${ride.stato_corsa}`,
       });
@@ -657,7 +663,10 @@ export const getActiveRide = async (req, res) => {
     const id_utente = req.user.id_utente;
 
     const ride = await Ride.findOne({
-      where: { id_utente, stato_corsa: "in_corso" },
+      where: {
+        id_utente,
+        stato_corsa: ["in_corso", "sospesa_batteria_esaurita"],
+      },
       include: [
         {
           model: Vehicle,

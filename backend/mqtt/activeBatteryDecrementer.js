@@ -1,5 +1,4 @@
 // backend/mqtt/activeBatteryDecrementer.js
-// Decrementa la batteria di TUTTI i mezzi che hanno corse attive
 
 import mqtt from "mqtt";
 import Ride from "../models/Ride.js";
@@ -16,9 +15,11 @@ export const initActiveBatteryDecrementer = () => {
     // Ogni 60 secondi, decrementa la batteria di tutti i mezzi in uso
     setInterval(async () => {
       try {
-        // Trova tutte le corse attive
+        // Trova tutte le corse attive (incluse quelle sospese per batteria)
         const activeRides = await Ride.findAll({
-          where: { stato_corsa: "in_corso" },
+          where: {
+            stato_corsa: ["in_corso", "sospesa_batteria_esaurita"],
+          },
           include: [{ model: Vehicle, as: "vehicle" }],
         });
 
@@ -28,6 +29,11 @@ export const initActiveBatteryDecrementer = () => {
 
           // ⚠️ SKIP se è bicicletta muscolare (batteria = null)
           if (vehicle.stato_batteria === null) {
+            continue;
+          }
+
+          // ⚠️ SKIP se corsa già sospesa (batteria già a 0)
+          if (ride.stato_corsa === "sospesa_batteria_esaurita") {
             continue;
           }
 
@@ -80,6 +86,32 @@ export const initActiveBatteryDecrementer = () => {
             client.publish(`Alerts/${ride.id_utente}/battery`, criticalMessage);
             console.error(
               `🔴 ALERT CRITICO - Utente ${ride.id_utente}, Mezzo ${vehicle.id_mezzo}: ${newBattery}%`
+            );
+          }
+
+          // ⚠️ BATTERIA ESAURITA = STOP CORSA ← AGGIUNGI QUI
+          if (newBattery === 0) {
+            // Ferma la corsa
+            ride.stato_corsa = "sospesa_batteria_esaurita";
+            await ride.save();
+
+            // Notifica l'utente
+            const batteryDeadMessage = JSON.stringify({
+              id_mezzo: vehicle.id_mezzo,
+              id_corsa: ride.id_corsa,
+              id_utente: ride.id_utente,
+              tipo: "batteria_esaurita",
+              messaggio:
+                "🛑 Batteria esaurita! La corsa è stata fermata. Procedi al pagamento.",
+              timestamp: new Date().toISOString(),
+            });
+            client.publish(
+              `Alerts/${ride.id_utente}/battery`,
+              batteryDeadMessage
+            );
+
+            console.error(
+              `🛑 BATTERIA ESAURITA - Utente ${ride.id_utente}, Mezzo ${vehicle.id_mezzo}. Corsa fermata.`
             );
           }
         }

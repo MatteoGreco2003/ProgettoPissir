@@ -500,6 +500,12 @@ function createParkingPopup(parking, vehicles) {
       const batteryClass = getBatteryClass(v.stato_batteria);
       const icon = v.tipo_mezzo === "monopattino" ? "🛴" : "🚲";
 
+      // ✅ Se è bicicletta muscolare, spazio vuoto per mantenere allineamento
+      const batteryHTML =
+        v.tipo_mezzo === "bicicletta_muscolare"
+          ? `<span style="width: 48px;"></span>` // Spazio fisso
+          : `<span class="battery-badge ${batteryClass}">${v.stato_batteria}%</span>`;
+
       return `
         <div style="
           padding: 8px;
@@ -508,14 +514,17 @@ function createParkingPopup(parking, vehicles) {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          gap: 8px;
         ">
-          <span>${icon} ${v.codice_identificativo}</span>
-          <span class="vehicle-status ${statusClass}">${formatVehicleStatus(
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;">${icon} ${
+        v.codice_identificativo
+      }</span>
+          <span class="vehicle-status ${statusClass}" style="flex-shrink: 0; white-space: nowrap;">${formatVehicleStatus(
         v.stato
       )}</span>
-          <span class="battery-badge ${batteryClass}">${
-        v.stato_batteria
-      }%</span>
+          <span style="flex-shrink: 0; white-space: nowrap; width: 48px; text-align: right;">
+            ${batteryHTML}
+          </span>
         </div>
       `;
     })

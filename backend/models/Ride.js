@@ -49,7 +49,9 @@ const Ride = sequelize.define(
       type: DataTypes.STRING(50),
       defaultValue: "in_corso",
       validate: {
-        isIn: [["in_corso", "completata", "cancellata"]],
+        isIn: [
+          ["in_corso", "completata", "cancellata", "sospesa_batteria_esaurita"],
+        ],
       },
     },
     km_percorsi: {
