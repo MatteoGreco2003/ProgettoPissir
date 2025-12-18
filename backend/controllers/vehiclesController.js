@@ -122,10 +122,10 @@ export const createVehicle = async (req, res) => {
     const vehicle = await Vehicle.create({
       tipo_mezzo,
       id_parcheggio,
-      tariffa_minuto, // ✅ Impostato automaticamente
+      tariffa_minuto,
       codice_identificativo,
       stato: "disponibile",
-      stato_batteria: 100,
+      stato_batteria: tipo_mezzo === "bicicletta_muscolare" ? null : 100,
     });
 
     res.status(201).json({
@@ -208,6 +208,11 @@ export const updateVehicle = async (req, res) => {
       }
 
       vehicle.stato_batteria = stato_batteria;
+    }
+
+    // ✅ Se cambi il tipo a muscolare, imposta batteria a NULL
+    if (tipo_mezzo === "bicicletta_muscolare") {
+      vehicle.stato_batteria = null;
     }
 
     await vehicle.save();

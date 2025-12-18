@@ -35,7 +35,6 @@ function getTariffaOraria(tipoMezzo) {
 }
 
 // ===== MQTT CLIENT INITIALIZATION =====
-// ✅ NUOVO: Inizializza cliente MQTT
 function initMQTTClient() {
   if (typeof Paho === "undefined") {
     console.warn(
@@ -56,26 +55,18 @@ function initMQTTClient() {
     rideState.mqttClient.onConnectionLost = onConnectionLost;
     rideState.mqttClient.onMessageArrived = onMessageArrived;
 
+    // ✅ RIMOSSO: reconnect (non supportato dalla libreria)
     rideState.mqttClient.connect({
       onSuccess: onMQTTConnected,
       onFailure: onMQTTConnectionFailed,
       useSSL: false,
+      keepAliveInterval: 60,
     });
 
     console.log("🔌 Tentando connessione MQTT...");
   } catch (error) {
     console.warn("⚠️ Errore MQTT init:", error.message);
-  }
-}
-
-// Callback: connessione riuscita
-function onMQTTConnected() {
-  console.log("✅ MQTT Connesso!");
-
-  if (rideState.vehicleData) {
-    const batteryTopic = `Vehicles/${rideState.vehicleData.id_mezzo}/battery`;
-    rideState.mqttClient.subscribe(batteryTopic);
-    console.log(`📡 Iscritto a: ${batteryTopic}`);
+    console.info("💡 Fallback: Continuerò con polling locale della batteria");
   }
 }
 
@@ -83,6 +74,7 @@ function onMQTTConnected() {
 function onConnectionLost(responseObject) {
   if (responseObject.errorCode !== 0) {
     console.warn("⚠️ MQTT Disconnesso:", responseObject.errorMessage);
+    console.info("🔄 Tentativa di riconnessione...");
   }
 }
 
@@ -90,7 +82,7 @@ function onConnectionLost(responseObject) {
 function onMessageArrived(message) {
   try {
     const payload = JSON.parse(message.payloadString);
-    console.log("📩 MQTT Message:", payload);
+    console.log("📩 MQTT Message ricevuto:", payload);
 
     // ✅ Aggiorna la batteria dal messaggio MQTT
     if (payload.level !== undefined) {
@@ -115,6 +107,29 @@ function onMessageArrived(message) {
 function onMQTTConnectionFailed(responseObject) {
   console.warn("⚠️ MQTT Connection Failed:", responseObject.errorMessage);
   console.info("💡 Fallback: Continuerò con polling locale della batteria");
+}
+
+function onMQTTConnected() {
+  console.log("✅ MQTT Connesso!");
+
+  // ✅ Attendi che vehicleData sia caricato
+  if (rideState.vehicleData) {
+    const batteryTopic = `Vehicles/${rideState.vehicleData.id_mezzo}/battery`;
+    rideState.mqttClient.subscribe(batteryTopic);
+    console.log(`📡 Iscritto a: ${batteryTopic}`);
+  } else {
+    console.warn(
+      "⚠️ vehicleData non ancora caricato, sottoscrizione posticipata"
+    );
+    // Riprova dopo 1 secondo
+    setTimeout(() => {
+      if (rideState.vehicleData) {
+        const batteryTopic = `Vehicles/${rideState.vehicleData.id_mezzo}/battery`;
+        rideState.mqttClient.subscribe(batteryTopic);
+        console.log(`📡 Iscritto a (retry): ${batteryTopic}`);
+      }
+    }, 1000);
+  }
 }
 
 // ✅ NUOVO: Animazione visiva quando batteria cambia

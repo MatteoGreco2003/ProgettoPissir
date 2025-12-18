@@ -14,10 +14,12 @@ let state = {
     credito: 0,
     id: null,
     stato: "attivo",
-    punti: 0, // ✅ AGGIUNTO
+    punti: 0,
   },
   map: null,
   markers: {},
+  mqttClient: null, // ✅ NUOVO: Cliente MQTT
+  mqttConnected: false, // ✅ NUOVO: Stato connessione
 };
 
 // ===== DOM ELEMENTS =====
@@ -38,13 +40,137 @@ let refreshInterval = null;
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   initMap();
-  loadUserProfile(); // ✅ CARICA DATI UTENTE PRIMA DI TUTTO
+  loadUserProfile();
+  // ✅ NUOVO: Connetti MQTT subito
+  initMQTTClient();
 });
 
 // ===== STOP REFRESH QUANDO CHIUDI LA PAGINA =====
 window.addEventListener("beforeunload", () => {
   stopAutoRefresh();
+  // ✅ NUOVO: Disconnetti MQTT
+  if (state.mqttClient && state.mqttClient.isConnected()) {
+    state.mqttClient.disconnect();
+    console.log("🔌 MQTT Disconnesso");
+  }
 });
+
+// ===== MQTT CLIENT INITIALIZATION =====
+function initMQTTClient() {
+  if (typeof Paho === "undefined") {
+    console.warn(
+      "⚠️ Libreria MQTT non caricata. Aggiorna la batteria tramite polling."
+    );
+    return;
+  }
+
+  const brokerUrl = "ws://localhost:9001";
+  const clientId = `mobishare-home-${Date.now()}`;
+
+  try {
+    const broker = brokerUrl.replace("ws://", "").split(":")[0];
+    const port = parseInt(brokerUrl.split(":")[1]) || 9001;
+
+    state.mqttClient = new Paho.MQTT.Client(broker, port, clientId);
+
+    state.mqttClient.onConnectionLost = onMQTTConnectionLost;
+    state.mqttClient.onMessageArrived = onMQTTMessageArrived;
+
+    state.mqttClient.connect({
+      onSuccess: onMQTTConnected,
+      onFailure: onMQTTConnectionFailed,
+      useSSL: false,
+      keepAliveInterval: 60,
+    });
+
+    console.log("🔌 Tentando connessione MQTT...");
+  } catch (error) {
+    console.warn("⚠️ Errore MQTT init:", error.message);
+    console.info("💡 Fallback: Continuerò con polling locale della batteria");
+  }
+}
+
+function onMQTTConnected() {
+  console.log("✅ MQTT Connesso!");
+  state.mqttConnected = true;
+
+  // ✅ Sottoscrivi a TUTTI i topic delle batterie
+  state.mqttClient.subscribe("Vehicles/+/battery");
+  console.log("📡 Iscritto a: Vehicles/+/battery");
+}
+
+function onMQTTConnectionLost(responseObject) {
+  if (responseObject.errorCode !== 0) {
+    console.warn("⚠️ MQTT Disconnesso:", responseObject.errorMessage);
+    state.mqttConnected = false;
+  }
+}
+
+function onMQTTMessageArrived(message) {
+  try {
+    const payload = JSON.parse(message.payloadString);
+
+    if (payload.level !== undefined && payload.id_mezzo !== undefined) {
+      const idMezzo = payload.id_mezzo;
+      const newBattery = payload.level;
+
+      console.log(`⚡ MQTT: Mezzo ${idMezzo} batteria ${newBattery}%`);
+
+      // ✅ Aggiorna nel state
+      const vehicle = state.vehicles.find((v) => v.id_mezzo === idMezzo);
+      if (vehicle) {
+        vehicle.stato_batteria = newBattery;
+
+        // ✅ Aggiorna nella griglia dei veicoli
+        updateVehicleInGrid(vehicle);
+
+        // ✅ Aggiorna nella mappa
+        updateVehicleInMap(vehicle);
+      }
+    }
+  } catch (error) {
+    console.error("❌ Errore parsing MQTT message:", error);
+  }
+}
+
+function onMQTTConnectionFailed(responseObject) {
+  console.warn("⚠️ MQTT Connection Failed:", responseObject.errorMessage);
+  console.info("💡 Fallback: Continuerò con polling locale della batteria");
+  state.mqttConnected = false;
+}
+
+// ✅ NUOVO: Aggiorna batteria nella griglia
+function updateVehicleInGrid(vehicle) {
+  const vehicleCard = document.querySelector(
+    `[data-vehicle-id="${vehicle.id_mezzo}"]`
+  );
+  if (vehicleCard) {
+    const batteryElement = vehicleCard.querySelector(".vehicle-battery");
+    if (batteryElement) {
+      // ✅ Aggiorna SOLO il numero
+      batteryElement.innerHTML = `<i class="fas fa-bolt"></i> ${vehicle.stato_batteria}%`;
+    }
+  }
+}
+
+// ✅ NUOVO: Aggiorna batteria nella mappa
+function updateVehicleInMap(vehicle) {
+  // Ricarica i dati della mappa
+  const parking = state.parkings.find(
+    (p) => p.id_parcheggio === vehicle.id_parcheggio
+  );
+  if (parking) {
+    const vehiclesInParking = state.vehicles.filter(
+      (v) => v.id_parcheggio === parking.id_parcheggio
+    );
+    // Aggiorna solo questo marker
+    const marker = state.markers[parking.id_parcheggio];
+    if (marker) {
+      const popupContent = createParkingPopup(parking, vehiclesInParking);
+      marker.setPopupContent(popupContent);
+    }
+  }
+}
 
 // ===== CARICA PROFILO UTENTE DAL BACKEND =====
 async function loadUserProfile() {
@@ -66,7 +192,7 @@ async function loadUserProfile() {
         punti: userData.punti || 0,
       };
 
-      loadHomepageData(); // ✅ Carica dati dopo aver preso l'utente
+      loadHomepageData();
     } else {
       console.error("❌ Errore caricamento profilo:", response.status);
       showSnackbar("❌ Errore nel caricamento del profilo", "error");
@@ -80,16 +206,21 @@ async function loadUserProfile() {
 // ===== EVENT LISTENERS =====
 function setupEventListeners() {
   // Toggle sidebar on mobile
-  menuToggle.addEventListener("click", () => {
-    sidebar.classList.toggle("active");
-  });
+  const menuToggle = document.querySelector(".menu-toggle");
+  const sidebar = document.querySelector(".sidebar");
 
-  // Close sidebar when clicking outside
-  document.addEventListener("click", (e) => {
-    if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-      sidebar.classList.remove("active");
-    }
-  });
+  if (menuToggle && sidebar) {
+    menuToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+    });
+
+    // Close sidebar when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+        sidebar.classList.remove("active");
+      }
+    });
+  }
 
   // ✅ Filter buttons (filtro mezzi nella card)
   filterButtons.forEach((btn) => {
@@ -129,8 +260,6 @@ function setupEventListeners() {
 }
 
 // ===== SINCRONIZZAZIONE FILTRI TRA SELECT E BUTTONS =====
-
-// ✅ NUOVO: Aggiorna sia i button che il select in base a state.currentFilter
 function updateFilterUI() {
   // Aggiorna i button
   filterButtons.forEach((btn) => {
@@ -148,7 +277,6 @@ function updateFilterUI() {
   }
 }
 
-// ✅ NUOVO: Sincronizza quando cambia la larghezza dello schermo
 function syncFilterUI() {
   updateFilterUI();
 }
@@ -193,7 +321,7 @@ function loadHomepageData() {
       renderParkings(state.parkings);
       renderVehicles(state.vehicles);
       showLoading(false);
-      startAutoRefresh(15000); // ✅ SPOSTA QUI
+      startAutoRefresh(15000);
     })
     .catch((error) => {
       console.error("❌ Errore caricamento dati:", error);
@@ -204,18 +332,17 @@ function loadHomepageData() {
 
 // ===== AUTO REFRESH DATI =====
 function startAutoRefresh(interval = 15000) {
-  // ✅ Abbassato a 15 sec
   refreshInterval = setInterval(() => {
     const hasActiveRide = state.vehicles.some((v) => v.stato === "in_uso");
 
     if (hasActiveRide) {
       refreshVehicleData();
-      refreshUserCredit(); // ✅ NUOVO: Aggiorna credito
+      refreshUserCredit();
     } else {
       stopAutoRefresh();
       setTimeout(() => {
         startAutoRefresh(interval);
-      }, 10000); // Pausa più breve
+      }, 10000);
     }
   }, interval);
 }
@@ -227,7 +354,6 @@ function stopAutoRefresh() {
   }
 }
 
-// ✅ NUOVO: Refresh credito utente
 async function refreshUserCredit() {
   try {
     const response = await fetch("/users/me", {
@@ -240,7 +366,6 @@ async function refreshUserCredit() {
       const userData = await response.json();
       state.user.credito = parseFloat(userData.saldo || 0);
       state.user.stato = userData.stato_account || "attivo";
-      // ✅ Aggiorna anche la navbar se mostra il credito
     }
   } catch (error) {
     console.error("❌ Errore refresh credito:", error);
@@ -248,14 +373,13 @@ async function refreshUserCredit() {
 }
 
 function refreshVehicleData() {
-  // ✅ Carica ENTRAMBI gli endpoint
   Promise.all([
     fetch("/vehicles/data").then((res) => res.json()),
     fetch("/parking/data").then((res) => res.json()),
   ])
     .then(([vehiclesData, parkingsData]) => {
       state.vehicles = vehiclesData.vehicles || [];
-      state.parkings = parkingsData.parkings || []; // ✅ Ora funziona!
+      state.parkings = parkingsData.parkings || [];
 
       renderVehicles(state.vehicles);
       renderParkings(state.parkings);
@@ -319,7 +443,7 @@ function renderParkingsOnMap(parkings) {
     // Popup con lista veicoli
     const popupContent = createParkingPopup(parking, vehiclesInParking);
     marker.bindPopup(popupContent, {
-      maxWidth: 300,
+      maxWidth: 330,
       maxHeight: 200,
     });
 
@@ -480,6 +604,8 @@ function renderVehicles(vehicles) {
 function createVehicleCard(vehicle) {
   const card = document.createElement("div");
   card.className = "vehicle-card";
+  // ✅ NUOVO: Aggiungi data-vehicle-id per identificare la card
+  card.setAttribute("data-vehicle-id", vehicle.id_mezzo);
 
   // Determina classe batteria
   let batteryClass = "vehicle-battery--good";
@@ -628,7 +754,6 @@ async function reserveVehicle(vehicle) {
   openReservationModal(vehicle);
 }
 
-// ✅ AGGIORNA: Verifica se c'è una corsa attiva dal backend
 async function getActiveRide() {
   try {
     const response = await fetch("/rides/active", {
@@ -651,7 +776,7 @@ async function getActiveRide() {
 
     // Caso 2: struttura attuale: se c'è id_corsa la corsa è attiva
     if (data.id_corsa) {
-      return data; // qualsiasi valore truthy va bene
+      return data;
     }
 
     return null;
@@ -736,34 +861,6 @@ function confirmReservation() {
       confirmBtn.disabled = false;
       confirmBtn.textContent = "Conferma";
     });
-}
-
-// ===== NUOVO: MOSTRA ERRORE IN DIV =====
-function showReservationError(message) {
-  const errorDiv = document.getElementById("reservationError");
-
-  // Riempi il contenuto
-  errorDiv.innerHTML = `
-    <div style="
-      background: #fff3cd;
-      border: 1px solid #ffc107;
-      color: #856404;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    ">
-      <i class="fas fa-exclamation-triangle" style="font-size: 16px; flex-shrink: 0;"></i>
-      <div style="font-size: 13px;">
-        ${message}
-      </div>
-    </div>
-  `;
-
-  // Mostra la div
-  errorDiv.classList.remove("hidden");
 }
 
 // ===== UTILITIES =====

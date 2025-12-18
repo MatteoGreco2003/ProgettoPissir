@@ -32,6 +32,7 @@ const Vehicle = sequelize.define(
     stato_batteria: {
       type: DataTypes.INTEGER,
       defaultValue: 100,
+      allowNull: true,
       validate: {
         min: 0,
         max: 100,

@@ -320,7 +320,7 @@ export const endRideWithPayment = async (req, res) => {
     // 7️⃣B Se l'utente vuole usare punti come sconto
     const { usa_punti } = req.body; // Boolean dal frontend
     if (usa_punti && user.punti > 0) {
-      // 1 punto = €0.01 di sconto
+      // 1 punto = €0.05 di sconto
       const sconto_punti = user.punti * 0.05;
       punti_utilizzati = user.punti;
 
@@ -365,11 +365,6 @@ export const endRideWithPayment = async (req, res) => {
     vehicle.id_parcheggio = id_parcheggio_fine;
     await vehicle.save();
 
-    // Aggiorna saldo utente
-    user.saldo = saldoDisponibile - costo;
-    user.stato_account = "attivo"; // Rimane attivo perché ha pagato
-    await user.save();
-
     // Crea transaction pagamento corsa
     await Transaction.create({
       id_utente,
@@ -380,11 +375,14 @@ export const endRideWithPayment = async (req, res) => {
     });
 
     //  Calcola e salva punti fedeltà se è bicicletta muscolare
-    if (ride.vehicle.tipo_mezzo === "bicicletta_muscolare") {
+    // ?MA SOLO SE NON HA USATO PUNTI IN QUESTA CORSA
+    if (
+      ride.vehicle.tipo_mezzo === "bicicletta_muscolare" &&
+      punti_utilizzati === 0
+    ) {
       const punti_guadagnati = Math.floor(durataMinuti / 5); // 1 punto ogni 5 minuti
 
       user.punti += punti_guadagnati;
-      await user.save();
 
       // Traccia l'operazione nella tabella punti_fedelta
       await PuntiFedelta.create({
@@ -437,6 +435,11 @@ export const endRideWithPayment = async (req, res) => {
       console.warn("⚠️ MQTT publish fallito:", mqttError.message);
     }
 
+    // Aggiorna saldo utente
+    user.saldo = saldoDisponibile - costo;
+    user.stato_account = "attivo"; // Rimane attivo perché ha pagato
+    await user.save();
+
     // ✅ Risposta successo
     res.status(200).json({
       success: true,
@@ -448,6 +451,16 @@ export const endRideWithPayment = async (req, res) => {
       saldo_residuo: parseFloat(user.saldo.toFixed(2)),
       parcheggio_fine: parkingFine.nome,
       stato_account: "attivo",
+      punti_fedeltà: {
+        punti_guadagnati:
+          punti_utilizzati > 0 ? 0 : Math.floor(durataMinuti / 5), // Se ha usato punti, non guadagna altri
+        punti_utilizzati: punti_utilizzati,
+        sconto_applicato:
+          punti_utilizzati > 0
+            ? parseFloat((punti_utilizzati * 0.05).toFixed(2))
+            : 0,
+        punti_totali_attuali: user.punti,
+      },
     });
   } catch (error) {
     console.error("❌ Errore END ride with payment:", error.message);
@@ -617,6 +630,7 @@ export const endRideWithDebt = async (req, res) => {
       debito_totale: parseFloat(debitoTotale.toFixed(2)),
       saldo_dopo: parseFloat(saldoNuovo.toFixed(2)),
       parcheggio_fine: parkingFine.nome,
+      punti_totali: user.punti,
       account_status: {
         stato_account: "sospeso",
         data_sospensione: user.data_sospensione,

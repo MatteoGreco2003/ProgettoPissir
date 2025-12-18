@@ -13,7 +13,7 @@ export const initActiveBatteryDecrementer = () => {
   client.on("connect", () => {
     console.log("✅ Active Battery Decrementer connesso!");
 
-    // Ogni 10 secondi, decrementa la batteria di tutti i mezzi in uso
+    // Ogni 60 secondi, decrementa la batteria di tutti i mezzi in uso
     setInterval(async () => {
       try {
         // Trova tutte le corse attive
@@ -26,7 +26,12 @@ export const initActiveBatteryDecrementer = () => {
         for (const ride of activeRides) {
           const vehicle = ride.vehicle;
 
-          // Decrementa 1% ogni 10 secondi (6% al minuto)
+          // ⚠️ SKIP se è bicicletta muscolare (batteria = null)
+          if (vehicle.stato_batteria === null) {
+            continue;
+          }
+
+          // Decrementa 1% ogni minuto
           const newBattery = Math.max(0, vehicle.stato_batteria - 1);
 
           // Aggiorna nel DB
@@ -42,15 +47,13 @@ export const initActiveBatteryDecrementer = () => {
 
           client.publish(`Vehicles/${vehicle.id_mezzo}/battery`, message);
           console.log(
-            `⚡ Mezzo ${vehicle.id_mezzo} (corsa ${
-              ride.id_corsa
-            }): ${newBattery.toFixed(2)}%`
+            `⚡ Mezzo ${vehicle.id_mezzo} (corsa ${ride.id_corsa}): ${newBattery}%`
           );
         }
       } catch (error) {
         console.error("❌ Errore decremento batteria:", error.message);
       }
-    }, 60000); // Ogni 10 secondi
+    }, 60000); // Ogni 60 secondi
   });
 
   client.on("error", (err) => {
