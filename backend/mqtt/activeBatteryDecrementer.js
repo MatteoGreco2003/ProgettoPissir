@@ -4,6 +4,33 @@ import mqtt from "mqtt";
 import Ride from "../models/Ride.js";
 import Vehicle from "../models/Vehicle.js";
 
+// HELPER PER SALVARE DATI CON BATTERIA A 0
+const getTariffaBaseByMezzo = (tipo_mezzo) => {
+  switch (tipo_mezzo) {
+    case "bicicletta_muscolare":
+      return 0.15;
+    case "bicicletta_elettrica":
+      return 0.25;
+    case "monopattino":
+      return 0.2;
+    default:
+      return 0.25;
+  }
+};
+
+const getVelocitaMediaByMezzo = (tipo_mezzo) => {
+  switch (tipo_mezzo) {
+    case "bicicletta_muscolare":
+      return 15;
+    case "bicicletta_elettrica":
+      return 25;
+    case "monopattino":
+      return 20;
+    default:
+      return 15;
+  }
+};
+
 export const initActiveBatteryDecrementer = () => {
   const client = mqtt.connect(
     process.env.MQTT_BROKER_URL || "mqtt://localhost:1883"
@@ -89,9 +116,29 @@ export const initActiveBatteryDecrementer = () => {
             );
           }
 
-          // ⚠️ BATTERIA ESAURITA = STOP CORSA ← AGGIUNGI QUI
+          // ⚠️ BATTERIA ESAURITA = STOP CORSA
           if (newBattery === 0) {
-            // Ferma la corsa
+            // Calcola i valori PRIMA di fermare
+            const durataMinutiCalcolata = Math.ceil(
+              (new Date() - ride.data_ora_inizio) / (1000 * 60)
+            );
+
+            const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
+            let costoCalcolato;
+            if (durataMinutiCalcolata <= 30) {
+              costoCalcolato = 1.0;
+            } else {
+              costoCalcolato = 1.0 + (durataMinutiCalcolata - 30) * tariffa;
+            }
+
+            const kmCalcolati =
+              (durataMinutiCalcolata / 60) *
+              getVelocitaMediaByMezzo(ride.vehicle.tipo_mezzo);
+
+            // Salva i valori nel ride
+            ride.durata_minuti = durataMinutiCalcolata;
+            ride.costo = costoCalcolato;
+            ride.km_percorsi = kmCalcolati;
             ride.stato_corsa = "sospesa_batteria_esaurita";
             await ride.save();
 

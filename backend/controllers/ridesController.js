@@ -194,8 +194,11 @@ export const checkPayment = async (req, res) => {
       return res.status(403).json({ error: "Questa corsa non ti appartiene" });
     }
 
-    // 3️⃣ Verifica che la corsa è ancora in corso
-    if (ride.stato_corsa !== "in_corso") {
+    // 3️⃣ Verifica che la corsa è ancora in corso o sospesa
+    if (
+      ride.stato_corsa !== "in_corso" &&
+      ride.stato_corsa !== "sospesa_batteria_esaurita"
+    ) {
       return res.status(400).json({
         error: `Corsa non è in corso. Stato: ${ride.stato_corsa}`,
       });
@@ -689,19 +692,36 @@ export const getActiveRide = async (req, res) => {
       });
     }
 
-    // Calcola durata corrente in minuti
+    // ⚠️ SE SOSPESA, USA I VALORI CONGELATI DAL DB
+    if (ride.stato_corsa === "sospesa_batteria_esaurita") {
+      return res.status(200).json({
+        id_corsa: ride.id_corsa,
+        stato_corsa: ride.stato_corsa,
+        id_mezzo: ride.vehicle.id_mezzo,
+        tipo_mezzo: ride.vehicle.tipo_mezzo,
+        data_ora_inizio: ride.data_ora_inizio,
+        durata_corrente_minuti: ride.durata_minuti || 0,
+        km_percorsi: ride.km_percorsi
+          ? parseFloat(ride.km_percorsi).toFixed(2)
+          : 0, // ← Convertito perche dava errore toFixed
+        costo_stimato: ride.costo ? parseFloat(ride.costo).toFixed(2) : 0, // ← Convertito perche dava errore toFixed
+        parcheggio_inizio: ride.parkingInizio.nome,
+        tariffa_minuto: ride.vehicle.tariffa_minuto,
+        avviso: "🛑 Batteria esaurita! Procedi al pagamento.",
+      });
+    }
+
+    // SE ATTIVA, CALCOLA LIVE
     const durataCorrenteMinuti = Math.ceil(
       (new Date() - ride.data_ora_inizio) / (1000 * 60)
     );
 
-    // Usa la stessa tariffa di checkPayment
     const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
     const kmPercorsi = calcolaKmPercorsi(
       durataCorrenteMinuti,
       ride.vehicle.tipo_mezzo
     );
 
-    // Stima costo
     let costStimato;
     if (durataCorrenteMinuti <= 30) {
       costStimato = 1.0;
@@ -711,6 +731,7 @@ export const getActiveRide = async (req, res) => {
 
     res.status(200).json({
       id_corsa: ride.id_corsa,
+      stato_corsa: ride.stato_corsa,
       id_mezzo: ride.vehicle.id_mezzo,
       tipo_mezzo: ride.vehicle.tipo_mezzo,
       data_ora_inizio: ride.data_ora_inizio,
@@ -820,7 +841,10 @@ export const cancelRide = async (req, res) => {
       return res.status(403).json({ error: "Accesso negato" });
     }
 
-    if (ride.stato_corsa !== "in_corso") {
+    if (
+      ride.stato_corsa !== "in_corso" &&
+      ride.stato_corsa !== "sospesa_batteria_esaurita"
+    ) {
       return res.status(400).json({
         error: "Puoi cancellare solo corse in corso",
       });

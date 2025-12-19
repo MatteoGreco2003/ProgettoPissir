@@ -20,6 +20,9 @@ let state = {
   markers: {},
   mqttClient: null, // ✅ NUOVO: Cliente MQTT
   mqttConnected: false, // ✅ NUOVO: Stato connessione
+  // ✅ NUOVO: Banner states
+  activeRideBanner: null,
+  accountBanner: null,
 };
 
 // ===== DOM ELEMENTS =====
@@ -203,6 +206,235 @@ async function loadUserProfile() {
   }
 }
 
+// ✅ NUOVO: Controlla corsa attiva e stato account
+async function checkActiveRideAndStatus() {
+  try {
+    const res = await fetch("/rides/active", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
+    const data = await res.json();
+
+    if (data.id_corsa) {
+      // ✅ Corsa attiva presente
+      state.activeRideBanner = {
+        id_corsa: data.id_corsa,
+        id_mezzo: data.id_mezzo,
+        tipo_mezzo: data.tipo_mezzo,
+        parcheggio_inizio: data.parcheggio_inizio,
+        data_ora_inizio: data.data_ora_inizio, // ✅ NUOVO
+        durata_minuti: data.durata_corrente_minuti || 0,
+        km_percorsi: parseFloat(data.km_percorsi) || 0,
+        costo_stimato: data.costo_stimato || 0,
+        stato_corsa: data.stato_corsa,
+      };
+      state.accountBanner = null;
+    } else {
+      state.activeRideBanner = null;
+      buildAccountBanner();
+    }
+
+    renderTopBanner();
+  } catch (err) {
+    console.error("❌ Errore checkActiveRide:", err);
+  }
+}
+
+// ✅ Costruisce il banner account/credito
+function buildAccountBanner() {
+  const saldo = state.user.credito || 0;
+  const stato = state.user.stato || "attivo";
+
+  // Account sospeso
+  if (stato !== "attivo") {
+    state.accountBanner = {
+      type: "blocked",
+      title: "Account sospeso",
+      message:
+        "Il tuo account è sospeso. Ricarica il saldo e attendi l'approvazione del gestore.",
+      showRechargeButton: true,
+    };
+    return;
+  }
+
+  // Credito basso (usa stessa soglia di startRide: 1.00 €)
+  if (saldo < 1) {
+    state.accountBanner = {
+      type: "low_credit",
+      title: "Credito insufficiente",
+      message: `Saldo attuale: €${saldo.toFixed(
+        2
+      )}. Devi avere almeno €1.00 per iniziare una corsa.`,
+      showRechargeButton: true,
+    };
+    return;
+  }
+
+  // Nessun avviso
+  state.accountBanner = null;
+}
+
+// ✅ Renderizza il banner in alto (NUOVO - MODERNO E BELLO)
+function renderTopBanner() {
+  const container = document.getElementById("topBannerContainer");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (state.activeRideBanner) {
+    const b = state.activeRideBanner;
+
+    // ✅ Determina icon e label del mezzo
+    let tipoIcon = "🚲";
+    let tipoLabel = "Bicicletta";
+    if (b.tipo_mezzo === "monopattino") {
+      tipoIcon = "🛴";
+      tipoLabel = "Monopattino Elettrico";
+    } else if (b.tipo_mezzo === "bicicletta_elettrica") {
+      tipoIcon = "⚡";
+      tipoLabel = "Bicicletta Elettrica";
+    }
+
+    // ✅ Formatta data e ora
+    const dataOra = new Date(b.data_ora_inizio);
+    const dataFormattata = dataOra.toLocaleDateString("it-IT", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    const oraFormattata = dataOra.toLocaleTimeString("it-IT", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    // ✅ Determina colore batteria
+    let batteryHTML = "";
+    if (b.tipo_mezzo !== "bicicletta_muscolare") {
+      const vehicle = state.vehicles.find((v) => v.id_mezzo === b.id_mezzo);
+      const battery = vehicle ? vehicle.stato_batteria : 0;
+      let batteryClass = "battery-good";
+      if (battery < 20) batteryClass = "battery-critical";
+      else if (battery < 50) batteryClass = "battery-warning";
+
+      batteryHTML = `
+        <div class="top-banner__battery-badge ${batteryClass}">
+          🔋 ${battery}%
+        </div>
+      `;
+    }
+
+    // ✅ Se batteria è esaurita, mostra avviso
+    const avviso =
+      b.stato_corsa === "sospesa_batteria_esaurita"
+        ? `
+        <div class="top-banner__warning-box">
+          <span>🛑</span>
+          <p><strong>Batteria esaurita!</strong> Procedi al pagamento.</p>
+        </div>
+      `
+        : "";
+
+    // ✅ HTML del banner
+    container.innerHTML = `
+      <div class="top-banner top-banner--ride">
+        <div class="top-banner__left">
+          <!-- LABEL -->
+          <span class="top-banner__label">
+            ${
+              b.stato_corsa === "sospesa_batteria_esaurita"
+                ? "🛑 Corsa Sospesa"
+                : "🟢 Corsa Attiva"
+            }
+          </span>
+
+          <!-- MEZZO + BATTERIA -->
+          <div class="top-banner__mezzo-info">
+            <div>
+              <span class="top-banner__mezzo-icon">${tipoIcon}</span>
+              <span class="top-banner__mezzo-tipo">${tipoLabel}</span>
+            </div>
+            ${batteryHTML}
+          </div>
+
+          <!-- PARCHEGGIO -->
+          <div class="top-banner__parking">
+            <span>📍</span>
+            <span>${b.parcheggio_inizio}</span>
+          </div>
+
+          <!-- DATA E ORA -->
+          <div class="top-banner__datetime">
+            <span>📅 ${dataFormattata}</span>
+            <span>🕐 ${oraFormattata}</span>
+          </div>
+
+          <!-- STATS -->
+          <div class="top-banner__stats">
+            <div class="top-banner__stat">
+              <span class="top-banner__stat-label">Durata</span>
+              <span class="top-banner__stat-value">⏱️ ${
+                b.durata_minuti
+              } min</span>
+            </div>
+            <div class="top-banner__stat">
+              <span class="top-banner__stat-label">Costo</span>
+              <span class="top-banner__stat-value costo">€${parseFloat(
+                b.costo_stimato || 0
+              ).toFixed(2)}</span>
+            </div>
+            <div class="top-banner__stat">
+              <span class="top-banner__stat-label">Km</span>
+              <span class="top-banner__stat-value">🗺️ ${b.km_percorsi.toFixed(
+                2
+              )}</span>
+            </div>
+          </div>
+
+          ${avviso}
+        </div>
+
+        <!-- BUTTON RIGHT -->
+        <div class="top-banner__right">
+          <button class="top-banner__btn" onclick="window.location.href='/ride?ride_id=${
+            b.id_corsa
+          }'">
+            ${
+              b.stato_corsa === "sospesa_batteria_esaurita"
+                ? "💳 Paga"
+                : "▶️ Continua"
+            }
+          </button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // 2️⃣ BANNER ACCOUNT
+  if (state.accountBanner) {
+    const a = state.accountBanner;
+    container.innerHTML = `
+      <div class="top-banner top-banner--warning">
+        <div class="top-banner__left">
+          <span class="top-banner__label">${a.title}</span>
+          <span>${a.message}</span>
+        </div>
+        ${
+          a.showRechargeButton
+            ? `<div class="top-banner__right">
+                 <button class="top-banner__btn" onclick="window.location.href='/wallet'">
+                   💰 Ricarica
+                 </button>
+               </div>`
+            : ""
+        }
+      </div>
+    `;
+  }
+}
+
 // ===== EVENT LISTENERS =====
 function setupEventListeners() {
   // Toggle sidebar on mobile
@@ -321,7 +553,12 @@ function loadHomepageData() {
       renderParkings(state.parkings);
       renderVehicles(state.vehicles);
       showLoading(false);
+
+      // ✅ NUOVO: Controlla corsa attiva e stato account DOPO caricamento
+      checkActiveRideAndStatus();
+
       startAutoRefresh(15000);
+      startBannerRefresh(15000);
     })
     .catch((error) => {
       console.error("❌ Errore caricamento dati:", error);
@@ -343,6 +580,16 @@ function startAutoRefresh(interval = 15000) {
       setTimeout(() => {
         startAutoRefresh(interval);
       }, 10000);
+    }
+  }, interval);
+}
+
+// ✅ NUOVO: Auto-refresh banner corsa attiva ogni 15 secondi
+function startBannerRefresh(interval = 15000) {
+  setInterval(() => {
+    // Aggiorna solo se c'è una corsa attiva
+    if (state.activeRideBanner) {
+      checkActiveRideAndStatus();
     }
   }, interval);
 }
