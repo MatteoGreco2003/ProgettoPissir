@@ -221,7 +221,7 @@ export const requestReactivation = async (req, res) => {
 
     if (user.saldo < 0) {
       return res.status(400).json({
-        error: "Devi ricaricare il credito prima di richiedere la riapertura",
+        error: "Ricarica il credito prima di richiedere la riapertura",
         debito_attuale: Math.abs(user.saldo),
       });
     }

@@ -907,10 +907,26 @@ export const getUserRideStatistics = async (req, res) => {
       0
     );
 
+    // 4️⃣ Calcola km totali percorsi
+    const rides = await Ride.findAll({
+      where: {
+        id_utente,
+        stato_corsa: "completata",
+      },
+      attributes: ["km_percorsi"],
+      raw: true,
+    });
+
+    const totalKm = rides.reduce(
+      (sum, ride) => sum + parseFloat(ride.km_percorsi || 0),
+      0
+    );
+
     res.status(200).json({
       corse_totali: totalRides,
       ultimo_mezzo: lastRide ? lastRide.vehicle.tipo_mezzo : "N/A",
       spesa_totale: parseFloat(totalSpent.toFixed(2)),
+      km_totali: parseFloat(totalKm.toFixed(2)),
     });
   } catch (error) {
     console.error("❌ Errore GET ride statistics:", error.message);

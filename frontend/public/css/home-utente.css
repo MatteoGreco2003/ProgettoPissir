@@ -752,22 +752,42 @@ body {
 }
 
 /* ============================================================================
-   TOP BANNER - COMPLETAMENTE RINNOVATO
+   TOP BANNER - COMPATTO E ORIZZONTALE
    ========================================================================== */
+
+/* ===== NASCONDE IL CONTAINER SE VUOTO ===== */
+#topBannerContainer:empty {
+  margin-bottom: 0;
+  display: none;
+}
 
 #topBannerContainer {
   margin-bottom: 24px;
 }
 
 .top-banner {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 16px;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
-  animation: slideDown 400ms 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-lg);
+  animation: slideDown 400ms var(--transition);
   border: none;
+  padding: 20px;
+  background: linear-gradient(135deg, #e0f7f9 0%, #cff0f5 100%);
+  border: 2px solid rgba(33, 128, 141, 0.3);
+}
+
+.top-banner--warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid rgba(250, 204, 21, 0.3);
+}
+
+#accountBanner {
+  grid-template-rows: auto;
+  gap: 0; /* ✅ TOLTO il gap per il warning */
 }
 
 @keyframes slideDown {
@@ -781,69 +801,54 @@ body {
   }
 }
 
-.top-banner__left {
-  flex: 1;
-  padding: 24px;
+/* ===== RIGA SUPERIORE: MEZZO + PARCHEGGIO + DATETIME ===== */
+.top-banner__header {
+  grid-column: 1;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 12px;
 }
 
-.top-banner__label {
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  opacity: 0.8;
-}
-
-.top-banner--ride {
-  background: linear-gradient(135deg, #e0f7f9 0%, #cff0f5 100%);
-  border: 2px solid rgba(33, 128, 141, 0.3);
-  color: var(--dark-text);
-}
-
-.top-banner--ride .top-banner__label {
-  color: var(--primary-teal);
-}
-
-.top-banner--warning {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border: 2px solid rgba(250, 204, 21, 0.3);
-  color: var(--dark-text);
-}
-
-.top-banner--warning .top-banner__label {
-  color: #d97706;
+/* ===== HEADER PER WARNING (CREDITO BASSO) - SENZA BORDER ===== */
+#accountBanner .top-banner__header {
+  border-bottom: none;
+  padding-bottom: 0;
+  padding-right: 16px;
+  gap: 16px;
+  flex-wrap: nowrap;
+  align-items: center;
 }
 
 /* ===== MEZZO + BATTERIA ===== */
 .top-banner__mezzo-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .top-banner__mezzo-tipo {
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--dark-text);
 }
 
 .top-banner__mezzo-icon {
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .top-banner__battery-badge {
-  background: rgba(255, 255, 255, 0.7);
-  padding: 4px 10px;
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 3px 8px;
+  border-radius: 18px;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   backdrop-filter: blur(10px);
 }
 
@@ -863,53 +868,47 @@ body {
   animation: pulse 2s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+.top-banner__location-datetime {
+  display: flex;
+  gap: 16px;
+  align-items: center;
 }
 
 /* ===== PARCHEGGIO ===== */
 .top-banner__parking {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--dark-text);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
 /* ===== DATA E ORA ===== */
 .top-banner__datetime {
   display: flex;
-  gap: 16px;
-  font-size: 13px;
+  gap: 12px;
+  font-size: 12px;
   color: rgba(0, 0, 0, 0.6);
   font-weight: 500;
 }
 
-/* ===== STATS GRID ===== */
+/* ===== STATS ROW - COMPATTI ===== */
 .top-banner__stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 8px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
 }
 
 .top-banner__stat {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  min-width: 80px;
 }
 
 .top-banner__stat-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -918,30 +917,34 @@ body {
 }
 
 .top-banner__stat-value {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--dark-text);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  justify-content: center;
 }
 
 .top-banner__stat-value.costo {
   color: var(--primary-teal);
-  font-size: 20px;
+  font-size: 16px;
+  justify-content: center;
 }
 
 /* ===== AVVISO BATTERIA ===== */
 .top-banner__warning-box {
+  grid-column: 1 / -1;
   background: rgba(192, 21, 47, 0.12);
   border: 1px solid rgba(192, 21, 47, 0.25);
   border-radius: 10px;
-  padding: 12px;
-  margin-top: 12px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   animation: shake 0.5s ease-in-out;
+  margin-top: 4px;
 }
 
 @keyframes shake {
@@ -958,7 +961,7 @@ body {
 }
 
 .top-banner__warning-box p {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--error-red);
   margin: 0;
@@ -966,24 +969,34 @@ body {
 
 /* ===== RIGHT BUTTON ===== */
 .top-banner__right {
-  padding: 24px;
+  grid-column: 2;
+  grid-row: 1 / 3;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
+  gap: 8px;
+  padding-left: 16px;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* ===== RIGHT BUTTON PER WARNING - ALLINEATO ===== */
+#accountBanner .top-banner__right {
+  grid-column: 2;
+  grid-row: 1;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  padding-left: 16px;
+  justify-content: center;
 }
 
 .top-banner__btn {
-  padding: 12px 20px;
+  padding: 10px 18px;
   border-radius: 10px;
   border: none;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1033,6 +1046,48 @@ body {
     outline: none;
     border-color: var(--primary-teal);
     box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
+  }
+
+  .top-banner {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .top-banner__right {
+    grid-column: 1;
+    grid-row: auto;
+    padding-left: 0;
+    border-left: none;
+    flex-direction: row;
+  }
+
+  .top-banner__btn {
+    flex: 1;
+  }
+
+  .top-banner__header {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .top-banner__stats {
+    gap: 16px;
+    justify-content: space-around;
+    margin-bottom: 8px;
+  }
+
+  .top-banner__stat {
+    min-width: auto;
+  }
+
+  #accountBanner .top-banner__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
   }
 }
 
@@ -1103,22 +1158,29 @@ body {
   }
 
   .top-banner {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .top-banner__stat {
+    min-width: auto;
+    margin-bottom: 0;
   }
 
   .top-banner__right {
-    width: 100%;
+    grid-column: 1;
     flex-direction: row;
-    padding: 16px;
-    gap: 8px;
+    width: 100%;
   }
 
   .top-banner__btn {
     flex: 1;
   }
 
-  .top-banner__stats {
-    grid-template-columns: repeat(2, 1fr);
+  .top-banner__datetime {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
 
@@ -1225,31 +1287,34 @@ body {
     font-size: 13px !important;
   }
 
-  .top-banner__left {
-    padding: 16px;
-  }
-
-  .top-banner__right {
-    padding: 12px;
+  .top-banner {
+    padding: 10px;
+    gap: 6px;
   }
 
   .top-banner__btn {
     font-size: 12px;
-    padding: 10px 16px;
+    padding: 8px 14px;
   }
 
-  .top-banner__stats {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-top: 4px;
+  .top-banner__stat-label {
+    font-size: 9px;
   }
 
   .top-banner__stat-value {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .top-banner__stat-value.costo {
-    font-size: 18px;
+    font-size: 14px;
+  }
+
+  .top-banner__datetime {
+    font-size: 11px;
+  }
+
+  .top-banner__mezzo-tipo {
+    font-size: 14px;
   }
 }
 
@@ -1259,4 +1324,14 @@ body {
 
 .hidden {
   display: none;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }

@@ -252,8 +252,7 @@ function buildAccountBanner() {
     state.accountBanner = {
       type: "blocked",
       title: "Account sospeso",
-      message:
-        "Il tuo account è sospeso. Ricarica il saldo e attendi l'approvazione del gestore.",
+      message: "Ricarica il saldo e attendi l'approvazione del gestore.",
       showRechargeButton: true,
     };
     return;
@@ -264,9 +263,7 @@ function buildAccountBanner() {
     state.accountBanner = {
       type: "low_credit",
       title: "Credito insufficiente",
-      message: `Saldo attuale: €${saldo.toFixed(
-        2
-      )}. Devi avere almeno €1.00 per iniziare una corsa.`,
+      message: `Devi avere almeno €1.00 per iniziare una corsa.`,
       showRechargeButton: true,
     };
     return;
@@ -276,7 +273,7 @@ function buildAccountBanner() {
   state.accountBanner = null;
 }
 
-// ✅ Renderizza il banner in alto (NUOVO - MODERNO E BELLO)
+// ✅ Renderizza il banner in alto (COMPATTO)
 function renderTopBanner() {
   const container = document.getElementById("topBannerContainer");
   if (!container) return;
@@ -288,10 +285,10 @@ function renderTopBanner() {
 
     // ✅ Determina icon e label del mezzo
     let tipoIcon = "🚲";
-    let tipoLabel = "Bicicletta";
+    let tipoLabel = "Bicicletta Muscolare";
     if (b.tipo_mezzo === "monopattino") {
       tipoIcon = "🛴";
-      tipoLabel = "Monopattino Elettrico";
+      tipoLabel = "Monopattino";
     } else if (b.tipo_mezzo === "bicicletta_elettrica") {
       tipoIcon = "⚡";
       tipoLabel = "Bicicletta Elettrica";
@@ -318,82 +315,64 @@ function renderTopBanner() {
       if (battery < 20) batteryClass = "battery-critical";
       else if (battery < 50) batteryClass = "battery-warning";
 
-      batteryHTML = `
-        <div class="top-banner__battery-badge ${batteryClass}">
-          🔋 ${battery}%
-        </div>
-      `;
+      batteryHTML = `<div class="top-banner__battery-badge ${batteryClass}">🔋 ${battery}%</div>`;
     }
 
     // ✅ Se batteria è esaurita, mostra avviso
     const avviso =
       b.stato_corsa === "sospesa_batteria_esaurita"
-        ? `
-        <div class="top-banner__warning-box">
-          <span>🛑</span>
-          <p><strong>Batteria esaurita!</strong> Procedi al pagamento.</p>
-        </div>
-      `
+        ? `<div class="top-banner__warning-box">
+            <span>🛑</span>
+            <p>Batteria esaurita! Procedi al pagamento.</p>
+          </div>`
         : "";
 
-    // ✅ HTML del banner
+    // ✅ HTML del banner COMPATTO
     container.innerHTML = `
-      <div class="top-banner top-banner--ride">
-        <div class="top-banner__left">
-          <!-- LABEL -->
-          <span class="top-banner__label">
-            ${
-              b.stato_corsa === "sospesa_batteria_esaurita"
-                ? "🛑 Corsa Sospesa"
-                : "🟢 Corsa Attiva"
-            }
-          </span>
-
-          <!-- MEZZO + BATTERIA -->
+      <div class="top-banner ${
+        b.stato_corsa === "sospesa_batteria_esaurita"
+          ? "top-banner--warning"
+          : ""
+      }">
+        
+        <!-- HEADER: MEZZO + PARCHEGGIO + DATETIME -->
+        <div class="top-banner__header">
           <div class="top-banner__mezzo-info">
-            <div>
-              <span class="top-banner__mezzo-icon">${tipoIcon}</span>
-              <span class="top-banner__mezzo-tipo">${tipoLabel}</span>
-            </div>
+            <span class="top-banner__mezzo-icon">${tipoIcon}</span>
+            <span class="top-banner__mezzo-tipo">${tipoLabel}</span>
             ${batteryHTML}
           </div>
-
-          <!-- PARCHEGGIO -->
-          <div class="top-banner__parking">
-            <span>📍</span>
-            <span>${b.parcheggio_inizio}</span>
-          </div>
-
-          <!-- DATA E ORA -->
-          <div class="top-banner__datetime">
-            <span>📅 ${dataFormattata}</span>
-            <span>🕐 ${oraFormattata}</span>
-          </div>
-
-          <!-- STATS -->
-          <div class="top-banner__stats">
-            <div class="top-banner__stat">
-              <span class="top-banner__stat-label">Durata</span>
-              <span class="top-banner__stat-value">⏱️ ${
-                b.durata_minuti
-              } min</span>
-            </div>
-            <div class="top-banner__stat">
-              <span class="top-banner__stat-label">Costo</span>
-              <span class="top-banner__stat-value costo">€${parseFloat(
-                b.costo_stimato || 0
-              ).toFixed(2)}</span>
-            </div>
-            <div class="top-banner__stat">
-              <span class="top-banner__stat-label">Km</span>
-              <span class="top-banner__stat-value">🗺️ ${b.km_percorsi.toFixed(
-                2
-              )}</span>
+          <div class="top-banner__location-datetime">
+            <div class="top-banner__parking">📍 ${b.parcheggio_inizio}</div>
+            <div class="top-banner__datetime">
+              <span>📅 ${dataFormattata}</span>
+              <span>🕐 ${oraFormattata}</span>
             </div>
           </div>
-
-          ${avviso}
         </div>
+
+        <!-- STATS: DURATA | COSTO | KM -->
+        <div class="top-banner__stats">
+          <div class="top-banner__stat">
+            <span class="top-banner__stat-label">Durata Stimata</span>
+            <span class="top-banner__stat-value">⏱️ ${b.durata_minuti}m</span>
+          </div>
+          <div class="top-banner__stat">
+            <span class="top-banner__stat-label">Costo Stimato</span>
+            <span class="top-banner__stat-value costo">€${parseFloat(
+              b.costo_stimato || 0
+            ).toFixed(2)}</span>
+          </div>
+          <div class="top-banner__stat">
+            <span class="top-banner__stat-label">Chilometri Stimati</span>
+            <span class="top-banner__stat-value">🗺️ ${b.km_percorsi.toFixed(
+              2
+            )}</span>
+          </div>
+        </div>
+
+        <!-- AVVISO (se batteria esaurita) -->
+        ${avviso}
 
         <!-- BUTTON RIGHT -->
         <div class="top-banner__right">
@@ -402,8 +381,8 @@ function renderTopBanner() {
           }'">
             ${
               b.stato_corsa === "sospesa_batteria_esaurita"
-                ? "💳 Paga"
-                : "▶️ Continua"
+                ? "Paga"
+                : "Continua"
             }
           </button>
         </div>
@@ -416,16 +395,16 @@ function renderTopBanner() {
   if (state.accountBanner) {
     const a = state.accountBanner;
     container.innerHTML = `
-      <div class="top-banner top-banner--warning">
-        <div class="top-banner__left">
+      <div class="top-banner top-banner--warning" id="accountBanner">
+        <div class="top-banner__header ">
           <span class="top-banner__label">${a.title}</span>
           <span>${a.message}</span>
         </div>
         ${
           a.showRechargeButton
             ? `<div class="top-banner__right">
-                 <button class="top-banner__btn" onclick="window.location.href='/wallet'">
-                   💰 Ricarica
+                 <button class="top-banner__btn" onclick="window.location.href='/credit'">
+                  Ricarica
                  </button>
                </div>`
             : ""
@@ -986,15 +965,15 @@ function getVehiclesByType(filter) {
 
 // ===== LOGIC - 4️⃣ PRENOTAZIONE =====
 async function reserveVehicle(vehicle) {
-  // ✅ Gate 1: Verifica credito
-  if (state.user.credito < 1) {
-    showSnackbar("❌ Credito insufficiente! Ricarica il tuo saldo.", "error");
+  // ✅ Gate 1: Verifica stato account
+  if (state.user.stato !== "attivo") {
+    showSnackbar("❌ Account sospeso! Ricaricare il saldo e attendi.", "error");
     return;
   }
 
-  // ✅ Gate 2: Verifica stato account
-  if (state.user.stato !== "attivo") {
-    showSnackbar("❌ Account sospeso! Ricaricare il saldo e attendi.", "error");
+  // ✅ Gate 2: Verifica credito
+  if (state.user.credito < 1) {
+    showSnackbar("❌ Credito insufficiente! Ricarica il tuo saldo.", "error");
     return;
   }
 

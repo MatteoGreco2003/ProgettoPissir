@@ -1,0 +1,272 @@
+<!-- ===== CREDIT MANAGEMENT PAGE ===== -->
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestione Credito</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+    <link rel="stylesheet" href="/css/credit.css" />
+  </head>
+
+  <body>
+    <!-- ===== TOP NAV (IMPORTATO) ===== -->
+    <%- include('./components/navbar') %>
+
+    <!-- ===== SIDEBAR (IMPORTATO) ===== -->
+    <%- include('./components/sidebar') %>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-content">
+      <!-- ===== ACCOUNT STATUS WARNING (Se sospeso) ===== -->
+      <div id="accountStatusBanner" class="account-status-banner hidden">
+        <div class="status-banner__content">
+          <div>
+            <h3 id="statusBannerTitle">Account Sospeso</h3>
+            <p id="statusBannerMessage">
+              Il tuo account è temporaneamente sospeso.
+            </p>
+          </div>
+        </div>
+        <button
+          id="statusBannerAction"
+          class="status-banner__btn"
+          style="display: none"
+        >
+          Richiedi Riapertura
+        </button>
+      </div>
+
+      <!-- ===== GRID LAYOUT ===== -->
+      <div class="credit-grid">
+        <!-- ===== SEZIONE 1: CREDITO DISPONIBILE ===== -->
+        <section class="card credit-card">
+          <div class="card-body">
+            <div class="credit-header">
+              <h2 class="credit-title">💳 Credito Disponibile</h2>
+              <button
+                class="refresh-btn"
+                id="refreshBalanceBtn"
+                title="Aggiorna"
+              >
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+
+            <div class="credit-display">
+              <div class="credit-chip" id="creditChip">
+                <div class="chip-amount" id="creditAmount">€0.00</div>
+                <div class="chip-label">Saldo Attuale</div>
+              </div>
+
+              <div class="credit-info">
+                <div class="info-item">
+                  <span class="info-label">Nome Utente:</span>
+                  <span class="info-value" id="userName">—</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Cognome:</span>
+                  <span class="info-value" id="userCognome">—</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Stato Account:</span>
+                  <span class="info-value" id="accountStatus">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== SEZIONE 2: STATISTICHE ===== -->
+        <section class="card stats-card">
+          <div class="card-body">
+            <h2 class="stats-title">📊 Statistiche</h2>
+
+            <div class="stats-grid">
+              <div class="stat-box">
+                <div class="stat-icon stat-icon--recharge">
+                  <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">Totale Ricaricato</div>
+                  <div class="stat-value" id="totalRecharges">€0.00</div>
+                  <div class="stat-count" id="rechargesCount">
+                    (0 ricariche)
+                  </div>
+                </div>
+              </div>
+
+              <div class="stat-box">
+                <div class="stat-icon stat-icon--expense">
+                  <i class="fas fa-minus-circle"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">Totale Speso</div>
+                  <div class="stat-value" id="totalExpenses">€0.00</div>
+                  <div class="stat-count" id="expensesCount">(0 corse)</div>
+                </div>
+              </div>
+
+              <div class="stat-box">
+                <div class="stat-icon stat-icon--rides">
+                  <i class="fas fa-route"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">Numero Corse</div>
+                  <div class="stat-value" id="ridesCount">0</div>
+                  <div class="stat-count">corse completate</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== SEZIONE 3: RICARICA CREDITO ===== -->
+        <section class="card recharge-card">
+          <div class="card-body">
+            <h2 class="recharge-title">💵 Ricarica Credito</h2>
+
+            <form id="rechargeForm" class="recharge-form">
+              <!-- Importo -->
+              <div class="form-group">
+                <label for="rechargeAmount" class="form-label">
+                  <i class="fas fa-euro-sign"></i> Importo
+                </label>
+                <div class="input-group">
+                  <select id="rechargeAmount" class="form-control" required>
+                    <option value="" disabled selected>
+                      Scegli importo...
+                    </option>
+                    <option value="5">€5.00</option>
+                    <option value="10">€10.00</option>
+                    <option value="20">€20.00</option>
+                    <option value="50">€50.00</option>
+                    <option value="100">€100.00</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Metodo Pagamento -->
+              <div class="form-group">
+                <label for="paymentMethod" class="form-label">
+                  <i class="fas fa-credit-card"></i> Metodo Pagamento
+                </label>
+                <select id="paymentMethod" class="form-control" required>
+                  <option value="" disabled selected>Scegli metodo...</option>
+                  <option value="carta_credito">💳 Carta Credito</option>
+                  <option value="paypal">🅿️ PayPal</option>
+                  <option value="bonifico">🏦 Bonifico Bancario</option>
+                  <option value="satispay">📱 Satispay</option>
+                </select>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" class="btn-recharge" id="rechargeBtn">
+                <i class="fas fa-check-circle"></i> Ricarica
+              </button>
+
+              <div id="rechargeMessage" class="recharge-message hidden"></div>
+            </form>
+
+            <!-- Avviso pagamento -->
+            <div class="payment-notice">
+              <i class="fas fa-info-circle"></i>
+              <p>La ricarica è elaborata in tempo reale.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== SEZIONE 4: STORICO TRANSAZIONI ===== -->
+        <section class="card history-card">
+          <div class="card-body">
+            <div class="history-header">
+              <h2 class="history-title">📜 Storico Transazioni</h2>
+              <div class="history-controls">
+                <select id="filterTransactionType" class="filter-select">
+                  <option value="">Tutti i Tipi</option>
+                  <option value="ricarica">Ricariche</option>
+                  <option value="pagamento_corsa">Spese</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Loading spinner -->
+            <div id="historyLoading" class="loading-spinner hidden">
+              <div class="spinner"></div>
+              <p>Caricamento transazioni...</p>
+            </div>
+
+            <!-- Transactions table -->
+            <div id="historyContainer" class="history-container">
+              <table class="transactions-table">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Tipo</th>
+                    <th>Descrizione</th>
+                    <th class="text-right">Importo</th>
+                  </tr>
+                </thead>
+                <tbody id="transactionsTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Empty state -->
+            <div id="historyEmpty" class="history-empty hidden">
+              <i class="fas fa-inbox"></i>
+              <p>Nessuna transazione trovata</p>
+            </div>
+
+            <!-- Pagination -->
+            <div id="historyPagination" class="pagination hidden">
+              <button id="prevPageBtn" class="pagination-btn">
+                <i class="fas fa-chevron-left"></i> Indietro
+              </button>
+              <span id="pageInfo" class="page-info">Pagina 1</span>
+              <button id="nextPageBtn" class="pagination-btn">
+                Avanti <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ===== SNACKBAR ===== -->
+    <div id="snackbar" class="snackbar"></div>
+
+    <!-- ===== MODAL ELIMINA PROFILO ===== -->
+    <div id="deleteProfileModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Elimina Profilo</h2>
+          <button class="modal-close" id="modalClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Sei sicuro di voler eliminare il tuo profilo?</p>
+          <p class="modal-warning">
+            <strong>Questa azione non può essere annullata.</strong>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" id="modalConfirmDelete">
+            Elimina Profilo
+          </button>
+          <button class="btn btn-secondary" id="modalCancel">Annulla</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="/js/credit.js"></script>
+  </body>
+</html>

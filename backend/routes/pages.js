@@ -3,7 +3,7 @@ import authMiddleware from "../middleware/auth.js";
 
 const router = express.Router();
 
-// ✅ HOME / LOGIN
+// HOME / LOGIN
 router.get("/", (req, res) => {
   const token = req.cookies?.token || null;
 
@@ -29,10 +29,15 @@ router.get("/profile", authMiddleware, (req, res) => {
   res.render("profile-utente");
 });
 
-// ✅ GET /ride - Pagina corsa (protetto)
+// GET /ride - Pagina corsa (protetto)
 router.get("/ride", authMiddleware, (req, res) => {
   const { ride_id } = req.query;
   res.render("ride", { rideId: ride_id });
+});
+
+// GET /credit - Pagina gestione credito (protetto)
+router.get("/credit", authMiddleware, (req, res) => {
+  res.render("credit");
 });
 
 /*
