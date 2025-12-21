@@ -109,7 +109,10 @@ export const startRide = async (req, res) => {
     }
 
     // 4️⃣B NUOVO - Verifica batteria minima (almeno 20%)
-    if (vehicle.stato_batteria < 20) {
+    if (
+      vehicle.stato_batteria < 20 &&
+      vehicle.tipo_mezzo != "bicicletta_muscolare"
+    ) {
       return res.status(400).json({
         error: "Mezzo non disponibile. Batteria insufficiente",
         batteria_attuale: vehicle.stato_batteria,
@@ -290,19 +293,29 @@ export const endRideWithPayment = async (req, res) => {
     }
 
     // 5️⃣ Calcola durata e costo
-    const dataFine = new Date();
-    const durataMinuti = Math.ceil(
-      (dataFine - ride.data_ora_inizio) / (1000 * 60)
-    );
-
-    // Determina la tariffa in base al tipo di mezzo
-    const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
-
+    let durataMinuti;
     let costo;
-    if (durataMinuti <= 30) {
-      costo = 1.0;
+    let kmPercorsi;
+    const dataFine = new Date();
+
+    if (ride.stato_corsa === "sospesa_batteria_esaurita") {
+      //  USA I DATI CONGELATI
+      durataMinuti = ride.durata_minuti;
+      costo = parseFloat(ride.costo);
+      kmPercorsi = ride.km_percorsi;
     } else {
-      costo = 1.0 + (durataMinuti - 30) * tariffa;
+      //  CALCOLA I DATI LIVE
+      durataMinuti = Math.ceil((dataFine - ride.data_ora_inizio) / (1000 * 60));
+
+      const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
+
+      if (durataMinuti <= 30) {
+        costo = 1.0;
+      } else {
+        costo = 1.0 + (durataMinuti - 30) * tariffa;
+      }
+
+      kmPercorsi = calcolaKmPercorsi(durataMinuti, ride.vehicle.tipo_mezzo);
     }
 
     // 6️⃣ Recupera utente
@@ -346,9 +359,6 @@ export const endRideWithPayment = async (req, res) => {
     }
 
     // 9️⃣ PAGAMENTO CONFERMATO - Aggiorna tutto
-    // Calcola km percorsi
-    const kmPercorsi = calcolaKmPercorsi(durataMinuti, ride.vehicle.tipo_mezzo);
-
     // Completa la ride
     ride.id_parcheggio_fine = id_parcheggio_fine;
     ride.data_ora_fine = dataFine;
@@ -361,8 +371,8 @@ export const endRideWithPayment = async (req, res) => {
     // 🔟 Aggiorna mezzo
     const vehicle = ride.vehicle;
 
-    // Controllo batteria: se < 20% → non prelevabile
-    if (vehicle.stato_batteria < 20) {
+    // Controllo batteria: se < 20% → non prelevabile (SOLO PER MEZZI CON BATTERIA)
+    if (vehicle.stato_batteria !== null && vehicle.stato_batteria < 20) {
       vehicle.stato = "non_prelevabile";
     } else {
       vehicle.stato = "disponibile";
@@ -457,16 +467,18 @@ export const endRideWithPayment = async (req, res) => {
       saldo_residuo: parseFloat(user.saldo.toFixed(2)),
       parcheggio_fine: parkingFine.nome,
       stato_account: "attivo",
-      punti_fedeltà: {
-        punti_guadagnati:
-          punti_utilizzati > 0 ? 0 : Math.floor(durataMinuti / 5), // Se ha usato punti, non guadagna altri
-        punti_utilizzati: punti_utilizzati,
-        sconto_applicato:
-          punti_utilizzati > 0
-            ? parseFloat((punti_utilizzati * 0.05).toFixed(2))
-            : 0,
-        punti_totali_attuali: user.punti,
-      },
+      ...(ride.vehicle.tipo_mezzo === "bicicletta_muscolare" && {
+        punti_fedeltà: {
+          punti_guadagnati:
+            punti_utilizzati > 0 ? 0 : Math.floor(durataMinuti / 5),
+          punti_utilizzati: punti_utilizzati,
+          sconto_applicato:
+            punti_utilizzati > 0
+              ? parseFloat((punti_utilizzati * 0.05).toFixed(2))
+              : 0,
+          punti_totali_attuali: user.punti,
+        },
+      }),
     });
   } catch (error) {
     console.error("❌ Errore END ride with payment:", error.message);
@@ -571,8 +583,8 @@ export const endRideWithDebt = async (req, res) => {
     // 🔟 Aggiorna mezzo
     const vehicle = ride.vehicle;
 
-    // Controllo batteria: se < 20% → non prelevabile
-    if (vehicle.stato_batteria < 20) {
+    // Controllo batteria: se < 20% → non prelevabile (SOLO PER MEZZI CON BATTERIA)
+    if (vehicle.stato_batteria !== null && vehicle.stato_batteria < 20) {
       vehicle.stato = "non_prelevabile";
     } else {
       vehicle.stato = "disponibile";
@@ -734,6 +746,7 @@ export const getActiveRide = async (req, res) => {
       stato_corsa: ride.stato_corsa,
       id_mezzo: ride.vehicle.id_mezzo,
       tipo_mezzo: ride.vehicle.tipo_mezzo,
+      stato_batteria: ride.vehicle.stato_batteria,
       data_ora_inizio: ride.data_ora_inizio,
       durata_corrente_minuti: durataCorrenteMinuti,
       km_percorsi: parseFloat(kmPercorsi.toFixed(2)),
@@ -852,7 +865,14 @@ export const cancelRide = async (req, res) => {
 
     // Aggiorna mezzo
     const vehicle = ride.vehicle;
-    vehicle.stato = "disponibile";
+
+    // Controllo batteria: se < 20% → non prelevabile (SOLO PER MEZZI CON BATTERIA)
+    if (vehicle.stato_batteria !== null && vehicle.stato_batteria < 20) {
+      vehicle.stato = "non_prelevabile";
+    } else {
+      vehicle.stato = "disponibile";
+    }
+
     await vehicle.save();
 
     // Cancella corsa

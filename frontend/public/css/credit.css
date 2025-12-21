@@ -60,7 +60,6 @@ body {
   display: grid;
   grid-template-columns: 2fr 2fr;
   gap: 24px;
-  margin-bottom: 24px;
 }
 
 /* ===== ACCOUNT STATUS BANNER ===== */

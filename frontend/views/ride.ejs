@@ -83,9 +83,25 @@
       <!-- Parking Selection -->
       <div class="parking-section">
         <label class="parking-label">Parcheggio di Arrivo</label>
-        <select class="parking-select" id="parkingSelect">
-          <option value="">-- Seleziona parcheggio --</option>
-        </select>
+        <select class="parking-select" id="parkingSelect" size="4"></select>
+      </div>
+
+      <!-- ✅ NUOVO: TOGGLE PUNTI FEDELTÀ -->
+      <div class="punti-fedeltà-container">
+        <label class="punti-fedeltà-label">
+          <input
+            type="checkbox"
+            id="usaPuntiToggle"
+            class="punti-fedeltà-checkbox"
+          />
+          <span class="punti-fedeltà-text">
+            Utilizza punti fedeltà
+            <span id="puntiDisponibili" class="punti-numero">0</span> 🎁
+          </span>
+        </label>
+        <div id="puntiInfo" class="punti-info">
+          Sconto: <span id="scontoCalcolato" class="punti-sconto">€0.00</span>
+        </div>
       </div>
 
       <!-- Error Box -->
@@ -95,9 +111,6 @@
       <div class="actions">
         <button class="btn btn-primary" id="endRideBtn">
           <i class="fas fa-stop-circle"></i> Termina Corsa
-        </button>
-        <button class="btn btn-secondary" id="pauseRideBtn">
-          <i class="fas fa-pause"></i> Pausa
         </button>
       </div>
     </div>

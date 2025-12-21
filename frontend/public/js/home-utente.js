@@ -864,7 +864,9 @@ function createVehicleCard(vehicle) {
 
   // Disabilitazione
   const isDisabled =
-    vehicle.stato !== "disponibile" || vehicle.stato_batteria < 20;
+    vehicle.stato !== "disponibile" ||
+    (vehicle.tipo_mezzo !== "bicicletta_muscolare" &&
+      vehicle.stato_batteria < 20);
   const buttonText =
     vehicle.stato === "disponibile" ? "Prenota" : "Non Disponibile";
 
@@ -1035,9 +1037,10 @@ function openReservationModal(vehicle) {
       : vehicle.tipo_mezzo === "bicicletta_elettrica"
       ? "Bicicletta Elettrica"
       : "Bicicletta Muscolare";
-  document.getElementById(
-    "summaryBattery"
-  ).textContent = `${vehicle.stato_batteria}%`;
+  const batteryText = vehicle.stato_batteria
+    ? `${vehicle.stato_batteria}%`
+    : "Non Presente";
+  document.getElementById("summaryBattery").textContent = batteryText;
   document.getElementById("summaryParking").textContent =
     parking?.nome || "N/A";
 

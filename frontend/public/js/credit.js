@@ -431,8 +431,6 @@ const sidebar = document.getElementById("sidebar");
 const menuToggle = document.getElementById("menuToggle");
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("✅ Credit page loaded");
-
   // Toggle sidebar on mobile
   menuToggle.addEventListener("click", () => {
     sidebar.classList.toggle("active");
