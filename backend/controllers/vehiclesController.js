@@ -314,6 +314,74 @@ export const getVehiclesByParking = async (req, res) => {
   }
 };
 
+// ✅ RECHARGE VEHICLE BATTERY (solo admin/gestore)
+export const rechargeVehicleBattery = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nuova_percentuale_batteria } = req.body;
+
+    // Validazione
+    if (nuova_percentuale_batteria === undefined) {
+      return res.status(400).json({
+        error: "nuova_percentuale_batteria è obbligatorio",
+      });
+    }
+
+    const batteria = parseFloat(nuova_percentuale_batteria);
+
+    if (isNaN(batteria) || batteria < 0 || batteria > 100) {
+      return res.status(400).json({
+        error: "Batteria deve essere un numero tra 0 e 100",
+      });
+    }
+
+    // Trova il veicolo
+    const vehicle = await Vehicle.findByPk(id);
+    if (!vehicle) {
+      return res.status(404).json({ error: "Mezzo non trovato" });
+    }
+
+    // Controlla che non sia bicicletta muscolare
+    if (vehicle.tipo_mezzo === "bicicletta_muscolare") {
+      return res.status(400).json({
+        error: "La bicicletta muscolare non ha batteria",
+      });
+    }
+
+    // Salva batteria precedente per il log
+    const batteriaPrecedente = vehicle.stato_batteria;
+
+    // Aggiorna batteria
+    vehicle.stato_batteria = batteria;
+
+    // ← LOGICA: Se batteria > 20%, torna a "disponibile"
+    if (batteria > 20) {
+      vehicle.stato = "disponibile";
+    } else if (batteria <= 20) {
+      // Se <= 20%, metti a "non_prelevabile"
+      vehicle.stato = "non_prelevabile";
+    }
+
+    await vehicle.save();
+
+    res.status(200).json({
+      message: "Batteria ricaricata con successo",
+      id_mezzo: vehicle.id_mezzo,
+      tipo_mezzo: vehicle.tipo_mezzo,
+      batteria_precedente: batteriaPrecedente,
+      batteria_nuova: vehicle.stato_batteria,
+      stato_mezzo: vehicle.stato,
+      avviso:
+        vehicle.stato_batteria <= 20
+          ? "⚠️ Batteria ancora bassa - Mezzo non prelevabile"
+          : "✅ Mezzo disponibile per il noleggio",
+    });
+  } catch (error) {
+    console.error("❌ Errore RECHARGE vehicle battery:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 export default {
   getAllVehicles,
   getVehicleById,
@@ -322,4 +390,5 @@ export default {
   deleteVehicle,
   updateBatteryFromMQTT,
   getVehiclesByParking,
+  rechargeVehicleBattery,
 };

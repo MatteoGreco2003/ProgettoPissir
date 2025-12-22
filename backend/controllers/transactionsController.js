@@ -88,12 +88,59 @@ export const getTransactionHistory = async (req, res) => {
       offset: parseInt(offset),
     });
 
+    //  Se è una transazione di pagamento_corsa,
+    // recupera i dati dalla ride per mostrare sconto punti
+    const transactionsFormatted = await Promise.all(
+      rows.map(async (transaction) => {
+        if (
+          transaction.tipo_transazione === "pagamento_corsa" &&
+          transaction.id_corsa
+        ) {
+          // Recupera la ride per i dati sui punti usati
+          const Ride = require("../models/Ride.js").default;
+          const ride = await Ride.findByPk(transaction.id_corsa, {
+            attributes: ["punti_fedeltà_usati", "costo"],
+          });
+
+          if (ride) {
+            return {
+              id_transazione: transaction.id_transazione,
+              id_utente: transaction.id_utente,
+              tipo_transazione: transaction.tipo_transazione,
+              id_corsa: transaction.id_corsa,
+              data_ora: transaction.data_ora,
+              costo_originale: parseFloat(ride.costo).toFixed(2),
+              sconto_punti: parseFloat(
+                (ride.punti_fedeltà_usati * 0.05).toFixed(2)
+              ),
+              importo_pagato: parseFloat(
+                (ride.costo - ride.punti_fedeltà_usati * 0.05).toFixed(2)
+              ),
+              punti_fedeltà_usati: ride.punti_fedeltà_usati,
+              descrizione: transaction.descrizione,
+            };
+          }
+        }
+
+        // Per altri tipi di transazione, ritorna come prima
+        return {
+          id_transazione: transaction.id_transazione,
+          id_utente: transaction.id_utente,
+          tipo_transazione: transaction.tipo_transazione,
+          id_corsa: transaction.id_corsa || null,
+          data_ora: transaction.data_ora,
+          importo: parseFloat(transaction.importo).toFixed(2),
+          descrizione: transaction.descrizione,
+        };
+      })
+    );
+
     res.status(200).json({
       message: "Storico transazioni recuperato",
       total: count,
       limit: parseInt(limit),
       offset: parseInt(offset),
-      transactions: rows,
+      transactions: transactionsFormatted,
     });
   } catch (error) {
     console.error("❌ Errore GET transactions:", error.message);
@@ -118,9 +165,46 @@ export const getTransactionById = async (req, res) => {
       return res.status(403).json({ error: "Accesso negato" });
     }
 
+    // ← AGGIUNGI: Se è pagamento_corsa, recupera i dettagli dalla ride
+    let transactionFormatted = {
+      id_transazione: transaction.id_transazione,
+      id_utente: transaction.id_utente,
+      tipo_transazione: transaction.tipo_transazione,
+      id_corsa: transaction.id_corsa || null,
+      data_ora: transaction.data_ora,
+      descrizione: transaction.descrizione,
+    };
+
+    if (
+      transaction.tipo_transazione === "pagamento_corsa" &&
+      transaction.id_corsa
+    ) {
+      const Ride = require("../models/Ride.js").default;
+      const ride = await Ride.findByPk(transaction.id_corsa, {
+        attributes: ["punti_fedeltà_usati", "costo"],
+      });
+
+      if (ride) {
+        transactionFormatted = {
+          ...transactionFormatted,
+          costo_originale: parseFloat(ride.costo).toFixed(2),
+          sconto_punti: parseFloat(
+            (ride.punti_fedeltà_usati * 0.05).toFixed(2)
+          ),
+          importo_pagato: parseFloat(
+            (ride.costo - ride.punti_fedeltà_usati * 0.05).toFixed(2)
+          ),
+          punti_fedeltà_usati: ride.punti_fedeltà_usati,
+        };
+      }
+    } else {
+      // Per altri tipi, mostra importo
+      transactionFormatted.importo = parseFloat(transaction.importo).toFixed(2);
+    }
+
     res.status(200).json({
       message: "Dettagli transazione",
-      transaction,
+      transaction: transactionFormatted,
     });
   } catch (error) {
     console.error("❌ Errore GET transaction by ID:", error.message);

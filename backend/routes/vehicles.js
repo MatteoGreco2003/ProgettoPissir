@@ -7,8 +7,9 @@ import {
   deleteVehicle,
   updateBatteryFromMQTT,
   getVehiclesByParking,
+  rechargeVehicleBattery,
 } from "../controllers/vehiclesController.js";
-import { verifyToken } from "../middleware/auth.js";
+import { verifyToken, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -19,5 +20,11 @@ router.post("/", verifyToken, createVehicle); // admin/gestore
 router.put("/:id", verifyToken, updateVehicle); // admin/gestore
 router.delete("/:id", verifyToken, deleteVehicle); // admin/gestore
 router.post("/mqtt/battery", updateBatteryFromMQTT); // from IoT
+router.post(
+  "/:id/recharge-battery",
+  verifyToken,
+  isAdmin,
+  rechargeVehicleBattery
+); // admin/gestore
 
 export default router;
