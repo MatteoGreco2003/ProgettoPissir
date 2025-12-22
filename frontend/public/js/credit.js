@@ -90,7 +90,7 @@ async function fetchAPI(endpoint, options = {}) {
 
 async function loadBalance() {
   try {
-    const data = await fetchAPI("/users/me");
+    const data = await fetchAPI("/transactions/balance");
     creditState.currentBalance = data;
 
     // Aggiorna UI
@@ -287,6 +287,41 @@ async function loadTransactions(page = 0) {
           : "transaction-amount--expense";
         const amountPrefix = isRecharge ? "+" : "−";
 
+        // ✅ NUOVO: Determina importo e sconto in base al tipo
+        let importoMostrato,
+          scontoHTML = "";
+
+        if (isRecharge) {
+          // Per ricariche: mostra l'importo diretto
+          importoMostrato = parseFloat(transaction.importo) || 0;
+        } else {
+          // Per corse: mostra importo_pagato (dopo sconto punti)
+          importoMostrato = parseFloat(
+            transaction.importo_pagato || transaction.importo
+          );
+
+          // ✅ Se c'è uno sconto punti, mostra info sotto descrizione
+          if (transaction.sconto_punti && transaction.sconto_punti > 0) {
+            scontoHTML = `
+              <div style="
+                font-size: 12px;
+                color: #22c55e;
+                font-weight: 600;
+                margin-top: 3px;
+              ">
+                🎁 ${transaction.punti_fedeltà_usati} punti → −${formatCurrency(
+              transaction.sconto_punti
+            )}
+              </div>
+            `;
+          }
+        }
+
+        // ✅ NUOVO: Controlla se NaN PRIMA di usare
+        if (isNaN(importoMostrato)) {
+          importoMostrato = 0;
+        }
+
         row.innerHTML = `
           <td class="transaction-date">${formatDate(transaction.data_ora)}</td>
           <td>
@@ -294,9 +329,12 @@ async function loadTransactions(page = 0) {
               ${isRecharge ? "🟢" : "🔴"} ${typeLabel}
             </span>
           </td>
-          <td>${transaction.descrizione}</td>
+          <td>
+            <div>${transaction.descrizione}</div>
+            ${scontoHTML}
+          </td>
           <td class="transaction-amount ${amountClass}">
-            ${amountPrefix}${formatCurrency(Math.abs(transaction.importo))}
+            ${amountPrefix}${formatCurrency(Math.abs(importoMostrato))}
           </td>
         `;
 

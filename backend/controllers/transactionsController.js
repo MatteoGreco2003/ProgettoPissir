@@ -1,5 +1,6 @@
 import Transaction from "../models/Transaction.js";
 import User from "../models/User.js";
+import Ride from "../models/Ride.js";
 
 // ✅ RECHARGE CREDIT
 export const rechargeCredit = async (req, res) => {
@@ -97,7 +98,6 @@ export const getTransactionHistory = async (req, res) => {
           transaction.id_corsa
         ) {
           // Recupera la ride per i dati sui punti usati
-          const Ride = require("../models/Ride.js").default;
           const ride = await Ride.findByPk(transaction.id_corsa, {
             attributes: ["punti_fedeltà_usati", "costo"],
           });
@@ -179,7 +179,6 @@ export const getTransactionById = async (req, res) => {
       transaction.tipo_transazione === "pagamento_corsa" &&
       transaction.id_corsa
     ) {
-      const Ride = require("../models/Ride.js").default;
       const ride = await Ride.findByPk(transaction.id_corsa, {
         attributes: ["punti_fedeltà_usati", "costo"],
       });

@@ -450,11 +450,35 @@ function setupEventListeners() {
     rideState.usaPunti = e.target.checked;
 
     if (e.target.checked) {
-      const sconto = rideState.punti_fedeltà * 0.05;
+      // ✅ Calcola il costo ATTUALE
+      const minutes = Math.floor(rideState.elapsedSeconds / 60);
+      let costoCorsa = 0;
+      const tariffaOraria = getTariffaOraria(rideState.vehicleData.tipo_mezzo);
+
+      if (minutes <= 30) {
+        costoCorsa = 1.0;
+      } else {
+        costoCorsa = 1.0 + (minutes - 30) * tariffaOraria;
+      }
+
+      // ✅ NUOVO: Calcola SOLO i punti necessari
+      const puntiNecessari = Math.ceil(costoCorsa / 0.05); // Quanti punti servono
+      const puntiUsabili = Math.min(puntiNecessari, rideState.punti_fedeltà); // Usa solo quelli necessari
+      const sconto = puntiUsabili * 0.05;
+
+      // ✅ AGGIORNA ENTRAMBI I VALORI
+      document.getElementById("puntiUsati").textContent = puntiUsabili; // ← QUESTO MANCAVA!
       scontoCalcolato.textContent = `€${sconto.toFixed(2)}`;
       puntiInfo.classList.add("active");
-      console.log(`✅ Punti attivati: €${sconto.toFixed(2)}`);
+
+      console.log(
+        `✅ Punti: ${puntiUsabili}/${
+          rideState.punti_fedeltà
+        } → Sconto: €${sconto.toFixed(2)}`
+      );
     } else {
+      // ✅ Quando deselezioni, torna a 0
+      document.getElementById("puntiUsati").textContent = "0"; // ← RESET
       puntiInfo.classList.remove("active");
     }
   });
