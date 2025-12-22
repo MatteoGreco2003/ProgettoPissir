@@ -339,12 +339,15 @@ export const endRideWithPayment = async (req, res) => {
     // 7️⃣B Se l'utente vuole usare punti come sconto
     const { usa_punti } = req.body; // Boolean dal frontend
     if (usa_punti && user.punti > 0) {
-      // 1 punto = €0.05 di sconto
-      const sconto_punti = user.punti * 0.05;
-      punti_utilizzati = user.punti;
+      // Calcola quanti punti servono per coprire il costo (1 punto = €0.05)
+      const puntiNecessari = Math.ceil(costo / 0.05);
+
+      // Usa solo i punti necessari (o tutti se ne ha meno)
+      punti_utilizzati = Math.min(puntiNecessari, user.punti);
+      const sconto_punti = punti_utilizzati * 0.05;
 
       saldoDisponibile += sconto_punti;
-      user.punti = 0; // Resetta i punti dopo l'uso
+      user.punti -= punti_utilizzati; // Decrementa solo i punti usati
     }
 
     // 8️⃣ Verifica se ha abbastanza per pagare
@@ -365,6 +368,7 @@ export const endRideWithPayment = async (req, res) => {
     ride.durata_minuti = durataMinuti;
     ride.costo = costo;
     ride.km_percorsi = kmPercorsi;
+    ride.punti_fedeltà_usati = punti_utilizzati;
     ride.stato_corsa = "completata";
     await ride.save();
 
@@ -467,6 +471,16 @@ export const endRideWithPayment = async (req, res) => {
       saldo_residuo: parseFloat(user.saldo.toFixed(2)),
       parcheggio_fine: parkingFine.nome,
       stato_account: "attivo",
+      pagamento: {
+        importo_pagato_saldo: parseFloat(
+          (costo - punti_utilizzati * 0.05).toFixed(2)
+        ),
+        sconto_punti_applicato: parseFloat(
+          (punti_utilizzati * 0.05).toFixed(2)
+        ),
+        punti_utilizzati: punti_utilizzati,
+        punti_rimasti: user.punti,
+      },
       ...(ride.vehicle.tipo_mezzo === "bicicletta_muscolare" && {
         punti_fedeltà: {
           punti_guadagnati:
@@ -790,12 +804,35 @@ export const getRideHistory = async (req, res) => {
       offset: parseInt(offset),
     });
 
+    //formatta le rides per farle uscire come vogliamo
+    const ridesFormatted = rows.map((ride) => ({
+      id_corsa: ride.id_corsa,
+      id_utente: ride.id_utente,
+      id_mezzo: ride.id_mezzo,
+      id_parcheggio_inizio: ride.id_parcheggio_inizio,
+      id_parcheggio_fine: ride.id_parcheggio_fine,
+      data_ora_inizio: ride.data_ora_inizio,
+      data_ora_fine: ride.data_ora_fine,
+      durata_minuti: ride.durata_minuti,
+      costo_originale: parseFloat(ride.costo).toFixed(2),
+      sconto_punti: parseFloat((ride.punti_fedeltà_usati * 0.05).toFixed(2)),
+      importo_pagato: parseFloat(
+        (ride.costo - ride.punti_fedeltà_usati * 0.05).toFixed(2)
+      ),
+      punti_fedeltà_usati: ride.punti_fedeltà_usati,
+      km_percorsi: ride.km_percorsi,
+      stato_corsa: ride.stato_corsa,
+      vehicle: ride.vehicle,
+      parkingInizio: ride.parkingInizio,
+      parkingFine: ride.parkingFine,
+    }));
+
     res.status(200).json({
       message: "Storico corse recuperato",
       total: count,
       limit: parseInt(limit),
       offset: parseInt(offset),
-      rides: rows,
+      rides: ridesFormatted,
     });
   } catch (error) {
     console.error("❌ Errore GET ride history:", error.message);

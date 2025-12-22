@@ -59,6 +59,11 @@ const Ride = sequelize.define(
       defaultValue: 0,
       comment: "Km percorsi durante la corsa",
     },
+    punti_fedeltà_usati: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      comment: "Punti fedeltà usati in questa corsa",
+    },
   },
   {
     tableName: "storico_corse",

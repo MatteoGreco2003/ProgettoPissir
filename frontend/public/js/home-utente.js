@@ -18,8 +18,6 @@ let state = {
   },
   map: null,
   markers: {},
-  mqttClient: null, // ✅ NUOVO: Cliente MQTT
-  mqttConnected: false, // ✅ NUOVO: Stato connessione
   // ✅ NUOVO: Banner states
   activeRideBanner: null,
   accountBanner: null,
@@ -44,102 +42,60 @@ document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   initMap();
   loadUserProfile();
-  // ✅ NUOVO: Connetti MQTT subito
-  initMQTTClient();
+
+  // ✅ NUOVO: Usa Singleton MQTT (connessione persistente)
+  MQTTManager.init();
+
+  // ✅ NUOVO: Ascolta messaggi MQTT da questa pagina
+  setupMQTTListener();
 });
 
 // ===== STOP REFRESH QUANDO CHIUDI LA PAGINA =====
 window.addEventListener("beforeunload", () => {
   stopAutoRefresh();
-  // ✅ NUOVO: Disconnetti MQTT
-  if (state.mqttClient && state.mqttClient.isConnected()) {
-    state.mqttClient.disconnect();
-    console.log("🔌 MQTT Disconnesso");
-  }
+  // ❌ NON disconnettere MQTT! Lascia che persista
+  // Se vuoi disconnettere SOLO quando esci davvero dall'app:
+  // MQTTManager.disconnect();
 });
 
-// ===== MQTT CLIENT INITIALIZATION =====
-function initMQTTClient() {
-  if (typeof Paho === "undefined") {
-    console.warn(
-      "⚠️ Libreria MQTT non caricata. Aggiorna la batteria tramite polling."
-    );
-    return;
-  }
+// ===== SETUP MQTT LISTENER =====
+function setupMQTTListener() {
+  document.addEventListener("mqtt-message", (event) => {
+    const { topic, payload } = event.detail;
 
-  const brokerUrl = "ws://localhost:9001";
-  const clientId = `mobishare-home-${Date.now()}`;
+    try {
+      const msg = JSON.parse(payload);
 
-  try {
-    const broker = brokerUrl.replace("ws://", "").split(":")[0];
-    const port = parseInt(brokerUrl.split(":")[1]) || 9001;
+      if (msg.level !== undefined && msg.id_mezzo !== undefined) {
+        const idMezzo = msg.id_mezzo;
+        const newBattery = msg.level;
 
-    state.mqttClient = new Paho.MQTT.Client(broker, port, clientId);
+        console.log(`⚡ MQTT Home: Mezzo ${idMezzo} batteria ${newBattery}%`);
 
-    state.mqttClient.onConnectionLost = onMQTTConnectionLost;
-    state.mqttClient.onMessageArrived = onMQTTMessageArrived;
+        // ✅ Aggiorna nel state
+        const vehicle = state.vehicles.find((v) => v.id_mezzo === idMezzo);
+        if (vehicle) {
+          vehicle.stato_batteria = newBattery;
 
-    state.mqttClient.connect({
-      onSuccess: onMQTTConnected,
-      onFailure: onMQTTConnectionFailed,
-      useSSL: false,
-      keepAliveInterval: 60,
-    });
+          // ✅ Aggiorna nella griglia dei veicoli
+          updateVehicleInGrid(vehicle);
 
-    console.log("🔌 Tentando connessione MQTT...");
-  } catch (error) {
-    console.warn("⚠️ Errore MQTT init:", error.message);
-    console.info("💡 Fallback: Continuerò con polling locale della batteria");
-  }
-}
+          // ✅ Aggiorna nella mappa
+          updateVehicleInMap(vehicle);
 
-function onMQTTConnected() {
-  console.log("✅ MQTT Connesso!");
-  state.mqttConnected = true;
-
-  // ✅ Sottoscrivi a TUTTI i topic delle batterie
-  state.mqttClient.subscribe("Vehicles/+/battery");
-  console.log("📡 Iscritto a: Vehicles/+/battery");
-}
-
-function onMQTTConnectionLost(responseObject) {
-  if (responseObject.errorCode !== 0) {
-    console.warn("⚠️ MQTT Disconnesso:", responseObject.errorMessage);
-    state.mqttConnected = false;
-  }
-}
-
-function onMQTTMessageArrived(message) {
-  try {
-    const payload = JSON.parse(message.payloadString);
-
-    if (payload.level !== undefined && payload.id_mezzo !== undefined) {
-      const idMezzo = payload.id_mezzo;
-      const newBattery = payload.level;
-
-      console.log(`⚡ MQTT: Mezzo ${idMezzo} batteria ${newBattery}%`);
-
-      // ✅ Aggiorna nel state
-      const vehicle = state.vehicles.find((v) => v.id_mezzo === idMezzo);
-      if (vehicle) {
-        vehicle.stato_batteria = newBattery;
-
-        // ✅ Aggiorna nella griglia dei veicoli
-        updateVehicleInGrid(vehicle);
-
-        // ✅ Aggiorna nella mappa
-        updateVehicleInMap(vehicle);
+          // ✅ Aggiorna il banner se c'è una corsa attiva
+          if (
+            state.activeRideBanner &&
+            state.activeRideBanner.id_mezzo === idMezzo
+          ) {
+            renderTopBanner();
+          }
+        }
       }
+    } catch (error) {
+      console.error("❌ Errore parsing MQTT:", error);
     }
-  } catch (error) {
-    console.error("❌ Errore parsing MQTT message:", error);
-  }
-}
-
-function onMQTTConnectionFailed(responseObject) {
-  console.warn("⚠️ MQTT Connection Failed:", responseObject.errorMessage);
-  console.info("💡 Fallback: Continuerò con polling locale della batteria");
-  state.mqttConnected = false;
+  });
 }
 
 // ✅ NUOVO: Aggiorna batteria nella griglia
@@ -224,7 +180,7 @@ async function checkActiveRideAndStatus() {
         id_mezzo: data.id_mezzo,
         tipo_mezzo: data.tipo_mezzo,
         parcheggio_inizio: data.parcheggio_inizio,
-        data_ora_inizio: data.data_ora_inizio, // ✅ NUOVO
+        data_ora_inizio: data.data_ora_inizio,
         durata_minuti: data.durata_corrente_minuti || 0,
         km_percorsi: parseFloat(data.km_percorsi) || 0,
         costo_stimato: data.costo_stimato || 0,

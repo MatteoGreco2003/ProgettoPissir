@@ -247,9 +247,88 @@ export const getSuspendedUsersWithReliability = async (req, res) => {
   }
 };
 
+// ✅ STATISTICHE PARCHEGGI - Utilizzo e popolarità
+export const getParkingUsageStatistics = async (req, res) => {
+  try {
+    const parkingUsage = await Ride.findAll({
+      where: { stato_corsa: "completata" },
+      attributes: [
+        "id_parcheggio_inizio",
+        [sequelize.fn("COUNT", sequelize.col("id_corsa")), "corse_partenze"],
+      ],
+      group: ["id_parcheggio_inizio"],
+      raw: true,
+      subQuery: false,
+    });
+
+    const parkingUsageEnd = await Ride.findAll({
+      where: { stato_corsa: "completata" },
+      attributes: [
+        "id_parcheggio_fine",
+        [sequelize.fn("COUNT", sequelize.col("id_corsa")), "corse_arrivi"],
+      ],
+      group: ["id_parcheggio_fine"],
+      raw: true,
+      subQuery: false,
+    });
+
+    // Combina i dati con informazioni del parcheggio
+    const parkings = await Parking.findAll({
+      include: [
+        {
+          model: Vehicle,
+          as: "vehicles",
+          attributes: ["id_mezzo"],
+          required: false,
+        },
+      ],
+    });
+
+    const parkingStatsUsage = parkings.map((parking) => {
+      const partenze = parkingUsage.find(
+        (p) => p.id_parcheggio_inizio === parking.id_parcheggio
+      );
+      const arrivi = parkingUsageEnd.find(
+        (p) => p.id_parcheggio_fine === parking.id_parcheggio
+      );
+
+      const corseTotali =
+        (parseInt(partenze?.corse_partenze) || 0) +
+        (parseInt(arrivi?.corse_arrivi) || 0);
+
+      return {
+        id_parcheggio: parking.id_parcheggio,
+        nome: parking.nome,
+        capacita: parking.capacita,
+        mezzi_presenti: parking.vehicles?.length || 0,
+        corse_partenze: parseInt(partenze?.corse_partenze) || 0,
+        corse_arrivi: parseInt(arrivi?.corse_arrivi) || 0,
+        corse_totali: corseTotali,
+        utilizzo_percentuale: (
+          (corseTotali / Math.max(parking.capacita, 1)) *
+          100
+        ).toFixed(1),
+      };
+    });
+
+    // Ordina per corse totali (più utilizzati primo)
+    parkingStatsUsage.sort((a, b) => b.corse_totali - a.corse_totali);
+
+    res.status(200).json({
+      message: "Statistiche utilizzo parcheggi",
+      total_parcheggi: parkingStatsUsage.length,
+      parcheggi_ordinati_per_utilizzo: parkingStatsUsage,
+    });
+  } catch (error) {
+    console.error("❌ Errore GET parking usage statistics:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 export default {
   getParkingStatistics,
   getVehicleStatistics,
   getOverviewStatistics,
   getSuspendedUsersWithReliability,
+  getParkingUsageStatistics,
 };

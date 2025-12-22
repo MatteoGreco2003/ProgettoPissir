@@ -8,7 +8,7 @@ const creditState = {
   balanceSummary: null,
   transactions: [],
   currentPage: 0,
-  pageSize: 10,
+  pageSize: 3,
   filterType: "", // "" | "ricarica" | "pagamento_corsa"
   isLoadingTransactions: false,
 };

@@ -6,6 +6,7 @@ import {
   getVehicleStatistics,
   getOverviewStatistics,
   getSuspendedUsersWithReliability,
+  getParkingUsageStatistics,
 } from "../controllers/statisticsController.js";
 import { verifyToken, isAdmin } from "../middleware/auth.js";
 
@@ -21,5 +22,5 @@ router.get(
   isAdmin,
   getSuspendedUsersWithReliability
 );
-
+router.get("/parking-usage", verifyToken, isAdmin, getParkingUsageStatistics);
 export default router;
