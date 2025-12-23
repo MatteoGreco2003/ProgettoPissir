@@ -4,6 +4,7 @@ import Feedback from "../models/Feedback.js";
 import User from "../models/User.js";
 import Vehicle from "../models/Vehicle.js";
 import Ride from "../models/Ride.js";
+import { Op } from "sequelize";
 
 // ✅ CREATE FEEDBACK - Lascia feedback su un mezzo dopo una corsa
 export const createFeedback = async (req, res) => {
@@ -260,6 +261,178 @@ export const deleteFeedback = async (req, res) => {
   }
 };
 
+// ✅ GET ALL FEEDBACKS
+export const getAllFeedbacks = async (req, res) => {
+  try {
+    const {
+      tipo_mezzo,
+      min_rating,
+      limit = 10,
+      offset = 0,
+      sort_by = "data",
+    } = req.query;
+
+    // Costruisci filtri
+    const where = {};
+
+    if (tipo_mezzo) {
+      // Filtra per tipo mezzo tramite la relazione Vehicle
+      // Usare un include per il filtro
+    }
+
+    if (min_rating) {
+      const minRatingNum = parseInt(min_rating);
+      if (minRatingNum >= 1 && minRatingNum <= 5) {
+        where.rating = { [Op.gte]: minRatingNum };
+      }
+    }
+
+    // Determina l'ordinamento
+    let order = [["data_ora", "DESC"]];
+    if (sort_by === "rating") {
+      order = [["rating", "DESC"]];
+    }
+
+    // Recupera i feedback con filtri
+    const { count, rows } = await Feedback.findAndCountAll({
+      where,
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["nome", "cognome"],
+        },
+        {
+          model: Vehicle,
+          as: "vehicle",
+          attributes: ["tipo_mezzo", "codice_identificativo"],
+          // Applica filtro tipo_mezzo se presente
+          where: tipo_mezzo ? { tipo_mezzo } : undefined,
+          required: tipo_mezzo ? true : false,
+        },
+      ],
+      order,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      subQuery: false,
+    });
+
+    // Calcola statistiche
+    const allFeedbacks = await Feedback.findAll({
+      attributes: ["rating"],
+      raw: true,
+    });
+
+    // Average rating
+    const averageRating =
+      allFeedbacks.length > 0
+        ? (
+            allFeedbacks.reduce((sum, f) => sum + f.rating, 0) /
+            allFeedbacks.length
+          ).toFixed(1)
+        : 0;
+
+    // Count by rating
+    const countByRating = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    };
+
+    allFeedbacks.forEach((f) => {
+      if (f.rating >= 1 && f.rating <= 5) {
+        countByRating[f.rating]++;
+      }
+    });
+
+    res.status(200).json({
+      message: "Feedback community recuperati",
+      total: count,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      feedbacks: rows,
+      statistics: {
+        average_rating: parseFloat(averageRating),
+        count_by_rating: countByRating,
+        total_feedbacks: allFeedbacks.length,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Errore GET all feedbacks:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+// ✅ GET VEHICLE RATING - Per mostrare le stellette
+export const getVehicleRating = async (req, res) => {
+  try {
+    const { id_mezzo } = req.params;
+
+    // Verifica che il mezzo esista
+    const vehicle = await Vehicle.findByPk(id_mezzo);
+    if (!vehicle) {
+      return res.status(404).json({ error: "Mezzo non trovato" });
+    }
+
+    // Recupera tutti i feedback per questo mezzo
+    const feedbacks = await Feedback.findAll({
+      where: { id_mezzo },
+      attributes: ["rating"],
+      raw: true,
+    });
+
+    // Se nessun feedback
+    if (feedbacks.length === 0) {
+      return res.status(200).json({
+        id_mezzo,
+        average_rating: 0,
+        total_feedbacks: 0,
+        rating_distribution: {
+          5: 0,
+          4: 0,
+          3: 0,
+          2: 0,
+          1: 0,
+        },
+        messaggio: "Nessun feedback per questo mezzo",
+      });
+    }
+
+    // Calcola average rating
+    const totalRating = feedbacks.reduce((sum, f) => sum + f.rating, 0);
+    const averageRating = (totalRating / feedbacks.length).toFixed(1);
+
+    // Calcola distribuzione per rating
+    const ratingDistribution = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    };
+
+    feedbacks.forEach((f) => {
+      if (f.rating >= 1 && f.rating <= 5) {
+        ratingDistribution[f.rating]++;
+      }
+    });
+
+    res.status(200).json({
+      id_mezzo,
+      tipo_mezzo: vehicle.tipo_mezzo,
+      codice_identificativo: vehicle.codice_identificativo,
+      average_rating: parseFloat(averageRating),
+      total_feedbacks: feedbacks.length,
+      rating_distribution: ratingDistribution,
+    });
+  } catch (error) {
+    console.error("❌ Errore GET vehicle rating:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 export default {
   createFeedback,
   getFeedbackByVehicle,
@@ -267,4 +440,6 @@ export default {
   getFeedbackById,
   updateFeedback,
   deleteFeedback,
+  getAllFeedbacks,
+  getVehicleRating,
 };

@@ -65,4 +65,15 @@ Feedback.belongsTo(Vehicle, {
   onDelete: "SET NULL", // ✅ id_mezzo diventa NULL se Vehicle è cancellato
 });
 
-export { Vehicle, Parking, User, Report, Ride };
+//Associazioni inverse (hasMany) per Feedback
+User.hasMany(Feedback, {
+  foreignKey: "id_utente",
+  as: "feedbacks",
+});
+
+Vehicle.hasMany(Feedback, {
+  foreignKey: "id_mezzo",
+  as: "feedbacks",
+});
+
+export { Vehicle, Parking, User, Report, Ride, Feedback };
