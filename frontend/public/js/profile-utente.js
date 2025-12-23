@@ -41,6 +41,17 @@ const userLoyaltyValue = document.getElementById("userLoyaltyValue");
 const loyaltyProgressBar = document.getElementById("loyaltyProgressBar");
 const loyaltyProgressText = document.getElementById("loyaltyProgressText");
 
+// ===== RIDES HISTORY ELEMENTS =====
+const noRidesMessage = document.getElementById("noRidesMessage");
+const ridesHistoryContainer = document.getElementById("ridesHistoryContainer");
+const ridesHistoryBody = document.getElementById("ridesHistoryBody");
+const ridesPagination = document.getElementById("ridesPagination");
+
+// Pagination state
+let currentRidesPage = 0;
+const ridesPerPage = 5;
+let totalRides = 0;
+
 // ===== USER DATA (GLOBALE) =====
 let userData = null;
 
@@ -48,6 +59,8 @@ let userData = null;
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   loadUserProfile();
+  loadRideStatistics();
+  loadRideHistory(ridesPerPage, 0);
 });
 
 // ===== EVENT LISTENERS =====
@@ -225,6 +238,131 @@ async function loadRideStatistics() {
   } catch (error) {
     console.error("❌ Errore statistiche:", error);
   }
+}
+
+// ===== LOAD RIDE HISTORY =====
+async function loadRideHistory(limit = 10, offset = 0) {
+  try {
+    const response = await fetch(
+      `/rides/history?limit=${limit}&offset=${offset}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      totalRides = data.total;
+
+      if (data.rides && data.rides.length > 0) {
+        renderRideHistory(data.rides);
+        renderRidesPagination(data.total, limit, offset);
+        noRidesMessage.classList.add("hidden");
+        ridesHistoryContainer.classList.remove("hidden");
+      } else {
+        noRidesMessage.classList.remove("hidden");
+        ridesHistoryContainer.classList.add("hidden");
+      }
+    } else {
+      console.warn("⚠️ Errore caricamento cronologia corse");
+    }
+  } catch (error) {
+    console.error("❌ Errore cronologia corse:", error);
+  }
+}
+
+// ===== RENDER RIDE HISTORY TABLE =====
+function renderRideHistory(rides) {
+  ridesHistoryBody.innerHTML = rides
+    .map((ride) => {
+      const dataInizio = new Date(ride.data_ora_inizio).toLocaleDateString(
+        "it-IT"
+      );
+      const vehicleName = formatVehicleName(ride.vehicle.tipo_mezzo);
+      const vehicleIcon = getVehicleIcon(ride.vehicle.tipo_mezzo);
+
+      return `
+        <tr class="ride-row">
+          <td class="ride-data">${dataInizio}</td>
+          <td class="ride-mezzo">
+            <i class="fas ${vehicleIcon} ride-icon"></i>
+            ${vehicleName}
+          </td>
+          <td class="ride-durata">${ride.durata_minuti} min</td>
+          <td class="ride-distanza">${parseFloat(ride.km_percorsi).toFixed(
+            1
+          )} km</td>
+          <td class="ride-costo">€ ${parseFloat(ride.costo_originale).toFixed(
+            2
+          )}</td>
+          <td class="ride-sconto">
+            ${
+              parseFloat(ride.sconto_punti) > 0
+                ? `<span class="discount-badge">-€ ${parseFloat(
+                    ride.sconto_punti
+                  ).toFixed(2)}</span>`
+                : "-"
+            }
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+// ===== GET VEHICLE ICON =====
+function getVehicleIcon(tipoMezzo) {
+  const icons = {
+    monopattino: "fa-person-skating scooter",
+    bicicletta_muscolare: "fa-bicycle",
+    bicicletta_elettrica: "fa-bolt",
+  };
+  return icons[tipoMezzo] || "fa-bicycle";
+}
+
+// ===== RENDER RIDES PAGINATION =====
+function renderRidesPagination(total, limit, offset) {
+  const totalPages = Math.ceil(total / limit);
+  const currentPage = Math.ceil(offset / limit) + 1;
+
+  ridesPagination.innerHTML = "";
+
+  // Container flex per il layout
+  const paginationContainer = document.createElement("div");
+  paginationContainer.className = "pagination-container";
+
+  // Bottone precedente
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "pagination-btn pagination-btn--nav";
+  prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Indietro';
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.addEventListener("click", () => {
+    loadRideHistory(limit, (currentPage - 2) * limit);
+  });
+  paginationContainer.appendChild(prevBtn);
+
+  // Testo pagina
+  const pageTextBtn = document.createElement("button");
+  pageTextBtn.className = "pagination-btn pagination-btn--text";
+  pageTextBtn.textContent = `Pagina ${currentPage} di ${totalPages}`;
+  pageTextBtn.disabled = true;
+  paginationContainer.appendChild(pageTextBtn);
+
+  // Bottone successivo
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "pagination-btn pagination-btn--nav";
+  nextBtn.innerHTML = 'Avanti <i class="fas fa-chevron-right"></i>';
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.addEventListener("click", () => {
+    loadRideHistory(limit, currentPage * limit);
+  });
+  paginationContainer.appendChild(nextBtn);
+
+  ridesPagination.appendChild(paginationContainer);
 }
 
 // ===== AGGIORNA NAVBAR =====

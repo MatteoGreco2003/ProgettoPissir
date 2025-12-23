@@ -207,6 +207,93 @@
       </div>
     </div>
 
+    <!-- ===== MODAL FEEDBACK CORSA ===== -->
+    <div id="feedbackModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content feedback-modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Feedback sulla Corsa</h2>
+          <button class="modal-close" id="feedbackModalClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Info Corsa -->
+          <div class="feedback-ride-info">
+            <div class="feedback-ride-item">
+              <span class="feedback-ride-label">Mezzo:</span>
+              <span class="feedback-ride-value" id="feedbackMezzoType">-</span>
+            </div>
+            <div class="feedback-ride-item">
+              <span class="feedback-ride-label">Costo:</span>
+              <span class="feedback-ride-value" id="feedbackCosto">-</span>
+            </div>
+            <div class="feedback-ride-item">
+              <span class="feedback-ride-label">Distanza:</span>
+              <span class="feedback-ride-value" id="feedbackDistanza">-</span>
+            </div>
+            <div class="feedback-ride-item">
+              <span class="feedback-ride-label">Durata:</span>
+              <span class="feedback-ride-value" id="feedbackDurata">-</span>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="feedback-divider"></div>
+
+          <!-- Valutazione Stelle -->
+          <div class="feedback-rating-container">
+            <label class="feedback-label">Valuta il mezzo:</label>
+            <div class="feedback-stars" id="feedbackStars">
+              <button class="feedback-star" data-rating="1" title="Pessimo">
+                <i class="fas fa-star"></i>
+              </button>
+              <button class="feedback-star" data-rating="2" title="Cattivo">
+                <i class="fas fa-star"></i>
+              </button>
+              <button class="feedback-star" data-rating="3" title="Medio">
+                <i class="fas fa-star"></i>
+              </button>
+              <button class="feedback-star" data-rating="4" title="Buono">
+                <i class="fas fa-star"></i>
+              </button>
+              <button class="feedback-star" data-rating="5" title="Eccellente">
+                <i class="fas fa-star"></i>
+              </button>
+            </div>
+            <div class="feedback-rating-text" id="feedbackRatingText">
+              Seleziona una valutazione
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="feedback-divider"></div>
+
+          <!-- Commento -->
+          <div class="feedback-comment-container">
+            <label class="feedback-label">Commento (opzionale):</label>
+            <textarea
+              id="feedbackComment"
+              class="feedback-textarea"
+              placeholder="Lascia un commento sulla tua esperienza..."
+              maxlength="500"
+            ></textarea>
+            <div class="feedback-char-count">
+              <span id="feedbackCharCount">0</span>/500
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="submitFeedback">
+            Invia Feedback
+          </button>
+          <button class="btn btn-secondary" id="skipFeedback">Salta</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== SCRIPTS ===== -->
     <script src="/js/home-utente.js"></script>
   </body>

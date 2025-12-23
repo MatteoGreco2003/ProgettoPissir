@@ -40,6 +40,7 @@ let refreshInterval = null;
 // ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
+  setupFeedbackModalListeners();
   initMap();
   loadUserProfile();
 
@@ -203,8 +204,19 @@ function buildAccountBanner() {
   const saldo = state.user.credito || 0;
   const stato = state.user.stato || "attivo";
 
-  // Account sospeso
-  if (stato !== "attivo") {
+  // ✅ Account sospeso CON ricarica in attesa
+  if (stato === "in_attesa_approvazione") {
+    state.accountBanner = {
+      type: "pending_approval",
+      title: "Account in attesa di approvazione",
+      message: "Attendi l'approvazione del gestore.",
+      showRechargeButton: true,
+    };
+    return;
+  }
+
+  // ✅ Account sospeso (per debito)
+  if (stato === "sospeso" || stato === "suspended") {
     state.accountBanner = {
       type: "blocked",
       title: "Account sospeso",
@@ -350,23 +362,29 @@ function renderTopBanner() {
   // 2️⃣ BANNER ACCOUNT
   if (state.accountBanner) {
     const a = state.accountBanner;
+    const isWaitingApproval = a.type === "pending_approval";
+
     container.innerHTML = `
-      <div class="top-banner top-banner--warning" id="accountBanner">
+      <div id="accountBanner" ${
+        isWaitingApproval
+          ? 'class="top-banner top-banner--warning pending-approval"'
+          : 'class="top-banner top-banner--warning"'
+      }>
         <div class="top-banner__header ">
           <span class="top-banner__label">${a.title}</span>
           <span>${a.message}</span>
         </div>
         ${
-          a.showRechargeButton
+          !isWaitingApproval
             ? `<div class="top-banner__right">
-                 <button class="top-banner__btn" onclick="window.location.href='/credit'">
-                  Ricarica
-                 </button>
-               </div>`
+               <button class="top-banner__btn" onclick="window.location.href='/credit'">
+                Ricarica
+               </button>
+             </div>`
             : ""
         }
-      </div>
-    `;
+    </div>
+  `;
   }
 }
 
@@ -424,6 +442,229 @@ function setupEventListeners() {
       closeReservationModal();
     }
   });
+
+  // ===== CONTROLLA SE C'È UN FEEDBACK IN SOSPESO =====
+  const pendingFeedback = sessionStorage.getItem("pendingFeedback");
+  if (pendingFeedback) {
+    try {
+      const rideData = JSON.parse(pendingFeedback);
+      sessionStorage.removeItem("pendingFeedback"); // Pulisci
+
+      // Apri la modal dopo un breve delay
+      setTimeout(() => {
+        openFeedbackModal(rideData);
+      }, 500);
+    } catch (error) {
+      console.error("❌ Errore parsing feedback:", error);
+    }
+  }
+}
+
+// ===== FEEDBACK MODAL STATE =====
+let feedbackState = {
+  isOpen: false,
+  rideData: null,
+  selectedRating: 0,
+  comment: "",
+};
+
+// ===== SETUP FEEDBACK MODAL EVENT LISTENERS =====
+function setupFeedbackModalListeners() {
+  const feedbackModal = document.getElementById("feedbackModal");
+  const feedbackModalClose = document.getElementById("feedbackModalClose");
+  const skipFeedbackBtn = document.getElementById("skipFeedback");
+  const submitFeedbackBtn = document.getElementById("submitFeedback");
+  const feedbackStars = document.querySelectorAll(".feedback-star");
+  const feedbackComment = document.getElementById("feedbackComment");
+
+  // ===== CHIUDI MODAL =====
+  feedbackModalClose.addEventListener("click", closeFeedbackModal);
+  skipFeedbackBtn.addEventListener("click", closeFeedbackModal);
+
+  // ===== CHIUDI CLICCANDO OVERLAY =====
+  feedbackModal.addEventListener("click", (e) => {
+    if (
+      e.target === feedbackModal ||
+      e.target.classList.contains("modal-overlay")
+    ) {
+      closeFeedbackModal();
+    }
+  });
+
+  // ===== GESTIONE STELLE =====
+  feedbackStars.forEach((star) => {
+    star.addEventListener("click", () => {
+      const rating = parseInt(star.getAttribute("data-rating"));
+      setFeedbackRating(rating);
+    });
+
+    // Hover effect
+    star.addEventListener("mouseenter", () => {
+      const rating = parseInt(star.getAttribute("data-rating"));
+      feedbackStars.forEach((s) => {
+        const sRating = parseInt(s.getAttribute("data-rating"));
+        if (sRating <= rating) {
+          s.style.color = "var(--primary-teal)";
+        } else {
+          s.style.color = "rgba(33, 128, 141, 0.3)";
+        }
+      });
+    });
+  });
+
+  // ===== RESET HOVER =====
+  const starsContainer = document.getElementById("feedbackStars");
+  starsContainer.addEventListener("mouseleave", () => {
+    feedbackStars.forEach((s) => {
+      const sRating = parseInt(s.getAttribute("data-rating"));
+      if (sRating <= feedbackState.selectedRating) {
+        s.classList.add("active");
+        s.style.color = "#ffc107";
+      } else {
+        s.classList.remove("active");
+        s.style.color = "rgba(33, 128, 141, 0.3)";
+      }
+    });
+  });
+
+  // ===== CONTEGGIO CARATTERI =====
+  feedbackComment.addEventListener("input", (e) => {
+    feedbackState.comment = e.target.value;
+    const charCount = e.target.value.length;
+    document.getElementById("feedbackCharCount").textContent = charCount;
+  });
+
+  // ===== INVIA FEEDBACK =====
+  submitFeedbackBtn.addEventListener("click", submitFeedback);
+}
+
+// ===== IMPOSTA RATING STELLE =====
+function setFeedbackRating(rating) {
+  feedbackState.selectedRating = rating;
+
+  const feedbackStars = document.querySelectorAll(".feedback-star");
+  const ratingTexts = ["Pessimo", "Cattivo", "Medio", "Buono", "Eccellente"];
+
+  feedbackStars.forEach((star) => {
+    const starRating = parseInt(star.getAttribute("data-rating"));
+    if (starRating <= rating) {
+      star.classList.add("active");
+      star.style.color = "#ffc107";
+    } else {
+      star.classList.remove("active");
+      star.style.color = "rgba(33, 128, 141, 0.3)";
+    }
+  });
+
+  document.getElementById("feedbackRatingText").textContent =
+    ratingTexts[rating - 1];
+}
+
+// ===== APRI MODAL FEEDBACK =====
+function openFeedbackModal(rideData) {
+  feedbackState.rideData = rideData;
+  feedbackState.selectedRating = 0;
+  feedbackState.comment = "";
+  feedbackState.isOpen = true;
+
+  // Reset form
+  document.getElementById("feedbackComment").value = "";
+  document.getElementById("feedbackCharCount").textContent = "0";
+  document.getElementById("feedbackRatingText").textContent =
+    "Seleziona una valutazione";
+
+  // Reset stelle
+  document.querySelectorAll(".feedback-star").forEach((star) => {
+    star.classList.remove("active");
+    star.style.color = "rgba(33, 128, 141, 0.3)";
+  });
+
+  // Popola info corsa
+  const tipoMezzoLabel =
+    rideData.tipo_mezzo === "monopattino"
+      ? "Monopattino"
+      : rideData.tipo_mezzo === "bicicletta_elettrica"
+      ? "Bicicletta Elettrica"
+      : "Bicicletta Muscolare";
+
+  document.getElementById("feedbackMezzoType").textContent = tipoMezzoLabel;
+  document.getElementById("feedbackDistanza").textContent =
+    (rideData.km_percorsi || 0).toFixed(2) + " km";
+  document.getElementById("feedbackDurata").textContent =
+    rideData.durata_minuti + " min";
+  document.getElementById("feedbackCosto").textContent =
+    "€" + parseFloat(rideData.costo_finale || 0).toFixed(2);
+
+  // Mostra modal
+  const feedbackModal = document.getElementById("feedbackModal");
+  feedbackModal.classList.remove("hidden");
+}
+
+// ===== CHIUDI MODAL FEEDBACK =====
+function closeFeedbackModal() {
+  feedbackState.isOpen = false;
+  feedbackState.rideData = null;
+  feedbackState.selectedRating = 0;
+  feedbackState.comment = "";
+
+  const feedbackModal = document.getElementById("feedbackModal");
+  feedbackModal.classList.add("hidden");
+}
+
+// ===== INVIA FEEDBACK AL BACKEND =====
+async function submitFeedback() {
+  // Validazione
+  if (feedbackState.selectedRating === 0) {
+    showSnackbar("❌ Seleziona una valutazione!", "error");
+    return;
+  }
+
+  if (!feedbackState.rideData) {
+    showSnackbar("❌ Errore: dati corsa mancanti", "error");
+    return;
+  }
+
+  const submitBtn = document.getElementById("submitFeedback");
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio...';
+
+  try {
+    const response = await fetch("/feedback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        id_mezzo: feedbackState.rideData.id_mezzo,
+        rating: feedbackState.selectedRating,
+        commento: feedbackState.comment || null,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Errore nell'invio del feedback");
+    }
+
+    const data = await response.json();
+
+    showSnackbar(
+      "✅ Grazie per il tuo feedback! " +
+        "⭐".repeat(feedbackState.selectedRating),
+      "success"
+    );
+    closeFeedbackModal();
+  } catch (error) {
+    console.error("❌ Errore invio feedback:", error.message);
+    showSnackbar(
+      "❌ Errore nell'invio del feedback: " + error.message,
+      "error"
+    );
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Invia Feedback';
+  }
 }
 
 // ===== SINCRONIZZAZIONE FILTRI TRA SELECT E BUTTONS =====
@@ -924,18 +1165,27 @@ function getVehiclesByType(filter) {
 // ===== LOGIC - 4️⃣ PRENOTAZIONE =====
 async function reserveVehicle(vehicle) {
   // ✅ Gate 1: Verifica stato account
-  if (state.user.stato !== "attivo") {
+  if (state.user.stato === "sospeso") {
     showSnackbar("❌ Account sospeso! Ricaricare il saldo e attendi.", "error");
     return;
   }
 
-  // ✅ Gate 2: Verifica credito
+  // ✅ Gate 2: Verifica stato account
+  if (state.user.stato === "in_attesa_approvazione") {
+    showSnackbar(
+      "❌ Account in attesa di approvazione! Attendi l'approvazione del gestore.",
+      "error"
+    );
+    return;
+  }
+
+  // ✅ Gate 3: Verifica credito
   if (state.user.credito < 1) {
     showSnackbar("❌ Credito insufficiente! Ricarica il tuo saldo.", "error");
     return;
   }
 
-  // ✅ Gate 3: Verifica corsa attiva
+  // ✅ Gate 4: Verifica corsa attiva
   const activeRide = await getActiveRide();
   if (activeRide) {
     showSnackbar("❌ Hai già una corsa attiva! Termina quella prima.", "error");

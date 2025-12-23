@@ -10,9 +10,10 @@ let rideState = {
   selectedParkingEnd: null,
   timerInterval: null,
   batteryZero: false,
-  // ❌ RIMOSSO: mqttClient (usa Singleton globale)
   punti_fedeltà: 0,
   usaPunti: false,
+  debtData: null,
+  importoRicaricaTemp: 0,
 };
 
 // ===== DOM ELEMENTS =====
@@ -39,6 +40,14 @@ function getTariffaOraria(tipoMezzo) {
     bicicletta_elettrica: 0.25,
   };
   return tariffe[tipoMezzo] || 0.2;
+}
+
+// ✅ Formatta un numero come valuta EUR
+function formatCurrency(value) {
+  return new Intl.NumberFormat("it-IT", {
+    style: "currency",
+    currency: "EUR",
+  }).format(value);
 }
 
 // ✅ Calcola km percorsi da durata e tipo mezzo
@@ -145,43 +154,55 @@ function showBatteryZeroModal() {
   modal.innerHTML = `
     <div style="
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      padding: 40px;
-      border-radius: 20px;
-      text-align: center;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       z-index: 999;
-      box-shadow: 0 20px 60px rgba(220, 38, 38, 0.3);
-      animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: 30px;
     ">
-      <div style="font-size: 60px; margin-bottom: 20px; animation: shake 0.5s ease-in-out;">🔋</div>
-      <div style="font-size: 24px; font-weight: bold; color: #dc2626; margin-bottom: 10px;">
-        Batteria Esaurita!
+      <div style="
+        background: white;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 450px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(220, 38, 38, 0.3);
+        animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      ">
+        <div style="font-size: 50px; margin-bottom: 15px; animation: shake 0.5s ease-in-out;">🔋</div>
+        <div style="font-size: 22px; font-weight: bold; color: #dc2626; margin-bottom: 8px;">
+          Batteria Esaurita!
+        </div>
+        <div style="color: #666; margin-bottom: 15px; font-size: 15px;">
+          Il mezzo si è fermato.
+        </div>
+        <div style="color: #999; font-size: 13px; line-height: 1.5; margin-bottom: 20px;">
+          Seleziona il parcheggio di arrivo e procedi al pagamento per completare la corsa.
+        </div>
+        <button id="closeModal" style="
+          padding: 12px 30px;
+          background: #dc2626;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background 0.3s ease;
+          width: 100%;
+        ">OK</button>
       </div>
-      <div style="color: #666; margin-bottom: 20px; font-size: 16px;">
-        Il mezzo si è fermato.
-      </div>
-      <div style="color: #999; font-size: 14px; line-height: 1.6; margin-bottom: 25px;">
-        Seleziona il parcheggio di arrivo e procedi al pagamento per completare la corsa.
-      </div>
-      <button id="closeModal" style="
-        padding: 10px 30px;
-        background: #dc2626;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background 0.3s ease;
-      ">OK</button>
     </div>
     <style>
       @keyframes pop {
-        from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-        to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
       }
       @keyframes shake {
         0%, 100% { transform: rotate(0deg); }
@@ -190,6 +211,14 @@ function showBatteryZeroModal() {
       }
       #closeModal:hover {
         background: #b91c1c !important;
+      }
+      
+      /* ✅ MOBILE */
+      @media (max-width: 640px) {
+        #closeModal {
+          padding: 14px 24px !important;
+          font-size: 14px !important;
+        }
       }
     </style>
   `;
@@ -494,9 +523,32 @@ function endRide() {
   endRideBtn.disabled = true;
   endRideBtn.textContent = "Elaborazione...";
 
+  // ✅ NUOVO: Calcola il costo ATTUALE (come fa il toggle)
+  const minutes = Math.floor(rideState.elapsedSeconds / 60);
+  let costoCorsa = 0;
+  const tariffaOraria = getTariffaOraria(rideState.vehicleData.tipo_mezzo);
+
+  if (minutes <= 30) {
+    costoCorsa = 1.0;
+  } else {
+    costoCorsa = 1.0 + (minutes - 30) * tariffaOraria;
+  }
+
+  // ✅ NUOVO: Se usa punti, calcola lo sconto
+  let costoFinale = costoCorsa;
+  if (rideState.usaPunti) {
+    const puntiNecessari = Math.ceil(costoCorsa / 0.05);
+    const puntiUsabili = Math.min(puntiNecessari, rideState.punti_fedeltà);
+    const sconto = puntiUsabili * 0.05;
+    costoFinale = costoCorsa - sconto;
+  }
+
   fetch(`/rides/${rideState.rideId}/check-payment`)
     .then((res) => res.json())
     .then((checkData) => {
+      // ✅ MODIFICA: Passa costoFinale invece di checkData.costo
+      checkData.costo = costoFinale;
+
       if (checkData.saldo_sufficiente) {
         return endRideWithPayment(checkData.costo);
       } else {
@@ -528,6 +580,22 @@ function endRideWithPayment(cost) {
     .then((data) => {
       showSnackbar("✅ Corsa terminata! Pagamento confermato.", "success");
       clearInterval(rideState.timerInterval);
+
+      // ✅ AGGIUNGI QUI - Prepara dati corsa per il feedback
+      const rideDataForFeedback = {
+        id_mezzo: rideState.vehicleData.id_mezzo,
+        tipo_mezzo: rideState.vehicleData.tipo_mezzo,
+        km_percorsi: parseFloat(distanceValue.textContent),
+        durata_minuti: Math.floor(rideState.elapsedSeconds / 60),
+        costo_finale: cost,
+      };
+
+      // Salva nei sessionStorage per recuperare nella home-utente
+      sessionStorage.setItem(
+        "pendingFeedback",
+        JSON.stringify(rideDataForFeedback)
+      );
+
       // ❌ NON disconnettere MQTT!
       setTimeout(() => {
         window.location.href = "/home-utente";
@@ -542,19 +610,430 @@ function endRideWithPayment(cost) {
 }
 
 function endRideWithDebt(checkData) {
-  const importo = Math.ceil(checkData.importo_mancante * 100) / 100;
-
-  showError(
-    "⚠️ Saldo insufficiente",
-    `Saldo attuale: €${checkData.saldo_attuale.toFixed(
-      2
-    )}, Costo: €${checkData.costo.toFixed(
-      2
-    )}. È possibile completare la corsa creando un debito oppure ricaricare ora.`
+  const costoPrimaCorsa = 1.0; // Costo preventivo della prossima corsa
+  const debitoTotale = checkData.costo + costoPrimaCorsa;
+  const importoMancante = Math.max(
+    0,
+    checkData.costo - checkData.saldo_attuale
   );
 
+  // ✅ Salva i dati nel state
+  rideState.debtData = {
+    costoCorsa: checkData.costo,
+    costoPrimaCorsa: costoPrimaCorsa,
+    debitoTotale: debitoTotale,
+    saldoAttuale: checkData.saldo_attuale,
+    importoMancante: importoMancante,
+  };
+
+  showDebtModal(checkData, importoMancante);
   endRideBtn.disabled = false;
   endRideBtn.textContent = "Termina Corsa";
+}
+
+// ✅ NUOVO: Modal per saldo insufficiente (DEBITO)
+function showDebtModal(checkData, importoMancante) {
+  const modal = document.createElement("div");
+  const costoPrimaCorsa = 1.0;
+  const debitoTotale = checkData.costo + costoPrimaCorsa;
+  const importoRicaricaMinimo =
+    Math.ceil((importoMancante + costoPrimaCorsa) * 100) / 100;
+
+  // ✅ NUOVO: Genera opzioni intelligenti
+  const opzioniBase = [5, 10, 20, 50, 100];
+  const opzioniDisponibili = opzioniBase.filter(
+    (importo) => importo >= importoRicaricaMinimo
+  );
+
+  // ✅ Se nessuna opzione base è sufficiente, aggiungi la minima arrotondata
+  if (opzioniDisponibili.length === 0) {
+    opzioniDisponibili.push(importoRicaricaMinimo);
+  }
+
+  // ✅ Crea HTML delle opzioni
+  const opzioniHTML = opzioniDisponibili
+    .map(
+      (importo) => `<option value="${importo}">€${importo.toFixed(2)}</option>`
+    )
+    .join("");
+
+  modal.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    ">
+      <div style="
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+        height: 90%;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(220, 38, 38, 0.3);
+        animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      ">
+        <!-- HEADER -->
+        <div style="font-size: 50px; margin-bottom: 20px;">⚠️</div>
+        <div style="font-size: 24px; font-weight: bold; color: #dc2626; margin-bottom: 10px;">
+          Saldo Insufficiente
+        </div>
+
+        <!-- DETTAGLI COSTI -->
+        <div style="
+          background: #f3f4f6;
+          padding: 20px;
+          border-radius: 12px;
+          margin: 20px 0;
+          text-align: left;
+        ">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <span style="color: #666;">Costo corsa:</span>
+            <span style="font-weight: bold; color: #dc2626;">−${formatCurrency(
+              checkData.costo
+            )}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
+            <span style="color: #666;">Saldo attuale:</span>
+            <span style="font-weight: bold; color: #0891b2;">${formatCurrency(
+              checkData.saldo_attuale
+            )}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #666; font-weight: bold;">Importo mancante:</span>
+            <span style="font-weight: bold; color: #dc2626;">${formatCurrency(
+              importoMancante
+            )}</span>
+          </div>
+        </div>
+
+        <!-- OPZIONI -->
+        <div style="margin: 25px 0;">
+          <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+            Scegli un'opzione per continuare:
+          </p>
+        </div>
+
+        <!-- FORM RICARICA -->
+        <div style="margin: 20px 0; text-align: left;">
+          <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+            💳 Ricarica Credito:
+          </label>
+          <select id="debtRechargeAmount" style="
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+          ">
+            <option value="">Seleziona importo...</option>
+            ${opzioniHTML}
+            <option value="custom" id="customOption">Personalizzato</option>
+          </select>
+          <input 
+            type="number" 
+            id="debtCustomAmount" 
+            placeholder="Importo (es: 15.50)" 
+            style="
+              width: 100%;
+              padding: 12px;
+              border: 2px solid #e5e7eb;
+              border-radius: 8px;
+              font-size: 16px;
+              display: none;
+              margin-bottom: 10px;
+            "
+            min="${importoRicaricaMinimo.toFixed(2)}"
+            step="0.01"
+          />
+          <button id="debtRechargeBtn" style="
+            width: 100%;
+            padding: 12px;
+            background: #059669;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+          ">
+            💳 Ricarica e Paga
+          </button>
+        </div>
+
+        <!-- DIVIDER -->
+        <div style="display: flex; align-items: center; margin: 25px 0;">
+          <div style="flex: 1; height: 1px; background: #e5e7eb;"></div>
+          <span style="padding: 0 10px; color: #999; font-size: 14px;">OPPURE</span>
+          <div style="flex: 1; height: 1px; background: #e5e7eb;"></div>
+        </div>
+
+        <!-- IGNORA BUTTON -->
+        <button id="debtIgnoreBtn" style="
+          width: 100%;
+          padding: 12px;
+          background: #6b7280;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background 0.3s ease;
+          margin-top: 10px;
+        ">
+          Ignora e Continua (Account Sospeso)
+        </button>
+
+        <!-- WARNING -->
+        <div style="
+          background: #fef3c7;
+          border-left: 4px solid #f59e0b;
+          padding: 12px;
+          border-radius: 6px;
+          margin-top: 20px;
+          text-align: left;
+        ">
+          <p style="margin: 0; color: #92400e; font-size: 13px; font-weight: bold;">
+            ⚠️ Se continui senza ricaricare il tuo account sarà sospeso.
+          </p>
+          <p style="margin: 5px 0 0 0; color: #92400e; font-size: 13px;">
+            Potrai riaprirlo ricariando almeno ${formatCurrency(
+              importoRicaricaMinimo
+            )}.
+          </p>
+        </div>
+      </div>
+    </div>
+    <style>
+      @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      #debtRechargeBtn:hover {
+        background: #047857 !important;
+      }
+      #debtIgnoreBtn:hover {
+        background: #4b5563 !important;
+      }
+    </style>
+  `;
+  document.body.appendChild(modal);
+
+  // ✅ Gestione select importo custom
+  const selectAmount = document.getElementById("debtRechargeAmount");
+  const customInput = document.getElementById("debtCustomAmount");
+
+  selectAmount.addEventListener("change", (e) => {
+    if (e.target.value === "custom") {
+      customInput.style.display = "block";
+      customInput.focus();
+    } else {
+      customInput.style.display = "none";
+    }
+  });
+
+  // ✅ Button: Ricarica e Paga
+  document.getElementById("debtRechargeBtn").addEventListener("click", () => {
+    const oldErrors = document.querySelectorAll("[data-error-box]");
+    oldErrors.forEach((err) => err.remove());
+
+    const selectedValue = selectAmount.value;
+    let importoRicarica = 0;
+
+    if (selectedValue === "custom") {
+      importoRicarica = parseFloat(customInput.value) || 0;
+      if (importoRicarica < importoRicaricaMinimo) {
+        const errorBox = document.createElement("div");
+        errorBox.setAttribute("data-error-box", "true");
+        errorBox.style.cssText = `
+          background: #fee2e2;
+          border: 1px solid #fca5a5;
+          color: #dc2626;
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 15px;
+          font-weight: 500;
+          text-align: center;
+        `;
+        errorBox.textContent = `❌ Importo minimo: €${importoRicaricaMinimo.toFixed(
+          2
+        )}`;
+
+        document
+          .getElementById("debtRechargeBtn")
+          .parentElement.insertBefore(
+            errorBox,
+            document.getElementById("debtRechargeBtn")
+          );
+
+        setTimeout(() => errorBox.remove(), 5000);
+        return;
+      }
+    } else {
+      importoRicarica = parseFloat(selectedValue) || 0;
+      if (importoRicarica === 0) {
+        // ✅ NUOVO: Mostra errore direttamente nella modal
+        const errorBox = document.createElement("div");
+        errorBox.setAttribute("data-error-box", "true");
+        errorBox.style.cssText = `
+          background: #fee2e2;
+          border: 1px solid #fca5a5;
+          color: #dc2626;
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 15px;
+          font-weight: 500;
+          text-align: center;
+        `;
+        errorBox.textContent = "❌ Seleziona un importo";
+
+        document
+          .getElementById("debtRechargeBtn")
+          .parentElement.insertBefore(
+            errorBox,
+            document.getElementById("debtRechargeBtn")
+          );
+
+        // Rimuovi dopo 3 secondi
+        setTimeout(() => errorBox.remove(), 5000);
+        return;
+      }
+    }
+
+    rideState.importoRicaricaTemp = importoRicarica;
+    console.log(`✅ Ricarica: €${importoRicarica.toFixed(2)}`);
+
+    // ✅ Chiudi modal
+    modal.remove();
+
+    // ✅ Chiama endRideWithPaymentAfterRecharge
+    endRideWithPaymentAfterRecharge(importoRicarica);
+  });
+
+  // ✅ Button: Ignora (crea debito)
+  document.getElementById("debtIgnoreBtn").addEventListener("click", () => {
+    console.log("⚠️ Utente continua senza ricaricare - Account sospeso");
+    modal.remove();
+
+    // ✅ Invia richiesta al backend per creare il debito
+    const payload = {
+      id_parcheggio_fine: parseInt(rideState.selectedParkingEnd),
+    };
+
+    fetch(`/rides/${rideState.rideId}/end-with-debt`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        showSnackbar("⚠️ Account sospeso per debito", "warning");
+        clearInterval(rideState.timerInterval);
+
+        // ✅ AGGIUNGI QUI - Prepara dati corsa per il feedback
+        const rideDataForFeedback = {
+          id_mezzo: rideState.vehicleData.id_mezzo,
+          tipo_mezzo: rideState.vehicleData.tipo_mezzo,
+          km_percorsi: parseFloat(distanceValue.textContent),
+          durata_minuti: Math.floor(rideState.elapsedSeconds / 60),
+          costo_finale: checkData.costo, // ← CORRETTO!
+        };
+
+        // Salva nei sessionStorage per recuperare nella home-utente
+        sessionStorage.setItem(
+          "pendingFeedback",
+          JSON.stringify(rideDataForFeedback)
+        );
+
+        setTimeout(() => {
+          window.location.href = "/home-utente";
+        }, 2000);
+      })
+      .catch((error) => {
+        console.error("❌ Errore:", error);
+        showError("❌ Errore", "Errore nella chiusura della corsa");
+      });
+  });
+}
+
+// ✅ NUOVO: Ricarica + Pagamento
+function endRideWithPaymentAfterRecharge(importoRicarica) {
+  endRideBtn.disabled = true;
+  endRideBtn.textContent = "Elaborazione...";
+
+  const payload = {
+    id_parcheggio_fine: parseInt(rideState.selectedParkingEnd),
+    importo_ricarica: importoRicarica,
+    usa_punti: rideState.usaPunti,
+  };
+
+  fetch(`/rides/${rideState.rideId}/end-with-payment`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      showSnackbar("✅ Corsa terminata! Pagamento confermato.", "success");
+      clearInterval(rideState.timerInterval);
+
+      const minutes = Math.floor(rideState.elapsedSeconds / 60);
+      let costoCorsa = 0;
+      const tariffaOraria = getTariffaOraria(rideState.vehicleData.tipo_mezzo);
+
+      if (minutes <= 30) {
+        costoCorsa = 1.0;
+      } else {
+        costoCorsa = 1.0 + (minutes - 30) * tariffaOraria;
+      }
+
+      // Se usa punti, calcola lo sconto
+      let costoFinale = costoCorsa;
+      if (rideState.usaPunti) {
+        const puntiNecessari = Math.ceil(costoCorsa / 0.05);
+        const puntiUsabili = Math.min(puntiNecessari, rideState.punti_fedeltà);
+        const sconto = puntiUsabili * 0.05;
+        costoFinale = costoCorsa - sconto;
+      }
+
+      // ✅ CORRETTO: Usa costoFinale appena calcolato
+      const rideDataForFeedback = {
+        id_mezzo: rideState.vehicleData.id_mezzo,
+        tipo_mezzo: rideState.vehicleData.tipo_mezzo,
+        km_percorsi: parseFloat(distanceValue.textContent),
+        durata_minuti: Math.floor(rideState.elapsedSeconds / 60),
+        costo_finale: costoFinale, // ← CORRETTO!
+      };
+
+      // Salva nei sessionStorage per recuperare nella home-utente
+      sessionStorage.setItem(
+        "pendingFeedback",
+        JSON.stringify(rideDataForFeedback)
+      );
+
+      setTimeout(() => {
+        window.location.href = "/home-utente";
+      }, 2000);
+    })
+    .catch((error) => {
+      console.error("❌ Errore:", error);
+      showError("❌ Errore", "Errore nella chiusura della corsa");
+      endRideBtn.disabled = false;
+      endRideBtn.textContent = "Termina Corsa";
+    });
 }
 
 // ===== ERROR BOX =====
