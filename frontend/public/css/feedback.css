@@ -1,0 +1,770 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+/* ============================================================================
+   RESET E VARIABILI GLOBALI
+   ========================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-teal: rgba(33, 128, 141, 1);
+  --primary-teal-dark: rgba(29, 116, 128, 1);
+  --success-green: rgba(33, 128, 141, 1);
+  --warning-orange: #e68161;
+  --error-red: rgba(192, 21, 47, 1);
+  --light-bg: rgba(252, 252, 249, 1);
+  --dark-text: rgba(19, 52, 59, 1);
+  --light-text: rgba(98, 108, 113, 1);
+  --white: rgba(255, 255, 255, 1);
+  --border-color: rgba(94, 82, 64, 0.2);
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: var(--light-bg);
+  color: var(--dark-text);
+}
+
+/* ============================================================================
+   MAIN CONTENT
+   ========================================================================== */
+
+.main-content {
+  margin-left: 250px;
+  padding: 24px;
+  min-height: calc(100vh - 60px);
+}
+
+/* ===== CARD BASE ===== */
+.card {
+  background-color: var(--white);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: all 250ms ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card-my-feedback {
+  margin-bottom: 24px;
+}
+
+.card-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(
+    135deg,
+    rgba(94, 82, 64, 0.08),
+    rgba(94, 82, 64, 0.04)
+  );
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--dark-text);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.card-body {
+  padding: 24px;
+}
+
+/* ===== LOADING SPINNER ===== */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+}
+
+.loading-spinner.hidden {
+  display: none;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(33, 128, 141, 0.1);
+  border-top-color: var(--primary-teal);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner p {
+  color: var(--light-text);
+  font-weight: 500;
+  margin: 0;
+}
+
+/* ===== MY FEEDBACK CONTAINER ===== */
+
+.feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== FEEDBACK CARD - LAYOUT REDESIGNED ===== */
+.feedback-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 250ms ease;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.feedback-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-teal);
+}
+
+.feedback-card--mine {
+  background: linear-gradient(135deg, rgba(33, 128, 141, 0.05), transparent);
+}
+
+/* ===== FEEDBACK HEADER - GRID LAYOUT ===== */
+.feedback-card-header {
+  grid-column: 1 / -1;
+  display: contents;
+}
+
+/* LEFT: Vehicle Info */
+.feedback-card-left {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* RIGHT: Date & Rating */
+.feedback-card-right {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  text-align: right;
+}
+
+/* Comment (full width at bottom) */
+.feedback-commento {
+  grid-column: 1 / -1;
+  padding: 12px;
+  background: rgba(94, 82, 64, 0.04);
+  border-radius: 8px;
+  border-left: 3px solid var(--primary-teal);
+  font-size: 13px;
+  color: var(--dark-text);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.feedback-commento p {
+  margin: 0;
+}
+
+/* Actions (full width at bottom) */
+.feedback-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* ===== VEHICLE INFO ===== */
+.feedback-vehicle-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feedback-vehicle-icon {
+  font-size: 24px;
+  min-width: 28px;
+  text-align: center;
+}
+
+.feedback-vehicle-details h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dark-text);
+  margin: 0;
+  margin-bottom: 2px;
+}
+
+.feedback-vehicle-details small {
+  font-size: 12px;
+  color: var(--light-text);
+}
+
+/* ===== USER INFO ===== */
+.feedback-user-info {
+  font-size: 12px;
+  color: var(--light-text);
+}
+
+.feedback-user-info strong {
+  color: var(--dark-text);
+}
+
+/* ===== RATING & DATE ===== */
+.feedback-rating {
+  font-size: 14px;
+  color: #ffc107;
+  font-weight: 600;
+}
+
+.feedback-date {
+  font-size: 11px;
+  color: var(--light-text);
+  font-weight: 500;
+}
+
+/* ===== FEEDBACK ACTIONS ===== */
+.feedback-btn-action {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.feedback-btn-edit {
+  background: rgba(33, 128, 141, 0.1);
+  color: var(--primary-teal);
+}
+
+.feedback-btn-edit:hover {
+  background: rgba(33, 128, 141, 0.2);
+}
+
+.feedback-btn-delete {
+  background: rgba(192, 21, 47, 0.1);
+  color: var(--error-red);
+}
+
+.feedback-btn-delete:hover {
+  background: rgba(192, 21, 47, 0.2);
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  text-align: center;
+  padding: 20px 20px;
+}
+
+.empty-state i {
+  font-size: 48px;
+  color: rgba(33, 128, 141, 0.2);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.empty-state p {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--light-text);
+}
+
+.empty-state small {
+  font-size: 13px;
+  color: var(--light-text);
+}
+
+.empty-state.hidden {
+  display: none;
+}
+
+/* ===== COMMUNITY FILTERS ===== */
+.community-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(33, 128, 141, 0.04);
+  border-radius: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  display: flex;
+  justify-content: center;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dark-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--white);
+  color: var(--dark-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  width: 185px;
+  min-width: 160px;
+  font-family: "Poppins", sans-serif;
+}
+
+.filter-select:hover {
+  border-color: var(--primary-teal);
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pagination.hidden {
+  display: none;
+}
+
+.pagination-btn {
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--dark-text);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-btn:hover {
+  border-color: var(--primary-teal);
+  color: var(--primary-teal);
+  background: rgba(33, 128, 141, 0.04);
+}
+
+.pagination-btn:active {
+  transform: translateY(0);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--light-text);
+  min-width: 80px;
+  text-align: center;
+}
+
+/* ===== MODAL ===== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 1;
+  transition: opacity 250ms ease;
+}
+
+.modal.hidden {
+  display: none;
+  opacity: 0;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: relative;
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--dark-text);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--light-text);
+  cursor: pointer;
+  transition: color 150ms ease;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  color: var(--dark-text);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body p {
+  font-size: 14px;
+  color: var(--dark-text);
+  line-height: 1.5;
+}
+
+.modal-footer {
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* ===== EDIT MODAL ===== */
+.vehicle-info-edit {
+  background: rgba(33, 128, 141, 0.08);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(33, 128, 141, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.vehicle-info-edit h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+.vehicle-info-edit p {
+  font-size: 12px;
+  color: var(--light-text);
+}
+
+.rating-edit {
+  margin-bottom: 20px;
+}
+
+.feedback-stars {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.feedback-star {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: rgba(33, 128, 141, 0.3);
+  cursor: pointer;
+  transition: all 200ms ease;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.feedback-star:hover {
+  color: var(--primary-teal);
+  transform: scale(1.1);
+  background: rgba(33, 128, 141, 0.08);
+}
+
+.feedback-star.active {
+  color: #ffc107;
+  transform: scale(1.15);
+}
+
+.feedback-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  color: var(--dark-text);
+  background-color: var(--white);
+  resize: vertical;
+  transition: all 200ms ease;
+  margin-bottom: 6px;
+}
+
+.feedback-textarea:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
+}
+
+.feedback-textarea::placeholder {
+  color: rgba(98, 108, 113, 0.5);
+}
+
+.feedback-char-count {
+  text-align: right;
+  font-size: 11px;
+  color: var(--light-text);
+  font-weight: 500;
+}
+
+/* ===== BUTTON STYLES ===== */
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: "Poppins", sans-serif;
+}
+
+.btn-secondary {
+  background-color: var(--white);
+  color: var(--dark-text);
+  border: 1px solid var(--border-color);
+}
+
+.btn-danger {
+  background-color: var(--error-red);
+  color: var(--white);
+  flex: 1;
+}
+
+.btn-primary {
+  background-color: var(--primary-teal);
+  color: var(--white);
+  flex: 1;
+}
+
+/* ===== SNACKBAR ===== */
+.snackbar {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--success-green);
+  color: var(--white);
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(100px);
+  transition: all 250ms ease;
+  z-index: 1000;
+  max-width: 400px;
+}
+
+.snackbar.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.snackbar--error {
+  background-color: var(--error-red);
+}
+
+.snackbar--warning {
+  background-color: var(--warning-orange);
+}
+
+/* ============================================================================
+   RESPONSIVE - TABLET (768px)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 16px;
+  }
+
+  .card-body {
+    padding: 16px;
+  }
+
+  .community-filters {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .filter-select {
+    width: 230px;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - MOBILE (480px)
+   ========================================================================== */
+
+@media (max-width: 480px) {
+  .card-header {
+    padding: 16px 12px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    gap: 8px;
+  }
+
+  .card-body {
+    padding: 12px;
+  }
+
+  .feedback-card {
+    padding: 10px;
+  }
+
+  .feedback-vehicle-icon {
+    display: none;
+  }
+
+  .feedback-vehicle-info {
+    margin-bottom: 6px;
+  }
+
+  .feedback-vehicle-details h4 {
+    font-size: 13px;
+  }
+
+  .feedback-actions {
+    gap: 6px;
+  }
+
+  .feedback-btn-action {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .community-filters {
+    gap: 8px;
+  }
+
+  .filter-group label {
+    font-size: 11px;
+  }
+
+  .filter-select {
+    font-size: 12px;
+  }
+
+  .modal-content {
+    border-radius: 12px 12px 0 0;
+    max-height: 80vh;
+  }
+
+  .feedback-star {
+    font-size: 28px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .feedback-textarea {
+    min-height: 80px;
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .empty-state i {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+  }
+}
+
+.hidden {
+  display: none;
+}

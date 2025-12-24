@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feedback</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+
+    <link rel="stylesheet" href="/css/feedback.css" />
+  </head>
+  <body>
+    <!-- ===== NAVBAR (IMPORTATO) ===== -->
+    <%- include('./components/navbar') %>
+
+    <!-- ===== SIDEBAR (IMPORTATO) ===== -->
+    <%- include('./components/sidebar') %>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-content">
+      <!-- ===== SEZIONE 1: I MIEI FEEDBACK ===== -->
+      <div class="card card-my-feedback">
+        <div class="card-header">
+          <h1 class="card-title">
+            <i class="fas fa-user-circle"></i>
+            I Miei Feedback
+          </h1>
+        </div>
+
+        <div class="card-body">
+          <div class="my-feedback-container">
+            <div id="myFeedbackList" class="feedback-list">
+              <!-- Caricato via JS -->
+            </div>
+            <div id="myFeedbackEmpty" class="empty-state hidden">
+              <i class="fas fa-comment-slash"></i>
+              <p>Non hai ancora lasciato feedback</p>
+              <small>Lascia un feedback dopo aver completato una corsa!</small>
+            </div>
+            <div id="myFeedbackLoading" class="loading-spinner">
+              <div class="spinner"></div>
+              <p>Caricamento feedback...</p>
+            </div>
+          </div>
+          <!-- PAGINATION MY FEEDBACK -->
+          <div id="myFeedbackPaginationContainer" class="pagination hidden">
+            <button id="myFeedbackPrevBtn" class="pagination-btn">
+              <i class="fas fa-chevron-left"></i> Indietro
+            </button>
+            <span id="myFeedbackPageInfo" class="pagination-info"></span>
+            <button id="myFeedbackNextBtn" class="pagination-btn">
+              Avanti <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SEZIONE 2: COMMUNITY FEEDBACK ===== -->
+      <div class="card card-community-feedback">
+        <div class="card-header">
+          <h1 class="card-title">
+            <i class="fas fa-users"></i>
+            Feedback della Community
+          </h1>
+        </div>
+
+        <div class="card-body">
+          <!-- FILTRI -->
+          <div class="community-filters">
+            <div class="filter-group">
+              <label for="filterMezzo">Tipo Mezzo:</label>
+              <select id="filterMezzo" class="filter-select">
+                <option value="">Tutti</option>
+                <option value="bicicletta_muscolare">Bicicletta Muscolare
+                </option>
+                <option value="bicicletta_elettrica">Bicicletta Elettrica
+                </option>
+                <option value="monopattino">Monopattino Elettrico</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filterRating">Rating:</label>
+              <select id="filterRating" class="filter-select">
+                <option value="">Tutti</option>
+                <option value="5">⭐⭐⭐⭐⭐</option>
+                <option value="4">⭐⭐⭐⭐☆</option>
+                <option value="3">⭐⭐⭐☆☆</option>
+                <option value="2">⭐⭐☆☆☆</option>
+                <option value="1">⭐☆☆☆☆</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- COMMUNITY FEEDBACKS -->
+          <div id="communityFeedbackList" class="feedback-list">
+            <!-- Caricato via JS -->
+          </div>
+
+          <div id="communityFeedbackEmpty" class="empty-state hidden">
+            <i class="fas fa-inbox"></i>
+            <p>Nessun feedback trovato</p>
+          </div>
+
+          <div id="communityFeedbackLoading" class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Caricamento feedback...</p>
+          </div>
+
+          <!-- PAGINATION COMMUNITY -->
+          <div id="paginationContainer" class="pagination hidden">
+            <button id="prevBtn" class="pagination-btn">
+              <i class="fas fa-chevron-left"></i> Indietro
+            </button>
+            <span id="pageInfo" class="pagination-info"></span>
+            <button id="nextBtn" class="pagination-btn">
+              Avanti <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SNACKBAR ===== -->
+    <div class="snackbar"></div>
+
+    <!-- ===== MODAL ELIMINA PROFILO ===== -->
+    <div id="deleteProfileModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Elimina Profilo</h2>
+          <button class="modal-close" id="modalClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Sei sicuro di voler eliminare il tuo profilo?</p>
+          <p class="modal-warning">
+            <strong>Questa azione non può essere annullata.</strong>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" id="modalConfirmDelete">
+            Elimina Profilo
+          </button>
+          <button class="btn btn-secondary" id="modalCancel">Annulla</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL MODIFICA FEEDBACK ===== -->
+    <div id="editFeedbackModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Modifica Feedback</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="editVehicleInfo" class="vehicle-info-edit"></div>
+
+          <div class="rating-edit">
+            <div class="feedback-stars" id="editStars">
+              <!-- Generato via JS -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <textarea
+              id="editCommentoText"
+              class="feedback-textarea"
+              placeholder="Scrivi un commento..."
+              maxlength="500"
+            ></textarea>
+            <div class="feedback-char-count">
+              <span id="editCharCount">0</span>/500
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="saveEditBtn" class="btn btn-primary">
+            Salva Modifiche
+          </button>
+          <button id="cancelEditBtn" class="btn btn-secondary">Annulla</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL ELIMINA FEEDBACK ===== -->
+    <div id="deleteFeedbackModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Elimina Feedback</h2>
+          <button class="modal-close" id="deleteFeedbackModalClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Sei sicuro di voler eliminare questo feedback?</p>
+          <p class="modal-warning">
+            <strong>Questa azione non può essere annullata.</strong>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" id="confirmDeleteFeedbackBtn">
+            Elimina Feedback
+          </button>
+          <button class="btn btn-secondary" id="cancelDeleteFeedbackBtn">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/feedback.js"></script>
+  </body>
+</html>

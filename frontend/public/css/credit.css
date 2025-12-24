@@ -167,21 +167,6 @@ body {
   margin: 0;
 }
 
-.refresh-btn {
-  background: none;
-  border: none;
-  color: var(--light-text);
-  font-size: 18px;
-  cursor: pointer;
-  transition: all var(--transition);
-  padding: 8px;
-}
-
-.refresh-btn:hover {
-  color: var(--primary-teal);
-  transform: rotate(180deg);
-}
-
 .credit-display {
   display: flex;
   flex-direction: column;

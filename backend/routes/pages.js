@@ -40,6 +40,11 @@ router.get("/credit", authMiddleware, (req, res) => {
   res.render("credit");
 });
 
+// GET /feedback - Pagina feedback (protetto)
+router.get("/feedback", authMiddleware, (req, res) => {
+  res.render("feedback");
+});
+
 /*
 // ✅ CORSA ATTIVA (protetto)
 router.get("/active-ride", authMiddleware, (req, res) => {

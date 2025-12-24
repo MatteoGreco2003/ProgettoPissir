@@ -394,13 +394,6 @@ document
     loadTransactions(0); // Reset a pagina 1
   });
 
-/**
- * Pulsante refresh balance
- */
-document.getElementById("refreshBalanceBtn").addEventListener("click", () => {
-  loadBalance();
-});
-
 // ============================================================================
 // BANNER STATO ACCOUNT
 // ============================================================================

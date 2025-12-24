@@ -120,8 +120,9 @@ export const getFeedbackByVehicle = async (req, res) => {
 export const getMyFeedback = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
+    const { limit = 10, offset = 0 } = req.query; // ← AGGIUNGI QUESTO
 
-    const feedbacks = await Feedback.findAll({
+    const { count, rows } = await Feedback.findAndCountAll({
       where: { id_utente },
       include: [
         {
@@ -131,12 +132,18 @@ export const getMyFeedback = async (req, res) => {
         },
       ],
       order: [["data_ora", "DESC"]],
+      limit: parseInt(limit), // ← AGGIUNGI QUESTO
+      offset: parseInt(offset), // ← AGGIUNGI QUESTO
+      subQuery: false, // ← AGGIUNGI QUESTO
     });
 
     res.status(200).json({
       message: "I miei feedback recuperati",
-      count: feedbacks.length,
-      feedbacks: feedbacks,
+      total: count, // ← IMPORTANTE: ritorna il TOTALE
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      count: rows.length, // Quanti feedback in questa pagina
+      feedbacks: rows,
     });
   } catch (error) {
     console.error("❌ Errore GET my feedback:", error.message);
@@ -261,29 +268,26 @@ export const deleteFeedback = async (req, res) => {
   }
 };
 
-// ✅ GET ALL FEEDBACKS
+// ✅ GET ALL FEEDBACKS (Tranne quelli dell'utente corrente)
 export const getAllFeedbacks = async (req, res) => {
   try {
     const {
       tipo_mezzo,
-      min_rating,
+      rating,
       limit = 10,
       offset = 0,
       sort_by = "data",
     } = req.query;
 
+    const currentUserId = req.user.id_utente;
+
     // Costruisci filtri
     const where = {};
 
-    if (tipo_mezzo) {
-      // Filtra per tipo mezzo tramite la relazione Vehicle
-      // Usare un include per il filtro
-    }
-
-    if (min_rating) {
-      const minRatingNum = parseInt(min_rating);
-      if (minRatingNum >= 1 && minRatingNum <= 5) {
-        where.rating = { [Op.gte]: minRatingNum };
+    if (rating) {
+      const ratingNum = parseInt(rating);
+      if (ratingNum >= 1 && ratingNum <= 5) {
+        where.rating = ratingNum;
       }
     }
 
@@ -293,6 +297,8 @@ export const getAllFeedbacks = async (req, res) => {
       order = [["rating", "DESC"]];
     }
 
+    where.id_utente = { [Op.ne]: currentUserId };
+
     // Recupera i feedback con filtri
     const { count, rows } = await Feedback.findAndCountAll({
       where,
@@ -300,13 +306,12 @@ export const getAllFeedbacks = async (req, res) => {
         {
           model: User,
           as: "user",
-          attributes: ["nome", "cognome"],
+          attributes: ["id_utente", "nome", "cognome"],
         },
         {
           model: Vehicle,
           as: "vehicle",
           attributes: ["tipo_mezzo", "codice_identificativo"],
-          // Applica filtro tipo_mezzo se presente
           where: tipo_mezzo ? { tipo_mezzo } : undefined,
           required: tipo_mezzo ? true : false,
         },
