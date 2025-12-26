@@ -1,19 +1,25 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 /* ============================================================================
-   VARIABILI GLOBALI
+   CSS CUSTOM PROPERTIES E RESET
    ========================================================================== */
+
 :root {
+  /* Colori primari e secondari */
   --primary-teal: rgba(33, 128, 141, 1);
   --primary-teal-dark: rgba(29, 116, 128, 1);
   --success-green: rgba(33, 128, 141, 1);
   --warning-orange: #e68161;
   --error-red: rgba(192, 21, 47, 1);
+
+  /* Colori neutrali */
   --light-bg: rgba(252, 252, 249, 1);
   --dark-text: rgba(19, 52, 59, 1);
   --light-text: rgba(98, 108, 113, 1);
   --white: rgba(255, 255, 255, 1);
   --border-color: rgba(94, 82, 64, 0.2);
+
+  /* Transizioni */
   --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -32,12 +38,13 @@ body {
 /* ============================================================================
    LAYOUT BASE
    ========================================================================== */
+
 .main-content {
   margin-left: 250px;
   padding: 24px;
 }
 
-/* ===== CARD BASE ===== */
+/* ===== CARD COMPONENT (BASE PER TUTTE LE SEZIONI) ===== */
 .card {
   background-color: var(--white);
   border-radius: 12px;
@@ -55,94 +62,11 @@ body {
   padding: 24px;
 }
 
-/* ===== GRID LAYOUT ===== */
+/* ===== GRID LAYOUT (2 COLONNE PER DESKTOP) ===== */
 .credit-grid {
   display: grid;
   grid-template-columns: 2fr 2fr;
   gap: 24px;
-}
-
-/* ===== ACCOUNT STATUS BANNER ===== */
-.account-status-banner {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  border: 2px solid rgba(192, 21, 47, 0.3);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  animation: slideDown 400ms var(--transition);
-}
-
-.account-status-banner.hidden {
-  display: none;
-}
-
-.status-banner__content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.status-banner__content i {
-  font-size: 24px;
-  color: var(--error-red);
-  flex-shrink: 0;
-  text-align: center;
-}
-
-.status-banner__content h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--dark-text);
-  margin-bottom: 4px;
-  text-align: center;
-}
-
-.status-banner__content p {
-  font-size: 13px;
-  color: var(--light-text);
-  margin: 0;
-  text-align: center;
-}
-
-.status-banner__btn {
-  padding: 10px 20px;
-  background: var(--error-red);
-  color: var(--white);
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all var(--transition);
-  white-space: nowrap;
-  flex-shrink: 0;
-  width: 100%;
-}
-
-.status-banner__btn:hover {
-  background: var(--error-red);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(192, 21, 47, 0.3);
-}
-
-.status-banner__btn:active {
-  transform: translateY(0);
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* ============================================================================
@@ -173,7 +97,7 @@ body {
   gap: 24px;
 }
 
-/* ===== CREDIT CHIP ===== */
+/* ===== CREDIT CHIP (DISPLAY SALDO) ===== */
 .credit-chip {
   background: linear-gradient(
     135deg,
@@ -192,6 +116,7 @@ body {
   align-items: center;
 }
 
+/* Variazioni colore chip in base al saldo */
 .credit-chip.low-balance {
   background: linear-gradient(
     135deg,
@@ -233,7 +158,7 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* ===== CREDIT INFO ===== */
+/* ===== CREDIT INFO (DATI UTENTE) ===== */
 .credit-info {
   display: flex;
   flex-direction: column;
@@ -282,6 +207,7 @@ body {
   gap: 16px;
 }
 
+/* ===== STAT BOX (ELEMENTI STATISTICHE) ===== */
 .stat-box {
   display: flex;
   align-items: center;
@@ -307,6 +233,7 @@ body {
   flex-shrink: 0;
 }
 
+/* Icone colorate per tipo statistica */
 .stat-icon--recharge {
   background: linear-gradient(
     135deg,
@@ -467,7 +394,7 @@ body {
   cursor: not-allowed;
 }
 
-/* ===== RECHARGE MESSAGE ===== */
+/* ===== RECHARGE MESSAGE (SUCCESS/ERROR) ===== */
 .recharge-message {
   padding: 12px 16px;
   border-radius: 8px;
@@ -626,7 +553,7 @@ body {
 
 .transactions-table {
   width: 100%;
-  min-width: 700px; /* ✅ RIDOTTO da 900px a 700px */
+  min-width: 700px;
   border-collapse: collapse;
   font-size: 13px;
   table-layout: auto;
@@ -673,10 +600,11 @@ body {
 .transaction-date {
   font-size: 12px;
   color: var(--light-text);
-  width: 130px; /* ✅ RIDOTTO */
+  width: 130px;
   flex-shrink: 0;
 }
 
+/* ===== TRANSACTION TYPE BADGE ===== */
 .transaction-type {
   display: inline-flex;
   align-items: center;
@@ -686,7 +614,7 @@ body {
   font-weight: 600;
   font-size: 11px;
   white-space: nowrap;
-  width: 85px; /* ✅ RIDOTTO da 100px */
+  width: 85px;
   flex-shrink: 0;
 }
 
@@ -708,10 +636,11 @@ body {
   color: var(--error-red);
 }
 
+/* ===== TRANSACTION AMOUNT (COLORI DIVERSI PER TIPO) ===== */
 .transaction-amount {
   font-weight: 700;
   text-align: right;
-  width: 85px; /* ✅ RIDOTTO da 100px */
+  width: 85px;
   flex-shrink: 0;
 }
 
@@ -796,7 +725,85 @@ body {
   text-align: center;
 }
 
-/* ===== SNACKBAR ===== */
+/* ============================================================================
+   ACCOUNT STATUS BANNER
+   ========================================================================== */
+
+.account-status-banner {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 2px solid rgba(192, 21, 47, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  animation: slideDown 400ms var(--transition);
+}
+
+.account-status-banner.hidden {
+  display: none;
+}
+
+.status-banner__content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-banner__content i {
+  font-size: 24px;
+  color: var(--error-red);
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.status-banner__content h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dark-text);
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.status-banner__content p {
+  font-size: 13px;
+  color: var(--light-text);
+  margin: 0;
+  text-align: center;
+}
+
+.status-banner__btn {
+  padding: 10px 20px;
+  background: var(--error-red);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.status-banner__btn:hover {
+  background: var(--error-red);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(192, 21, 47, 0.3);
+}
+
+.status-banner__btn:active {
+  transform: translateY(0);
+}
+
+/* ============================================================================
+   SNACKBAR (NOTIFICHE TOAST)
+   ========================================================================== */
+
 .snackbar {
   position: fixed;
   bottom: 16px;
@@ -828,7 +835,10 @@ body {
   background-color: #e68161;
 }
 
-/* ===== MODAL ===== */
+/* ============================================================================
+   MODAL (DELETE PROFILE)
+   ========================================================================== */
+
 .modal {
   position: fixed;
   top: 0;
@@ -953,6 +963,25 @@ body {
   flex: 1;
 }
 
+/* ============================================================================
+   ANIMAZIONI
+   ========================================================================== */
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - DESKTOP GRANDE (1200px)
+   ========================================================================== */
+
 @media (max-width: 1200px) {
   .credit-grid {
     grid-template-columns: 1fr;
@@ -1030,7 +1059,10 @@ body {
   }
 }
 
-/* ===== RESPONSIVE - MOBILE (480px) ===== */
+/* ============================================================================
+   RESPONSIVE - MOBILE (480px)
+   ========================================================================== */
+
 @media (max-width: 480px) {
   .main-content {
     padding: 12px;

@@ -499,12 +499,6 @@ function setupEventListeners() {
       document.getElementById("puntiUsati").textContent = puntiUsabili; // ← QUESTO MANCAVA!
       scontoCalcolato.textContent = `€${sconto.toFixed(2)}`;
       puntiInfo.classList.add("active");
-
-      console.log(
-        `✅ Punti: ${puntiUsabili}/${
-          rideState.punti_fedeltà
-        } → Sconto: €${sconto.toFixed(2)}`
-      );
     } else {
       // ✅ Quando deselezioni, torna a 0
       document.getElementById("puntiUsati").textContent = "0"; // ← RESET
@@ -914,7 +908,6 @@ function showDebtModal(checkData, importoMancante) {
     }
 
     rideState.importoRicaricaTemp = importoRicarica;
-    console.log(`✅ Ricarica: €${importoRicarica.toFixed(2)}`);
 
     // ✅ Chiudi modal
     modal.remove();
@@ -925,7 +918,6 @@ function showDebtModal(checkData, importoMancante) {
 
   // ✅ Button: Ignora (crea debito)
   document.getElementById("debtIgnoreBtn").addEventListener("click", () => {
-    console.log("⚠️ Utente continua senza ricaricare - Account sospeso");
     modal.remove();
 
     // ✅ Invia richiesta al backend per creare il debito

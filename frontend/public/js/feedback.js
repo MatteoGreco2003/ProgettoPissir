@@ -1,30 +1,48 @@
-// ===== STATE =====
+// ============================================================================
+// FEEDBACK PAGE - feedback.js
+// Gestisce i miei feedback, community feedback, filtri, edit e delete
+// ============================================================================
+
+/* ========================================================================
+   APPLICATION STATE
+   Contiene dati feedback, paginazione, filtri e ID in modifica/cancellazione
+   ======================================================================== */
 let feedbackState = {
   currentUserId: null,
+
+  // My feedbacks state
   myFeedbacks: [],
   myCurrentPage: 1,
   myTotalPages: 1,
   myPageSize: 2,
 
+  // Community feedbacks state
   communityFeedbacks: [],
   currentPage: 1,
   totalPages: 1,
   pageSize: 3,
+
+  // Filtri community
   filters: {
     tipo_mezzo: "",
     rating: "",
   },
+
+  // ID feedback in modifica/cancellazione
   editingFeedbackId: null,
   deletingFeedbackId: null,
 };
 
-// ===== DOM ELEMENTS =====
-// My Feedback
+/* ========================================================================
+   DOM ELEMENTS SELECTORS
+   ======================================================================== */
+
+// My feedback
 const myFeedbackList = document.getElementById("myFeedbackList");
 const myFeedbackEmpty = document.getElementById("myFeedbackEmpty");
 const myFeedbackLoading = document.getElementById("myFeedbackLoading");
 
-// My Feedback Pagination
+// My feedback pagination
 const myFeedbackPaginationContainer = document.getElementById(
   "myFeedbackPaginationContainer"
 );
@@ -32,7 +50,7 @@ const myFeedbackPrevBtn = document.getElementById("myFeedbackPrevBtn");
 const myFeedbackNextBtn = document.getElementById("myFeedbackNextBtn");
 const myFeedbackPageInfo = document.getElementById("myFeedbackPageInfo");
 
-// Community Feedback
+// Community feedback
 const communityFeedbackList = document.getElementById("communityFeedbackList");
 const communityFeedbackEmpty = document.getElementById(
   "communityFeedbackEmpty"
@@ -41,17 +59,17 @@ const communityFeedbackLoading = document.getElementById(
   "communityFeedbackLoading"
 );
 
-// Filters
+// Filtri
 const filterMezzo = document.getElementById("filterMezzo");
 const filterRating = document.getElementById("filterRating");
 
-// Pagination
+// Community pagination
 const paginationContainer = document.getElementById("paginationContainer");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const pageInfo = document.getElementById("pageInfo");
 
-// Edit Modal
+// Edit modal
 const editFeedbackModal = document.getElementById("editFeedbackModal");
 const editStars = document.getElementById("editStars");
 const editCommentoText = document.getElementById("editCommentoText");
@@ -59,9 +77,8 @@ const editCharCount = document.getElementById("editCharCount");
 const editVehicleInfo = document.getElementById("editVehicleInfo");
 const cancelEditBtn = document.getElementById("cancelEditBtn");
 const saveEditBtn = document.getElementById("saveEditBtn");
-const modalClose = document.querySelector(".modal-close");
 
-// Delete Feedback Modal
+// Delete feedback modal
 const deleteFeedbackModal = document.getElementById("deleteFeedbackModal");
 const confirmDeleteFeedbackBtn = document.getElementById(
   "confirmDeleteFeedbackBtn"
@@ -73,9 +90,13 @@ const deleteFeedbackModalClose = document.getElementById(
   "deleteFeedbackModalClose"
 );
 
-// ===== INITIALIZATION =====
+/* ========================================================================
+   PAGE INITIALIZATION
+   Carica current user ID e setup listeners
+   ======================================================================== */
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Toggle sidebar on mobile
+  // Toggle sidebar su mobile
   const menuToggle = document.querySelector(".menu-toggle");
   const sidebar = document.querySelector(".sidebar");
 
@@ -91,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 🔥 ASPETTA che l'ID sia caricato PRIMA di continuare
+  // Carica current user ID PRIMA di tutto il resto
   loadCurrentUserId().then(() => {
     setupModalListeners();
     setupFilterListeners();
@@ -100,7 +121,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// ===== LOAD CURRENT USER ID =====
+/**
+ * Carica l'ID dell'utente corrente
+ * @returns {Promise} Risolve quando l'ID è caricato
+ */
 function loadCurrentUserId() {
   return fetch("/users/me")
     .then((res) => res.json())
@@ -114,12 +138,20 @@ function loadCurrentUserId() {
     });
 }
 
-// ===== LOAD MY FEEDBACKS =====
+/* ========================================================================
+   SEZIONE 1: I MIEI FEEDBACK
+   Carica, renderizza e gestisce i feedback personali
+   ======================================================================== */
+
+/**
+ * Carica i feedback personali con paginazione
+ */
 function loadMyFeedbacks() {
   myFeedbackLoading.classList.remove("hidden");
   myFeedbackEmpty.classList.add("hidden");
   myFeedbackList.innerHTML = "";
 
+  // Calcola offset per paginazione
   const offset = (feedbackState.myCurrentPage - 1) * feedbackState.myPageSize;
 
   fetch(
@@ -148,7 +180,9 @@ function loadMyFeedbacks() {
     });
 }
 
-// ===== RENDER MY FEEDBACKS PAGINATION =====
+/**
+ * Renderizza paginazione feedback personali
+ */
 function renderMyFeedbackPagination() {
   if (feedbackState.myTotalPages <= 1) {
     myFeedbackPaginationContainer.classList.add("hidden");
@@ -157,16 +191,18 @@ function renderMyFeedbackPagination() {
 
   myFeedbackPaginationContainer.classList.remove("hidden");
 
-  // Update page info
+  // Aggiorna info pagina
   myFeedbackPageInfo.textContent = `Pagina ${feedbackState.myCurrentPage} di ${feedbackState.myTotalPages}`;
 
-  // Update button states
+  // Disabilita bottoni se primo/ultimo
   myFeedbackPrevBtn.disabled = feedbackState.myCurrentPage === 1;
   myFeedbackNextBtn.disabled =
     feedbackState.myCurrentPage === feedbackState.myTotalPages;
 }
 
-// ===== RENDER MY FEEDBACKS =====
+/**
+ * Renderizza lista dei miei feedback in HTML
+ */
 function renderMyFeedbacks() {
   myFeedbackList.innerHTML = feedbackState.myFeedbacks
     .map((feedback) => {
@@ -215,10 +251,13 @@ function renderMyFeedbacks() {
     })
     .join("");
 
+  // Setup event listeners per edit/delete bottoni
   setupEditAndDeleteListeners();
 }
 
-// ===== EDIT AND DELETE LISTENERS =====
+/**
+ * Setup event listeners per bottoni modifica e elimina
+ */
 function setupEditAndDeleteListeners() {
   document.querySelectorAll(".feedback-btn-edit").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -232,18 +271,27 @@ function setupEditAndDeleteListeners() {
     });
   });
 }
-// ===== LOAD COMMUNITY FEEDBACKS =====
+
+/* ========================================================================
+   SEZIONE 2: COMMUNITY FEEDBACK
+   Carica, renderizza, filtra feedback della community
+   ======================================================================== */
+
+/**
+ * Carica feedback community con filtri e paginazione
+ */
 function loadCommunityFeedbacks() {
   communityFeedbackLoading.classList.remove("hidden");
   communityFeedbackEmpty.classList.add("hidden");
   communityFeedbackList.innerHTML = "";
 
-  // 🔥 IMPORTANTE: passa l'offset per paginazione corretta
+  // Calcola offset per paginazione
   const offset = (feedbackState.currentPage - 1) * feedbackState.pageSize;
 
+  // Costruisci query params con filtri
   const params = new URLSearchParams({
-    limit: feedbackState.pageSize, 
-    offset: offset,   
+    limit: feedbackState.pageSize,
+    offset: offset,
     ...(feedbackState.filters.tipo_mezzo && {
       tipo_mezzo: feedbackState.filters.tipo_mezzo,
     }),
@@ -278,7 +326,9 @@ function loadCommunityFeedbacks() {
     });
 }
 
-// ===== RENDER COMMUNITY FEEDBACKS =====
+/**
+ * Renderizza lista feedback community
+ */
 function renderCommunityFeedbacks() {
   communityFeedbackList.innerHTML = feedbackState.communityFeedbacks
     .map((feedback) => {
@@ -319,7 +369,9 @@ function renderCommunityFeedbacks() {
     .join("");
 }
 
-// ===== RENDER COMMUNITY PAGINATION =====
+/**
+ * Renderizza paginazione feedback community
+ */
 function renderCommunityPagination() {
   if (feedbackState.totalPages <= 1) {
     paginationContainer.classList.add("hidden");
@@ -328,16 +380,23 @@ function renderCommunityPagination() {
 
   paginationContainer.classList.remove("hidden");
 
-  // Update page info
+  // Aggiorna info pagina
   pageInfo.textContent = `Pagina ${feedbackState.currentPage} di ${feedbackState.totalPages}`;
 
-  // Update button states
+  // Disabilita bottoni se primo/ultimo
   prevBtn.disabled = feedbackState.currentPage === 1;
   nextBtn.disabled = feedbackState.currentPage === feedbackState.totalPages;
 }
 
-// ===== SETUP FILTER LISTENERS =====
+/* ========================================================================
+   FILTRI E PAGINAZIONE LISTENERS
+   ======================================================================== */
+
+/**
+ * Setup event listeners per filtri e paginazione
+ */
 function setupFilterListeners() {
+  // Filtri community
   filterMezzo.addEventListener("change", () => {
     feedbackState.filters.tipo_mezzo = filterMezzo.value;
     feedbackState.currentPage = 1;
@@ -350,7 +409,7 @@ function setupFilterListeners() {
     loadCommunityFeedbacks();
   });
 
-  // My Feedback Pagination Buttons
+  // Paginazione miei feedback
   myFeedbackPrevBtn.addEventListener("click", () => {
     if (feedbackState.myCurrentPage > 1) {
       feedbackState.myCurrentPage--;
@@ -365,7 +424,7 @@ function setupFilterListeners() {
     }
   });
 
-  // Community Pagination Buttons
+  // Paginazione community feedback
   prevBtn.addEventListener("click", () => {
     if (feedbackState.currentPage > 1) {
       feedbackState.currentPage--;
@@ -381,9 +440,15 @@ function setupFilterListeners() {
   });
 }
 
-// ===== SETUP MODAL LISTENERS =====
+/* ========================================================================
+   MODALS - EDIT FEEDBACK
+   ======================================================================== */
+
+/**
+ * Setup event listeners per modali (edit, delete)
+ */
 function setupModalListeners() {
-  // ===== EDIT FEEDBACK MODAL =====
+  // ===== EDIT MODAL =====
   const editModalCloseBtn = document.querySelector(
     "#editFeedbackModal .modal-close"
   );
@@ -401,10 +466,12 @@ function setupModalListeners() {
   cancelEditBtn.addEventListener("click", closeEditModal);
   saveEditBtn.addEventListener("click", saveEditFeedback);
 
+  // Counter caratteri commento
   editCommentoText.addEventListener("input", () => {
     editCharCount.textContent = editCommentoText.value.length;
   });
 
+  // Stella rating interattiva (click per selezionare)
   editStars.addEventListener("click", (e) => {
     if (e.target.classList.contains("feedback-star")) {
       const rating = e.target.dataset.rating;
@@ -442,10 +509,15 @@ function setupModalListeners() {
   }
 }
 
-// ===== OPEN EDIT MODAL =====
+/**
+ * Apri modal modifica feedback
+ * Popola campi con dati feedback da modificare
+ * @param {string} feedbackId - ID feedback da modificare
+ */
 function openEditModal(feedbackId) {
   const feedbackIdNum = parseInt(feedbackId, 10);
 
+  // Trova feedback nella lista
   const feedback = feedbackState.myFeedbacks.find(
     (f) => f.id_feedback === feedbackIdNum
   );
@@ -457,6 +529,7 @@ function openEditModal(feedbackId) {
 
   feedbackState.editingFeedbackId = feedbackId;
 
+  // Popola info mezzo
   const vehicle = feedback.vehicle;
   const icon = getVehicleIcon(vehicle.tipo_mezzo);
 
@@ -465,9 +538,11 @@ function openEditModal(feedbackId) {
     <p>${vehicle.codice_identificativo}</p>
   `;
 
+  // Popola commento e char count
   editCommentoText.value = feedback.commento || "";
   editCharCount.textContent = feedback.commento ? feedback.commento.length : 0;
 
+  // Crea stelle rating
   editStars.innerHTML = "";
   for (let i = 1; i <= 5; i++) {
     const star = document.createElement("button");
@@ -479,17 +554,24 @@ function openEditModal(feedbackId) {
     editStars.appendChild(star);
   }
 
+  // Mostra modal
   editFeedbackModal.classList.remove("hidden");
 }
 
-// ===== CLOSE EDIT MODAL =====
+/**
+ * Chiudi modal modifica feedback
+ */
 function closeEditModal() {
   editFeedbackModal.classList.add("hidden");
   feedbackState.editingFeedbackId = null;
 }
 
-// ===== SAVE EDIT FEEDBACK =====
+/**
+ * Salva modifiche feedback al backend
+ * Endpoint: PATCH /feedback/{id}
+ */
 function saveEditFeedback() {
+  // Conta stelle attive per il rating
   const rating = document.querySelectorAll(
     "#editStars .feedback-star.active"
   ).length;
@@ -527,19 +609,31 @@ function saveEditFeedback() {
     });
 }
 
-// ===== DELETE FEEDBACK (SHOW MODAL) =====
+/* ========================================================================
+   MODALS - DELETE FEEDBACK
+   ======================================================================== */
+
+/**
+ * Apri modal conferma eliminazione feedback
+ * @param {string} feedbackId - ID feedback da eliminare
+ */
 function deleteFeedback(feedbackId) {
   feedbackState.deletingFeedbackId = feedbackId;
   deleteFeedbackModal.classList.remove("hidden");
 }
 
-// ===== CLOSE DELETE FEEDBACK MODAL =====
+/**
+ * Chiudi modal eliminazione feedback
+ */
 function closeDeleteFeedbackModal() {
   deleteFeedbackModal.classList.add("hidden");
   feedbackState.deletingFeedbackId = null;
 }
 
-// ===== CONFIRM DELETE FEEDBACK =====
+/**
+ * Conferma e invia richiesta eliminazione feedback al backend
+ * Endpoint: DELETE /feedback/{id}
+ */
 function confirmDeleteFeedback() {
   const feedbackId = feedbackState.deletingFeedbackId;
 
@@ -570,7 +664,15 @@ function confirmDeleteFeedback() {
     });
 }
 
-// ===== UTILITY FUNCTIONS =====
+/* ========================================================================
+   UTILITY FUNCTIONS
+   ======================================================================== */
+
+/**
+ * Ottieni emoji icona in base al tipo mezzo
+ * @param {string} tipoMezzo - Tipo mezzo (bicicletta_muscolare, etc)
+ * @returns {string} - Emoji icona
+ */
 function getVehicleIcon(tipoMezzo) {
   switch (tipoMezzo) {
     case "bicicletta_muscolare":
@@ -584,6 +686,11 @@ function getVehicleIcon(tipoMezzo) {
   }
 }
 
+/**
+ * Genera stringhe stelle in base al rating
+ * @param {number} rating - Rating (1-5)
+ * @returns {string} - Stringa stelle (es: ⭐⭐⭐☆☆)
+ */
 function generateStars(rating) {
   let stars = "";
   for (let i = 1; i <= 5; i++) {
@@ -592,6 +699,11 @@ function generateStars(rating) {
   return stars;
 }
 
+/**
+ * Mostra snackbar notifica temporanea
+ * @param {string} message - Messaggio da mostrare
+ * @param {string} type - Tipo: "success" | "error"
+ */
 function showSnackbar(message, type = "success") {
   const snackbar = document.querySelector(".snackbar");
   if (!snackbar) return;
@@ -599,6 +711,7 @@ function showSnackbar(message, type = "success") {
   snackbar.textContent = message;
   snackbar.className = `snackbar show snackbar--${type}`;
 
+  // Auto-hide dopo 3.5 secondi
   setTimeout(() => {
     snackbar.classList.remove("show");
   }, 3500);

@@ -63,27 +63,27 @@ document.addEventListener("DOMContentLoaded", () => {
   loadRideHistory(ridesPerPage, 0);
 });
 
-// ===== EVENT LISTENERS =====
+// ===== EVENT LISTENERS SETUP =====
 function setupEventListeners() {
   // Toggle sidebar on mobile
   menuToggle.addEventListener("click", () => {
     sidebar.classList.toggle("active");
   });
 
-  // Close sidebar when clicking outside
+  // Close sidebar quando click fuori
   document.addEventListener("click", (e) => {
     if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
       sidebar.classList.remove("active");
     }
   });
 
-  // Modify profile modal
+  // Modify profile modal events
   modifyProfileBtn.addEventListener("click", openModifyProfileModal);
   modalProfileClose.addEventListener("click", closeModifyProfileModal);
   modalProfileCancel.addEventListener("click", closeModifyProfileModal);
   modalProfileSave.addEventListener("click", saveProfileChanges);
 
-  // Modify password modal
+  // Modify password modal events
   modifyPasswordBtn.addEventListener("click", openModifyPasswordModal);
   modalPasswordClose.addEventListener("click", closeModifyPasswordModal);
   modalPasswordCancel.addEventListener("click", closeModifyPasswordModal);
@@ -109,7 +109,7 @@ function setupEventListeners() {
   });
 }
 
-// ===== LOAD USER PROFILE =====
+// ===== LOAD USER PROFILE FROM API =====
 async function loadUserProfile() {
   try {
     const response = await fetch("/users/me", {
@@ -134,7 +134,7 @@ async function loadUserProfile() {
   }
 }
 
-// ===== DISPLAY USER PROFILE =====
+// ===== DISPLAY USER PROFILE DATA =====
 function displayUserProfile() {
   if (!userData) return;
 
@@ -145,29 +145,29 @@ function displayUserProfile() {
   // Email
   userEmail.textContent = userData.email || "N/A";
 
-  // Data registrazione (formato DD/MM/YYYY)
+  // Data registrazione formattata DD/MM/YYYY
   const dataReg = new Date(userData.data_registrazione);
   const dataFormattata = dataReg.toLocaleDateString("it-IT");
   userDataReg.textContent = dataFormattata;
 
-  // Saldo
+  // Saldo con stato dinamico
   const saldo = parseFloat(userData.saldo || 0);
   userBalance.textContent = `€ ${saldo.toFixed(2)}`;
 
-  // Reset classi stato saldo sul contenitore
+  // Reset classi stato saldo
   balanceContainer.classList.remove(
     "balance-container--danger",
     "balance-container--warning",
     "balance-container--ok"
   );
 
-  // Rimuovi eventuali classi precedenti
   userBalance.classList.remove(
     "balance-amount--danger",
     "balance-amount--warning",
     "balance-amount--ok"
   );
 
+  // Assegna classe in base al saldo
   if (saldo <= 0) {
     balanceContainer.classList.add("balance-container--danger");
     userBalance.classList.add("balance-amount--danger");
@@ -179,7 +179,7 @@ function displayUserProfile() {
     userBalance.classList.add("balance-amount--ok");
   }
 
-  // ✅ NUOVO: PUNTI FEDELTÀ
+  // ✅ PUNTI FEDELTÀ
   const punti = userData.punti || 0;
   userLoyaltyPoints.textContent = punti;
 
@@ -194,7 +194,7 @@ function displayUserProfile() {
   const puntiRimanenti = Math.max(100 - punti, 0);
   loyaltyProgressText.textContent = `${punti} / 100 punti verso € 5,00 di sconto`;
 
-  // Stato account
+  // Stato account con badge dinamico
   const statusMap = {
     attivo: "Attivo",
     sospeso: "Sospeso",
@@ -221,6 +221,7 @@ async function loadRideStatistics() {
 
       const vehicleNameFormatted = formatVehicleName(stats.ultimo_mezzo);
 
+      // Aggiorna gli elementi statistici
       document.getElementById("userTotalRides").textContent =
         stats.corse_totali;
       document.getElementById("userLastVehicle").textContent =
@@ -240,7 +241,7 @@ async function loadRideStatistics() {
   }
 }
 
-// ===== LOAD RIDE HISTORY =====
+// ===== LOAD RIDE HISTORY WITH PAGINATION =====
 async function loadRideHistory(limit = 10, offset = 0) {
   try {
     const response = await fetch(
@@ -258,12 +259,14 @@ async function loadRideHistory(limit = 10, offset = 0) {
       const data = await response.json();
       totalRides = data.total;
 
+      // Se ci sono corse, mostra tabella e paginazione
       if (data.rides && data.rides.length > 0) {
         renderRideHistory(data.rides);
         renderRidesPagination(data.total, limit, offset);
         noRidesMessage.classList.add("hidden");
         ridesHistoryContainer.classList.remove("hidden");
       } else {
+        // Altrimenti mostra messaggio vuoto
         noRidesMessage.classList.remove("hidden");
         ridesHistoryContainer.classList.add("hidden");
       }
@@ -317,7 +320,7 @@ function renderRideHistory(rides) {
 // ===== GET VEHICLE ICON =====
 function getVehicleIcon(tipoMezzo) {
   const icons = {
-    monopattino: "fa-person-skating scooter",
+    monopattino: "fa-person-skating",
     bicicletta_muscolare: "fa-bicycle",
     bicicletta_elettrica: "fa-bolt",
   };
@@ -365,7 +368,7 @@ function renderRidesPagination(total, limit, offset) {
   ridesPagination.appendChild(paginationContainer);
 }
 
-// ===== AGGIORNA NAVBAR =====
+// ===== AGGIORNA NAVBAR CON DATI UTENTE =====
 function updateNavbar() {
   const userNameNavbar = document.getElementById("userNameNavbar");
   const userInitial = document.getElementById("userInitial");
@@ -397,7 +400,7 @@ function closeModifyProfileModal() {
   clearProfileErrors();
 }
 
-// ===== FUNZIONE PER PULIRE ERRORI =====
+// ===== FUNZIONE PER PULIRE ERRORI PROFILE =====
 function clearProfileErrors() {
   const errorContainer = document.getElementById("profileErrorContainer");
   errorContainer.innerHTML = "";
@@ -407,7 +410,7 @@ function clearProfileErrors() {
   inputCognome.classList.remove("input-error");
 }
 
-// ===== FUNZIONE PER MOSTRARE ERRORI =====
+// ===== FUNZIONE PER MOSTRARE ERRORI PROFILE =====
 function showProfileError(errorMessage, fieldsWithError = []) {
   const errorContainer = document.getElementById("profileErrorContainer");
 
@@ -427,6 +430,7 @@ function showProfileError(errorMessage, fieldsWithError = []) {
   });
 }
 
+// ===== SAVE PROFILE CHANGES =====
 async function saveProfileChanges() {
   const nome = inputNome.value.trim();
   const cognome = inputCognome.value.trim();
@@ -548,6 +552,7 @@ function closeModifyPasswordModal() {
   passwordToggleSetup = false;
 }
 
+// ===== SAVE PASSWORD CHANGES =====
 async function savePasswordChanges() {
   const current = currentPassword.value.trim();
   const newPass = newPassword.value.trim();
@@ -651,6 +656,8 @@ function setupPasswordToggle() {
 
     /**
      * Aggiorna l'icona in base al contenuto dell'input
+     * Se input ha contenuto → mostra occhio (eye)
+     * Se input vuoto → mostra lucchetto (lock)
      */
     function updateIcon() {
       if (newInput.value.length > 0) {
@@ -686,7 +693,13 @@ function setupPasswordToggle() {
   passwordToggleSetup = true;
 }
 
-// ===== UTILITIES =====
+// ===== UTILITY FUNCTIONS =====
+
+/**
+ * Mostra una snackbar notifica
+ * @param {string} message - Messaggio da mostrare
+ * @param {string} type - Tipo: 'success', 'error', 'warning'
+ */
 function showSnackbar(message, type = "success") {
   snackbarElement.textContent = message;
   snackbarElement.className = `snackbar show snackbar--${type}`;
@@ -696,6 +709,11 @@ function showSnackbar(message, type = "success") {
   }, 3000);
 }
 
+/**
+ * Formatta il nome del mezzo per la visualizzazione
+ * @param {string} tipoMezzo - Tipo di mezzo (monopattino, bicicletta_muscolare, bicicletta_elettrica)
+ * @returns {string} Nome formattato del mezzo
+ */
 function formatVehicleName(tipoMezzo) {
   if (tipoMezzo === "N/A" || !tipoMezzo) {
     return "Nessuno";

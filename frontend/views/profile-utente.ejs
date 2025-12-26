@@ -15,18 +15,18 @@
   <body>
     <!-- ===== APP CONTAINER ===== -->
     <div id="app">
-      <!-- ===== NAVBAR (IMPORTATO) ===== -->
+      <!-- ===== NAVBAR (COMPONENTE IMPORTATO) ===== -->
       <%- include('./components/navbar') %>
 
-      <!-- ===== SIDEBAR (IMPORTATO) ===== -->
+      <!-- ===== SIDEBAR (COMPONENTE IMPORTATO) ===== -->
       <%- include('./components/sidebar') %>
 
-      <!-- ===== MAIN CONTENT ===== -->
+      <!-- ===== MAIN CONTENT AREA ===== -->
       <main class="main-content">
         <div class="container">
-          <!-- ===== PROFILO UTENTE ===== -->
+          <!-- ===== PROFILO UTENTE SECTION ===== -->
           <section id="profile" class="page-section active">
-            <!-- ===== CARD INFORMAZIONI PERSONALI ===== -->
+            <!-- ===== CARD: INFORMAZIONI PERSONALI ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
@@ -40,7 +40,7 @@
               </div>
               <div class="card-body">
                 <div class="info-grid">
-                  <!-- Nome e Cognome -->
+                  <!-- Nome e Cognome (2 colonne) -->
                   <div class="info-row">
                     <div class="info-field">
                       <label class="info-label">Nome</label>
@@ -52,7 +52,7 @@
                     </div>
                   </div>
 
-                  <!-- Email -->
+                  <!-- Email (full width) -->
                   <div class="info-row">
                     <div class="info-field full-width">
                       <label class="info-label">Email</label>
@@ -65,7 +65,7 @@
               </div>
             </div>
 
-            <!-- ===== CARD SICUREZZA ===== -->
+            <!-- ===== CARD: SICUREZZA ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
@@ -75,6 +75,7 @@
               </div>
               <div class="card-body">
                 <div class="security-section">
+                  <!-- Elemento di sicurezza: Password -->
                   <div class="security-item">
                     <div class="security-info">
                       <h3 class="security-title">Password</h3>
@@ -92,6 +93,7 @@
               </div>
             </div>
 
+            <!-- ===== CARD: INFORMAZIONI ACCOUNT ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
@@ -101,10 +103,12 @@
               </div>
               <div class="card-body">
                 <div class="info-row">
+                  <!-- Data Registrazione -->
                   <div class="info-field">
                     <label class="info-label">Data Registrazione</label>
                     <div class="info-value" id="userDataReg">09/12/2025</div>
                   </div>
+                  <!-- Stato Account con Badge -->
                   <div class="info-field">
                     <label class="info-label">Stato Account</label>
                     <div class="info-value info-value-badge">
@@ -117,7 +121,7 @@
               </div>
             </div>
 
-            <!-- ===== CARD STATISTICHE D'USO ===== -->
+            <!-- ===== CARD: STATISTICHE ACCOUNT ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
@@ -127,7 +131,7 @@
               </div>
               <div class="card-body">
                 <div class="stats-grid">
-                  <!-- Prima riga: Corse Totali e Spesa Totale -->
+                  <!-- Prima riga: Corse Totali, Spesa Totale, Km Totali -->
                   <div class="stats-row">
                     <div class="stat-card">
                       <div class="stat-icon">
@@ -174,7 +178,7 @@
               </div>
             </div>
 
-            <!-- ===== CARD CRONOLOGIA CORSE ===== -->
+            <!-- ===== CARD: CRONOLOGIA CORSE ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
@@ -183,13 +187,13 @@
                 </h2>
               </div>
               <div class="card-body">
-                <!-- Se non ci sono corse -->
+                <!-- Messaggio quando nessuna corsa disponibile -->
                 <div id="noRidesMessage" class="no-rides-message">
                   <i class="fas fa-inbox"></i>
                   <p>Nessuna corsa ancora. Inizia la tua prima avventura!</p>
                 </div>
 
-                <!-- Tabella corse -->
+                <!-- Tabella corse con scroll orizzontale -->
                 <div
                   id="ridesHistoryContainer"
                   class="rides-history-container hidden"
@@ -207,18 +211,18 @@
                         </tr>
                       </thead>
                       <tbody id="ridesHistoryBody">
-                        <!-- Populate con JS -->
+                        <!-- Righe popolate dinamicamente con JS -->
                       </tbody>
                     </table>
                   </div>
 
-                  <!-- Paginazione -->
+                  <!-- Controlli Paginazione -->
                   <div id="ridesPagination" class="pagination"></div>
                 </div>
               </div>
             </div>
 
-            <!-- ===== CARD CREDITO ===== -->
+            <!-- ===== CARD: SALDO CREDITO ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
@@ -236,7 +240,7 @@
               </div>
             </div>
 
-            <!-- ===== CARD PUNTI FEDELTÀ ===== -->
+            <!-- ===== CARD: PUNTI FEDELTÀ ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
@@ -246,13 +250,13 @@
               </div>
               <div class="card-body">
                 <div class="loyalty-container">
-                  <!-- Numero punti grande -->
+                  <!-- Numero punti grande con etichetta -->
                   <div class="loyalty-score">
                     <span class="loyalty-number" id="userLoyaltyPoints">0</span>
                     <span class="loyalty-label">punti</span>
                   </div>
 
-                  <!-- Info sconto -->
+                  <!-- Informazioni sconto calcolato -->
                   <div class="loyalty-info">
                     <p class="loyalty-description">
                       Guadagna punti con le corse in bicicletta muscolare
@@ -265,7 +269,7 @@
                     </div>
                   </div>
 
-                  <!-- Progress bar verso il prossimo traguardo -->
+                  <!-- Progress bar verso il prossimo traguardo (100 punti = €5) -->
                   <div class="loyalty-progress">
                     <div class="progress-bar-container">
                       <div
@@ -278,7 +282,7 @@
                     </p>
                   </div>
 
-                  <!-- Bottone info -->
+                  <!-- Footer con informazioni utili -->
                   <div class="loyalty-footer">
                     <i class="fas fa-info-circle"></i>
                     <span
@@ -297,7 +301,7 @@
     <!-- ===== SNACKBAR NOTIFICHE ===== -->
     <div id="snackbar" class="snackbar"></div>
 
-    <!-- ===== MODAL ELIMINA PROFILO ===== -->
+    <!-- ===== MODAL: ELIMINA PROFILO ===== -->
     <div id="deleteProfileModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -322,7 +326,7 @@
       </div>
     </div>
 
-    <!-- ===== MODAL MODIFICA DATI PERSONALI ===== -->
+    <!-- ===== MODAL: MODIFICA DATI PERSONALI ===== -->
     <div id="modifyProfileModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -339,6 +343,7 @@
           </p>
           <form id="modifyProfileForm">
             <div class="form-row">
+              <!-- Campo Nome -->
               <div class="form-group">
                 <label for="inputNome" class="form-label">Nome</label>
                 <input
@@ -349,6 +354,7 @@
                   required
                 />
               </div>
+              <!-- Campo Cognome -->
               <div class="form-group">
                 <label for="inputCognome" class="form-label">Cognome</label>
                 <input
@@ -363,7 +369,7 @@
           </form>
         </div>
 
-        <!-- ===== ERROR CONTAINER ===== -->
+        <!-- Contenitore messaggi di errore -->
         <div id="profileErrorContainer" class="error-messages"></div>
 
         <div class="modal-footer">
@@ -377,7 +383,7 @@
       </div>
     </div>
 
-    <!-- ===== MODAL MODIFICA PASSWORD ===== -->
+    <!-- ===== MODAL: MODIFICA PASSWORD ===== -->
     <div id="modifyPasswordModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -393,6 +399,7 @@
             password che desideri impostare.
           </p>
           <form id="modifyPasswordForm">
+            <!-- Campo Password Attuale -->
             <div class="form-group">
               <label for="currentPassword" class="form-label">
                 Password attuale
@@ -409,6 +416,7 @@
               </div>
             </div>
 
+            <!-- Campo Nuova Password -->
             <div class="form-group">
               <label for="newPassword" class="form-label">Nuova password</label>
               <div class="password-input-wrapper">
@@ -423,6 +431,7 @@
               </div>
             </div>
 
+            <!-- Campo Conferma Password -->
             <div class="form-group">
               <label for="confirmPassword" class="form-label">
                 Conferma nuova password
@@ -441,7 +450,7 @@
           </form>
         </div>
 
-        <!-- ===== ERROR CONTAINER ===== -->
+        <!-- Contenitore messaggi di errore -->
         <div id="passwordErrorContainer" class="error-messages"></div>
 
         <div class="modal-footer">

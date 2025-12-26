@@ -1,16 +1,23 @@
 // ==========================================
-// AUTENTICAZIONE - MOBISHARE
-// Modulo per gestire login, registrazione e password reset
+// AUTHENTICATION MODULE - MOBISHARE
+// Handles login, registration, password recovery
+// Client-side validation and form management
 // ==========================================
 
-// ===== DOM SELECTORS =====
+/* ========================================================================
+   DOM SELECTORS
+   ======================================================================== */
+
+// Main container and toggle buttons
 const container = document.querySelector(".container");
 const registerBtn = document.querySelector(".register-btn");
 const loginBtn = document.querySelector(".login-btn");
+
+// Form references
 const registerForm = document.getElementById("registerForm");
 const loginForm = document.getElementById("loginForm");
 
-// ===== MODALE SELECTORS =====
+// Modal elements
 const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 const forgotPasswordModal = document.getElementById("forgotPasswordModal");
 const closeModalBtn = document.querySelector(".close");
@@ -18,11 +25,12 @@ const forgotPasswordForm = document.getElementById("forgotPasswordForm");
 const closeForgotBtn = document.getElementById("closeForgotBtn");
 
 /* ========================================================================
-   TOGGLE LOGIN / REGISTRAZIONE
+   FORM TOGGLE: LOGIN <-> REGISTRATION
    ======================================================================== */
 
 /**
- * Attiva form registrazione e resetta login
+ * Show registration form and hide login form
+ * Resets login form state (clears inputs, errors, password visibility)
  */
 registerBtn.addEventListener("click", () => {
   container.classList.add("active");
@@ -30,7 +38,8 @@ registerBtn.addEventListener("click", () => {
 });
 
 /**
- * Attiva form login e resetta registrazione
+ * Show login form and hide registration form
+ * Resets registration form state (clears inputs, errors, password visibility)
  */
 loginBtn.addEventListener("click", () => {
   container.classList.remove("active");
@@ -38,33 +47,34 @@ loginBtn.addEventListener("click", () => {
 });
 
 /* ========================================================================
-   FUNZIONI DI RESET FORM
+   FORM RESET FUNCTIONS
    ======================================================================== */
 
 /**
- * Resetta form login, errori, password visibility e input errors
+ * Reset login form: clears inputs, errors, password visibility
  */
 function resetLoginForm() {
   loginForm.reset();
 
-  // Resetta visibility password
+  // Reset password visibility to hidden (lock icon)
   document.getElementById("loginPassword").type = "password";
   document.querySelectorAll(".login .toggle-password").forEach((icon) => {
     icon.classList.remove("fa-eye");
     icon.classList.add("fa-lock");
   });
 
+  // Clear error messages and input error styling
   clearErrors("login");
   clearInputErrors("login");
 }
 
 /**
- * Resetta form registrazione, errori, password visibility e input errors
+ * Reset registration form: clears inputs, errors, password visibility
  */
 function resetRegisterForm() {
   registerForm.reset();
 
-  // Resetta visibility password
+  // Reset all password fields to hidden
   document.getElementById("registerPassword").type = "password";
   document.getElementById("confirmPassword").type = "password";
   document.querySelectorAll(".register .toggle-password").forEach((icon) => {
@@ -72,12 +82,13 @@ function resetRegisterForm() {
     icon.classList.add("fa-lock");
   });
 
+  // Clear error messages and input error styling
   clearErrors("register");
   clearInputErrors("register");
 }
 
 /**
- * Resetta form recupero password, errori e messaggi di successo
+ * Reset forgot password form: clears inputs, errors, and success message
  */
 function resetForgotPasswordForm() {
   forgotPasswordForm.reset();
@@ -86,13 +97,13 @@ function resetForgotPasswordForm() {
 }
 
 /* ========================================================================
-   VALIDAZIONE FORM
+   VALIDATION FUNCTIONS
    ======================================================================== */
 
 /**
- * Valida formato email
- * @param {string} email - Email da validare
- * @returns {boolean} - True se valida
+ * Validate email format using regex
+ * @param {string} email - Email address to validate
+ * @returns {boolean} - True if valid email format
  */
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -100,9 +111,10 @@ function isValidEmail(email) {
 }
 
 /**
- * Valida nome (minimo 2 caratteri, solo lettere e spazi)
- * @param {string} name - Nome da validare
- * @returns {boolean} - True se valido
+ * Validate name: minimum 2 characters, only letters and spaces
+ * Supports Italian accented characters (à, é, ù, etc.)
+ * @param {string} name - Name to validate
+ * @returns {boolean} - True if valid
  */
 function isValidName(name) {
   const nameRegex =
@@ -111,10 +123,10 @@ function isValidName(name) {
 }
 
 /**
- * Valida password
- * Requisiti: minimo 8 caratteri, 1 maiuscola, 1 minuscola, 1 numero
- * @param {string} password - Password da validare
- * @returns {boolean} - True se valida
+ * Validate password strength
+ * Requirements: min 8 characters, 1 uppercase, 1 lowercase, 1 digit
+ * @param {string} password - Password to validate
+ * @returns {boolean} - True if meets all requirements
  */
 function isValidPassword(password) {
   const hasMinLength = password.length >= 8;
@@ -126,18 +138,19 @@ function isValidPassword(password) {
 }
 
 /* ========================================================================
-   GESTIONE MESSAGGI DI ERRORE
+   ERROR MESSAGE MANAGEMENT
    ======================================================================== */
 
 /**
- * Mostra messaggi di errore nel form
- * @param {string} formType - "login", "register" o "forgotPassword"
- * @param {array} errors - Array di stringhe con errori
+ * Display validation errors in form
+ * @param {string} formType - "login", "register", or "forgotPassword"
+ * @param {array} errors - Array of error message strings
  */
 function showErrors(formType, errors) {
   const errorContainer = document.getElementById(`${formType}Errors`);
   errorContainer.innerHTML = "";
 
+  // Create error div for each error message
   errors.forEach((error) => {
     const errorDiv = document.createElement("div");
     errorDiv.className = "error-message";
@@ -147,8 +160,8 @@ function showErrors(formType, errors) {
 }
 
 /**
- * Mostra errori nella modale recupero password
- * @param {array} errors - Array di messaggi di errore
+ * Display errors in forgot password modal
+ * @param {array} errors - Array of error message strings
  */
 function showErrorsForgotPass(errors) {
   const errorContainer = document.getElementById("forgotErrors");
@@ -163,8 +176,8 @@ function showErrorsForgotPass(errors) {
 }
 
 /**
- * Pulisce i messaggi di errore di un form
- * @param {string} formType - "login" o "register"
+ * Clear all error messages from form
+ * @param {string} formType - "login" or "register"
  */
 function clearErrors(formType) {
   const errorContainer = document.getElementById(`${formType}Errors`);
@@ -172,8 +185,8 @@ function clearErrors(formType) {
 }
 
 /**
- * Aggiunge la classe di errore a un input
- * @param {string} inputId - ID dell'input
+ * Add error styling to an input field
+ * @param {string} inputId - ID of input to highlight
  */
 function addInputError(inputId) {
   const input = document.getElementById(inputId);
@@ -183,8 +196,8 @@ function addInputError(inputId) {
 }
 
 /**
- * Rimuove la classe di errore da tutti gli input del form
- * @param {string} formType - "login" o "register"
+ * Remove error styling from all inputs in a form
+ * @param {string} formType - "login" or "register"
  */
 function clearInputErrors(formType) {
   const form = formType === "login" ? loginForm : registerForm;
@@ -195,28 +208,32 @@ function clearInputErrors(formType) {
 }
 
 /* ========================================================================
-   TOGGLE PASSWORD VISIBILITY
+   PASSWORD VISIBILITY TOGGLE
    ======================================================================== */
 
 /**
- * Gestisce il toggle di visibilità password
- * Cambio icona: lucchetto (vuoto) -> occhio (con testo)
+ * Manage password visibility toggle on all password fields
+ * Icon changes: lock (empty) -> eye (with text)
+ * Click to toggle between password and text type
  */
 document.querySelectorAll(".toggle-password").forEach((icon) => {
   const inputId = icon.getAttribute("data-input");
   const input = document.getElementById(inputId);
 
   /**
-   * Aggiorna l'icona in base al contenuto dell'input
+   * Update icon based on input value
+   * Shows eye icon only when password has been entered
    */
   function updateIcon() {
     if (input.value.length > 0) {
+      // Show eye icon when field has text
       if (!icon.classList.contains("fa-eye")) {
         icon.classList.remove("fa-lock");
         icon.classList.add("fa-eye");
         icon.style.cursor = "pointer";
       }
     } else {
+      // Show lock icon when field is empty
       icon.classList.remove("fa-eye");
       icon.classList.add("fa-lock");
       input.type = "password";
@@ -224,87 +241,92 @@ document.querySelectorAll(".toggle-password").forEach((icon) => {
     }
   }
 
-  // Aggiorna icona quando l'utente digita
+  // Update icon as user types
   input.addEventListener("input", updateIcon);
 
-  // Toggle visibilità al click (solo se c'è testo)
+  // Toggle visibility on click (only if field has text)
   icon.addEventListener("click", () => {
     if (input.value.length > 0) {
       input.type = input.type === "password" ? "text" : "password";
     }
   });
 
-  // Inizializza l'icona al caricamento
+  // Initialize icon on page load
   updateIcon();
 });
 
 /* ========================================================================
-   GESTIONE REGISTRAZIONE
+   REGISTRATION FORM HANDLING
    ======================================================================== */
 
 /**
- * Submit form registrazione con validazione client-side
+ * Registration form submission with client-side validation
+ * Validates: firstName, lastName, email, password strength, password match
+ * On success: sends data to backend and redirects
  */
 registerForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
+  // Get form values
   const firstName = document.getElementById("registerFirstName").value.trim();
   const lastName = document.getElementById("registerLastName").value.trim();
   const email = document.getElementById("registerEmail").value.trim();
   const password = document.getElementById("registerPassword").value;
   const confirmPassword = document.getElementById("confirmPassword").value;
 
-  // Pulisci errori precedenti
+  // Clear previous errors
   clearErrors("register");
   clearInputErrors("register");
 
   let firstError = null;
   let firstErrorInput = null;
 
-  // Validazione 1: Nome
+  // Validation: first name
   if (!isValidName(firstName)) {
     firstError = "Nome non valido (minimo 2 caratteri)";
     firstErrorInput = "registerFirstName";
   }
-  // Validazione 2: Cognome
+  // Validation: last name
   else if (!isValidName(lastName)) {
     firstError = "Cognome non valido (minimo 2 caratteri)";
     firstErrorInput = "registerLastName";
   }
-  // Validazione 3: Email
+  // Validation: email format
   else if (!isValidEmail(email)) {
     firstError = "Email non valida (es: user@example.com)";
     firstErrorInput = "registerEmail";
   }
-  // Validazione 4: Password
+  // Validation: password strength
   else if (!isValidPassword(password)) {
     firstError =
       "Password deve contenere minimo 8 caratteri, almeno una maiuscola, una minuscola e un numero (es: Password123)";
     firstErrorInput = "registerPassword";
   }
-  // Validazione 5: Conferma password
+  // Validation: password confirmation match
   else if (password !== confirmPassword) {
     firstError = "Le password non corrispondono";
     firstErrorInput = "confirmPassword";
   }
 
+  // Display errors if validation failed
   if (firstError) {
     showErrors("register", [firstError]);
     if (firstErrorInput) {
       addInputError(firstErrorInput);
     }
   } else {
+    // All validation passed, send registration request
     registerUser(firstName, lastName, email, password);
   }
 });
 
 /**
- * Registra un nuovo utente
- * Invia dati al backend e reindirizza al login
- * @param {string} firstName - Nome utente
- * @param {string} lastName - Cognome utente
- * @param {string} email - Email utente
- * @param {string} password - Password utente
+ * Send registration data to backend
+ * On success: redirects to login page
+ * @param {string} firstName - User's first name
+ * @param {string} lastName - User's last name
+ * @param {string} email - User's email
+ * @param {string} password - User's password
  */
 async function registerUser(firstName, lastName, email, password) {
   try {
@@ -325,8 +347,7 @@ async function registerUser(firstName, lastName, email, password) {
 
     if (response.ok) {
       registerForm.reset();
-
-      // Reindirizza al login
+      // Redirect to login after successful registration
       window.location.href = "/";
     } else {
       showErrors("register", [data.error || "Errore di registrazione"]);
@@ -338,50 +359,57 @@ async function registerUser(firstName, lastName, email, password) {
 }
 
 /* ========================================================================
-   GESTIONE LOGIN
+   LOGIN FORM HANDLING
    ======================================================================== */
 
 /**
- * Submit form login con validazione client-side
+ * Login form submission with client-side validation
+ * Validates: email format, password not empty
+ * On success: sends credentials to backend, stores token and user data
  */
 loginForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
+  // Get form values
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
+  // Clear previous errors
   clearErrors("login");
   clearInputErrors("login");
 
   let firstError = null;
   let firstErrorInput = null;
 
-  // Validazione 1: Email
+  // Validation: email format
   if (!isValidEmail(email)) {
     firstError = "Email non valida (es: user@example.com)";
     firstErrorInput = "loginEmail";
   }
-  // Validazione 2: Password
+  // Validation: password not empty
   else if (password.length === 0) {
     firstError = "Inserisci la password";
     firstErrorInput = "loginPassword";
   }
 
+  // Display errors if validation failed
   if (firstError) {
     showErrors("login", [firstError]);
     if (firstErrorInput) {
       addInputError(firstErrorInput);
     }
   } else {
+    // All validation passed, send login request
     loginUser(email, password);
   }
 });
 
 /**
- * Effettua login comunicando con il backend
- * Salva token e userInfo in localStorage, reindirizza in base al tipo utente
- * @param {string} email - Email utente
- * @param {string} password - Password utente
+ * Send login credentials to backend
+ * On success: stores token and user info in localStorage
+ * Redirects based on user type (admin or regular user)
+ * @param {string} email - User's email
+ * @param {string} password - User's password
  */
 async function loginUser(email, password) {
   try {
@@ -399,7 +427,7 @@ async function loginUser(email, password) {
     const data = await response.json();
 
     if (response.ok) {
-      // Salva token e user info in localStorage
+      // Store authentication data in localStorage
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("userType", data.user.stato_account);
       localStorage.setItem("userId", data.user.id_utente);
@@ -410,7 +438,7 @@ async function loginUser(email, password) {
       );
       localStorage.setItem("isAdmin", data.user.isAdmin);
 
-      // Reindirizza in base al tipo utente
+      // Redirect based on user role
       if (data.user.isAdmin) {
         window.location.href = "/home-admin";
       } else {
@@ -426,11 +454,11 @@ async function loginUser(email, password) {
 }
 
 /* ========================================================================
-   GESTIONE MODALE RECUPERO PASSWORD
+   FORGOT PASSWORD MODAL
    ======================================================================== */
 
 /**
- * Apri modale recupero password
+ * Open forgot password modal
  */
 forgotPasswordLink.addEventListener("click", (e) => {
   e.preventDefault();
@@ -438,7 +466,7 @@ forgotPasswordLink.addEventListener("click", (e) => {
 });
 
 /**
- * Chiudi modale cliccando X
+ * Close modal on X button click
  */
 closeModalBtn.addEventListener("click", () => {
   forgotPasswordModal.style.display = "none";
@@ -446,7 +474,7 @@ closeModalBtn.addEventListener("click", () => {
 });
 
 /**
- * Chiudi modale cliccando fuori dal contenuto
+ * Close modal when clicking outside the modal content
  */
 window.addEventListener("click", (e) => {
   if (e.target === forgotPasswordModal) {
@@ -456,7 +484,7 @@ window.addEventListener("click", (e) => {
 });
 
 /**
- * Chiudi modale cliccando bottone Annulla
+ * Close modal on Cancel button click
  */
 closeForgotBtn.addEventListener("click", () => {
   forgotPasswordModal.style.display = "none";
@@ -464,8 +492,9 @@ closeForgotBtn.addEventListener("click", () => {
 });
 
 /**
- * Richiedi reset password al backend
- * @param {string} email - Email utente
+ * Send password reset request to backend
+ * Shows success message or error, auto-closes modal on success
+ * @param {string} email - Email for password recovery
  */
 async function requestPasswordReset(email) {
   try {
@@ -480,10 +509,11 @@ async function requestPasswordReset(email) {
     const data = await response.json();
 
     if (response.ok) {
+      // Show success message
       document.getElementById("forgotSuccess").style.display = "block";
       forgotPasswordForm.reset();
 
-      // Chiudi modale automaticamente dopo 3 secondi
+      // Auto-close modal after 3 seconds
       setTimeout(() => {
         forgotPasswordModal.style.display = "none";
         document.getElementById("forgotSuccess").style.display = "none";
@@ -498,20 +528,24 @@ async function requestPasswordReset(email) {
 }
 
 /**
- * Submit form recupero password
+ * Forgot password form submission
+ * Validates email and sends password recovery request
  */
 forgotPasswordForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const email = document.getElementById("forgotEmail").value.trim();
 
+  // Clear previous messages
   document.getElementById("forgotErrors").innerHTML = "";
   document.getElementById("forgotSuccess").style.display = "none";
 
+  // Validate email
   if (!isValidEmail(email)) {
     showErrorsForgotPass(["Email non valida (es: user@example.com)"]);
     return;
   }
 
+  // Email valid, request password reset
   requestPasswordReset(email);
 });

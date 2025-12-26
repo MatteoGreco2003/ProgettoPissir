@@ -260,15 +260,15 @@ body {
 
 /* ===== BALANCE COLORS DINAMICI ===== */
 .balance-amount--danger {
-  color: #c0152f; /* rosso */
+  color: #c0152f;
 }
 
 .balance-amount--warning {
-  color: #e68161; /* arancione */
+  color: #e68161;
 }
 
 .balance-amount--ok {
-  color: #21808d; /* verdino (già in palette) */
+  color: #21808d;
 }
 
 .balance-description {
@@ -594,6 +594,7 @@ body {
 .snackbar--warning {
   background-color: #e68161;
 }
+
 /* ===== STATISTICS SECTION ===== */
 .stats-grid {
   display: flex;
@@ -670,6 +671,7 @@ body {
   word-break: break-word;
   letter-spacing: -0.5px;
 }
+
 /* ===== LOYALTY POINTS SECTION ===== */
 .loyalty-container {
   background: linear-gradient(
@@ -813,7 +815,6 @@ body {
 }
 
 /* ===== RIDES HISTORY ===== */
-
 .no-rides-message {
   display: flex;
   flex-direction: column;
@@ -958,8 +959,6 @@ body {
   white-space: nowrap;
 }
 
-/* Pulsanti di navigazione */
-
 .pagination-btn--nav:hover:not(:disabled) {
   background: #e5e7eb;
   border-color: #d1d5db;
@@ -969,7 +968,6 @@ body {
   background: #d1d5db;
 }
 
-/* Pulsante testo pagina */
 .pagination-btn--text {
   background: #f9fafb;
   border: 1px solid #d1d5db;
@@ -979,7 +977,6 @@ body {
   pointer-events: none;
 }
 
-/* Disabilitato */
 .pagination-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -991,7 +988,6 @@ body {
   border-color: #e5e7eb;
 }
 
-/* Icone */
 .pagination-btn i {
   font-size: 12px;
 }

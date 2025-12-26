@@ -132,7 +132,6 @@ body {
   gap: 16px;
 }
 
-/* ===== FEEDBACK CARD - LAYOUT REDESIGNED ===== */
 .feedback-card {
   background: var(--white);
   border: 1px solid var(--border-color);

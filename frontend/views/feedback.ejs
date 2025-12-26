@@ -9,19 +9,19 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" href="/css/navbar-sidebar.css" />
-
     <link rel="stylesheet" href="/css/feedback.css" />
   </head>
+
   <body>
-    <!-- ===== NAVBAR (IMPORTATO) ===== -->
+    <!-- ========== NAVBAR (COMPONENTE IMPORTATO) ========== -->
     <%- include('./components/navbar') %>
 
-    <!-- ===== SIDEBAR (IMPORTATO) ===== -->
+    <!-- ========== SIDEBAR (COMPONENTE IMPORTATO) ========== -->
     <%- include('./components/sidebar') %>
 
-    <!-- ===== MAIN CONTENT ===== -->
+    <!-- ========== MAIN CONTENT ========== -->
     <div class="main-content">
-      <!-- ===== SEZIONE 1: I MIEI FEEDBACK ===== -->
+      <!-- ========== SEZIONE 1: I MIEI FEEDBACK ========== -->
       <div class="card card-my-feedback">
         <div class="card-header">
           <h1 class="card-title">
@@ -31,21 +31,26 @@
         </div>
 
         <div class="card-body">
+          <!-- Contenitore feedback personali con loading spinner -->
           <div class="my-feedback-container">
-            <div id="myFeedbackList" class="feedback-list">
-              <!-- Caricato via JS -->
-            </div>
+            <!-- Lista feedback: popola da JavaScript -->
+            <div id="myFeedbackList" class="feedback-list"></div>
+
+            <!-- Empty state: nessun feedback lasciato -->
             <div id="myFeedbackEmpty" class="empty-state hidden">
               <i class="fas fa-comment-slash"></i>
               <p>Non hai ancora lasciato feedback</p>
               <small>Lascia un feedback dopo aver completato una corsa!</small>
             </div>
+
+            <!-- Loading spinner durante caricamento -->
             <div id="myFeedbackLoading" class="loading-spinner">
               <div class="spinner"></div>
               <p>Caricamento feedback...</p>
             </div>
           </div>
-          <!-- PAGINATION MY FEEDBACK -->
+
+          <!-- Paginazione feedback personali -->
           <div id="myFeedbackPaginationContainer" class="pagination hidden">
             <button id="myFeedbackPrevBtn" class="pagination-btn">
               <i class="fas fa-chevron-left"></i> Indietro
@@ -58,7 +63,7 @@
         </div>
       </div>
 
-      <!-- ===== SEZIONE 2: COMMUNITY FEEDBACK ===== -->
+      <!-- ========== SEZIONE 2: COMMUNITY FEEDBACK ========== -->
       <div class="card card-community-feedback">
         <div class="card-header">
           <h1 class="card-title">
@@ -68,20 +73,24 @@
         </div>
 
         <div class="card-body">
-          <!-- FILTRI -->
+          <!-- Filtri: tipo mezzo e rating -->
           <div class="community-filters">
+            <!-- Filtro tipo mezzo -->
             <div class="filter-group">
               <label for="filterMezzo">Tipo Mezzo:</label>
               <select id="filterMezzo" class="filter-select">
                 <option value="">Tutti</option>
-                <option value="bicicletta_muscolare">Bicicletta Muscolare
+                <option value="bicicletta_muscolare">
+                  Bicicletta Muscolare
                 </option>
-                <option value="bicicletta_elettrica">Bicicletta Elettrica
+                <option value="bicicletta_elettrica">
+                  Bicicletta Elettrica
                 </option>
                 <option value="monopattino">Monopattino Elettrico</option>
               </select>
             </div>
 
+            <!-- Filtro rating (stelle) -->
             <div class="filter-group">
               <label for="filterRating">Rating:</label>
               <select id="filterRating" class="filter-select">
@@ -95,22 +104,22 @@
             </div>
           </div>
 
-          <!-- COMMUNITY FEEDBACKS -->
-          <div id="communityFeedbackList" class="feedback-list">
-            <!-- Caricato via JS -->
-          </div>
+          <!-- Lista feedback community: popola da JavaScript -->
+          <div id="communityFeedbackList" class="feedback-list"></div>
 
+          <!-- Empty state: nessun feedback trovato con i filtri -->
           <div id="communityFeedbackEmpty" class="empty-state hidden">
             <i class="fas fa-inbox"></i>
             <p>Nessun feedback trovato</p>
           </div>
 
+          <!-- Loading spinner durante caricamento -->
           <div id="communityFeedbackLoading" class="loading-spinner">
             <div class="spinner"></div>
             <p>Caricamento feedback...</p>
           </div>
 
-          <!-- PAGINATION COMMUNITY -->
+          <!-- Paginazione feedback community -->
           <div id="paginationContainer" class="pagination hidden">
             <button id="prevBtn" class="pagination-btn">
               <i class="fas fa-chevron-left"></i> Indietro
@@ -124,10 +133,10 @@
       </div>
     </div>
 
-    <!-- ===== SNACKBAR ===== -->
+    <!-- ========== SNACKBAR (NOTIFICHE TOAST) ========== -->
     <div class="snackbar"></div>
 
-    <!-- ===== MODAL ELIMINA PROFILO ===== -->
+    <!-- ========== MODAL ELIMINA PROFILO ========== -->
     <div id="deleteProfileModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -152,7 +161,7 @@
       </div>
     </div>
 
-    <!-- ===== MODAL MODIFICA FEEDBACK ===== -->
+    <!-- ========== MODAL MODIFICA FEEDBACK ========== -->
     <div id="editFeedbackModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -161,14 +170,17 @@
           <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
+          <!-- Informazioni mezzo (tipo, codice) -->
           <div id="editVehicleInfo" class="vehicle-info-edit"></div>
 
+          <!-- Selezione rating con stelle cliccabili -->
           <div class="rating-edit">
             <div class="feedback-stars" id="editStars">
-              <!-- Generato via JS -->
+              <!-- Generato via JavaScript -->
             </div>
           </div>
 
+          <!-- Textarea per commento (max 500 caratteri) -->
           <div class="form-group">
             <textarea
               id="editCommentoText"
@@ -190,7 +202,7 @@
       </div>
     </div>
 
-    <!-- ===== MODAL ELIMINA FEEDBACK ===== -->
+    <!-- ========== MODAL ELIMINA FEEDBACK ========== -->
     <div id="deleteFeedbackModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -217,6 +229,7 @@
       </div>
     </div>
 
+    <!-- ========== SCRIPT ========== -->
     <script src="/js/feedback.js"></script>
   </body>
 </html>

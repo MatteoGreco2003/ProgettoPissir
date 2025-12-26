@@ -71,11 +71,6 @@ app.use("/reports", reportRoutes);
 app.use("/feedback", feedbackRoutes);
 app.use("/statistics", statisticsRoutes);
 
-// // 404 Handler
-// app.use((req, res) => {
-//   res.status(404).render("404", { title: "Pagina non trovata" });
-// });
-
 // Start server
 const PORT = process.env.PORT || 3000;
 

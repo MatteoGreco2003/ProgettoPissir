@@ -18,7 +18,6 @@ let state = {
   },
   map: null,
   markers: {},
-  // ✅ NUOVO: Banner states
   activeRideBanner: null,
   accountBanner: null,
 };
@@ -44,19 +43,16 @@ document.addEventListener("DOMContentLoaded", () => {
   initMap();
   loadUserProfile();
 
-  // ✅ NUOVO: Usa Singleton MQTT (connessione persistente)
+  // Usa Singleton MQTT (connessione persistente)
   MQTTManager.init();
 
-  // ✅ NUOVO: Ascolta messaggi MQTT da questa pagina
+  // Ascolta messaggi MQTT da questa pagina
   setupMQTTListener();
 });
 
 // ===== STOP REFRESH QUANDO CHIUDI LA PAGINA =====
 window.addEventListener("beforeunload", () => {
   stopAutoRefresh();
-  // ❌ NON disconnettere MQTT! Lascia che persista
-  // Se vuoi disconnettere SOLO quando esci davvero dall'app:
-  // MQTTManager.disconnect();
 });
 
 // ===== SETUP MQTT LISTENER =====
@@ -73,18 +69,18 @@ function setupMQTTListener() {
 
         console.log(`⚡ MQTT Home: Mezzo ${idMezzo} batteria ${newBattery}%`);
 
-        // ✅ Aggiorna nel state
+        // Aggiorna nel state
         const vehicle = state.vehicles.find((v) => v.id_mezzo === idMezzo);
         if (vehicle) {
           vehicle.stato_batteria = newBattery;
 
-          // ✅ Aggiorna nella griglia dei veicoli
+          // Aggiorna nella griglia dei veicoli
           updateVehicleInGrid(vehicle);
 
-          // ✅ Aggiorna nella mappa
+          // Aggiorna nella mappa
           updateVehicleInMap(vehicle);
 
-          // ✅ Aggiorna il banner se c'è una corsa attiva
+          // Aggiorna il banner se c'è una corsa attiva
           if (
             state.activeRideBanner &&
             state.activeRideBanner.id_mezzo === idMezzo
@@ -99,7 +95,7 @@ function setupMQTTListener() {
   });
 }
 
-// ✅ NUOVO: Aggiorna batteria nella griglia
+// Aggiorna batteria nella griglia
 function updateVehicleInGrid(vehicle) {
   const vehicleCard = document.querySelector(
     `[data-vehicle-id="${vehicle.id_mezzo}"]`
@@ -107,15 +103,13 @@ function updateVehicleInGrid(vehicle) {
   if (vehicleCard) {
     const batteryElement = vehicleCard.querySelector(".vehicle-battery");
     if (batteryElement) {
-      // ✅ Aggiorna SOLO il numero
       batteryElement.innerHTML = `<i class="fas fa-bolt"></i> ${vehicle.stato_batteria}%`;
     }
   }
 }
 
-// ✅ NUOVO: Aggiorna batteria nella mappa
+// Aggiorna batteria nella mappa
 function updateVehicleInMap(vehicle) {
-  // Ricarica i dati della mappa
   const parking = state.parkings.find(
     (p) => p.id_parcheggio === vehicle.id_parcheggio
   );
@@ -123,7 +117,6 @@ function updateVehicleInMap(vehicle) {
     const vehiclesInParking = state.vehicles.filter(
       (v) => v.id_parcheggio === parking.id_parcheggio
     );
-    // Aggiorna solo questo marker
     const marker = state.markers[parking.id_parcheggio];
     if (marker) {
       const popupContent = createParkingPopup(parking, vehiclesInParking);
@@ -163,7 +156,7 @@ async function loadUserProfile() {
   }
 }
 
-// ✅ NUOVO: Controlla corsa attiva e stato account
+// Controlla corsa attiva e stato account
 async function checkActiveRideAndStatus() {
   try {
     const res = await fetch("/rides/active", {
@@ -175,7 +168,7 @@ async function checkActiveRideAndStatus() {
     const data = await res.json();
 
     if (data.id_corsa) {
-      // ✅ Corsa attiva presente
+      // Corsa attiva presente
       state.activeRideBanner = {
         id_corsa: data.id_corsa,
         id_mezzo: data.id_mezzo,
@@ -199,12 +192,12 @@ async function checkActiveRideAndStatus() {
   }
 }
 
-// ✅ Costruisce il banner account/credito
+// Costruisce il banner account/credito
 function buildAccountBanner() {
   const saldo = state.user.credito || 0;
   const stato = state.user.stato || "attivo";
 
-  // ✅ Account sospeso CON ricarica in attesa
+  // Account sospeso CON ricarica in attesa
   if (stato === "in_attesa_approvazione") {
     state.accountBanner = {
       type: "pending_approval",
@@ -215,7 +208,7 @@ function buildAccountBanner() {
     return;
   }
 
-  // ✅ Account sospeso (per debito)
+  // Account sospeso (per debito)
   if (stato === "sospeso" || stato === "suspended") {
     state.accountBanner = {
       type: "blocked",
@@ -226,7 +219,7 @@ function buildAccountBanner() {
     return;
   }
 
-  // Credito basso (usa stessa soglia di startRide: 1.00 €)
+  // Credito basso
   if (saldo < 1) {
     state.accountBanner = {
       type: "low_credit",
@@ -237,11 +230,10 @@ function buildAccountBanner() {
     return;
   }
 
-  // Nessun avviso
   state.accountBanner = null;
 }
 
-// ✅ Renderizza il banner in alto (COMPATTO)
+// Renderizza il banner in alto
 function renderTopBanner() {
   const container = document.getElementById("topBannerContainer");
   if (!container) return;
@@ -251,7 +243,6 @@ function renderTopBanner() {
   if (state.activeRideBanner) {
     const b = state.activeRideBanner;
 
-    // ✅ Determina icon e label del mezzo
     let tipoIcon = "🚲";
     let tipoLabel = "Bicicletta Muscolare";
     if (b.tipo_mezzo === "monopattino") {
@@ -262,7 +253,6 @@ function renderTopBanner() {
       tipoLabel = "Bicicletta Elettrica";
     }
 
-    // ✅ Formatta data e ora
     const dataOra = new Date(b.data_ora_inizio);
     const dataFormattata = dataOra.toLocaleDateString("it-IT", {
       day: "2-digit",
@@ -274,7 +264,6 @@ function renderTopBanner() {
       minute: "2-digit",
     });
 
-    // ✅ Determina colore batteria
     let batteryHTML = "";
     if (b.tipo_mezzo !== "bicicletta_muscolare") {
       const vehicle = state.vehicles.find((v) => v.id_mezzo === b.id_mezzo);
@@ -286,7 +275,7 @@ function renderTopBanner() {
       batteryHTML = `<div class="top-banner__battery-badge ${batteryClass}">🔋 ${battery}%</div>`;
     }
 
-    // ✅ Se batteria è esaurita, mostra avviso
+    // Se batteria è esaurita, mostra avviso
     const avviso =
       b.stato_corsa === "sospesa_batteria_esaurita"
         ? `<div class="top-banner__warning-box">
@@ -295,7 +284,6 @@ function renderTopBanner() {
           </div>`
         : "";
 
-    // ✅ HTML del banner COMPATTO
     container.innerHTML = `
       <div class="top-banner ${
         b.stato_corsa === "sospesa_batteria_esaurita"
@@ -359,7 +347,6 @@ function renderTopBanner() {
     return;
   }
 
-  // 2️⃣ BANNER ACCOUNT
   if (state.accountBanner) {
     const a = state.accountBanner;
     const isWaitingApproval = a.type === "pending_approval";
@@ -390,7 +377,6 @@ function renderTopBanner() {
 
 // ===== EVENT LISTENERS =====
 function setupEventListeners() {
-  // Toggle sidebar on mobile
   const menuToggle = document.querySelector(".menu-toggle");
   const sidebar = document.querySelector(".sidebar");
 
@@ -399,7 +385,6 @@ function setupEventListeners() {
       sidebar.classList.toggle("active");
     });
 
-    // Close sidebar when clicking outside
     document.addEventListener("click", (e) => {
       if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
         sidebar.classList.remove("active");
@@ -407,12 +392,11 @@ function setupEventListeners() {
     });
   }
 
-  // ✅ Filter buttons (filtro mezzi nella card)
+  // Filter buttons (filtro mezzi nella card)
   filterButtons.forEach((btn) => {
     btn.addEventListener("click", filterVehiclesByType);
   });
 
-  // ✅ NUOVO: Select filter per responsive
   const filterSelect = document.getElementById("filterSelect");
   if (filterSelect) {
     filterSelect.addEventListener("change", (e) => {
@@ -422,18 +406,16 @@ function setupEventListeners() {
     });
   }
 
-  // ✅ NUOVO: Window resize listener per sincronizzare filtri
+  //Window resize listener per sincronizzare filtri
   window.addEventListener("resize", () => {
     syncFilterUI();
   });
 
-  // ✅ AGGIORNATO: Modal buttons per reservation
   const reservationModalClose = reservationModal.querySelector(".modal-close");
   reservationModalClose.addEventListener("click", closeReservationModal);
   confirmReservationBtn.addEventListener("click", confirmReservation);
   cancelReservationBtn.addEventListener("click", closeReservationModal);
 
-  // ✅ Chiudi modal cliccando sull'overlay
   reservationModal.addEventListener("click", (e) => {
     if (
       e.target === reservationModal ||
@@ -448,9 +430,8 @@ function setupEventListeners() {
   if (pendingFeedback) {
     try {
       const rideData = JSON.parse(pendingFeedback);
-      sessionStorage.removeItem("pendingFeedback"); // Pulisci
+      sessionStorage.removeItem("pendingFeedback");
 
-      // Apri la modal dopo un breve delay
       setTimeout(() => {
         openFeedbackModal(rideData);
       }, 500);
@@ -477,11 +458,9 @@ function setupFeedbackModalListeners() {
   const feedbackStars = document.querySelectorAll(".feedback-star");
   const feedbackComment = document.getElementById("feedbackComment");
 
-  // ===== CHIUDI MODAL =====
   feedbackModalClose.addEventListener("click", closeFeedbackModal);
   skipFeedbackBtn.addEventListener("click", closeFeedbackModal);
 
-  // ===== CHIUDI CLICCANDO OVERLAY =====
   feedbackModal.addEventListener("click", (e) => {
     if (
       e.target === feedbackModal ||
@@ -491,14 +470,12 @@ function setupFeedbackModalListeners() {
     }
   });
 
-  // ===== GESTIONE STELLE =====
   feedbackStars.forEach((star) => {
     star.addEventListener("click", () => {
       const rating = parseInt(star.getAttribute("data-rating"));
       setFeedbackRating(rating);
     });
 
-    // Hover effect
     star.addEventListener("mouseenter", () => {
       const rating = parseInt(star.getAttribute("data-rating"));
       feedbackStars.forEach((s) => {
@@ -512,7 +489,6 @@ function setupFeedbackModalListeners() {
     });
   });
 
-  // ===== RESET HOVER =====
   const starsContainer = document.getElementById("feedbackStars");
   starsContainer.addEventListener("mouseleave", () => {
     feedbackStars.forEach((s) => {
@@ -527,14 +503,12 @@ function setupFeedbackModalListeners() {
     });
   });
 
-  // ===== CONTEGGIO CARATTERI =====
   feedbackComment.addEventListener("input", (e) => {
     feedbackState.comment = e.target.value;
     const charCount = e.target.value.length;
     document.getElementById("feedbackCharCount").textContent = charCount;
   });
 
-  // ===== INVIA FEEDBACK =====
   submitFeedbackBtn.addEventListener("click", submitFeedback);
 }
 
@@ -567,19 +541,16 @@ function openFeedbackModal(rideData) {
   feedbackState.comment = "";
   feedbackState.isOpen = true;
 
-  // Reset form
   document.getElementById("feedbackComment").value = "";
   document.getElementById("feedbackCharCount").textContent = "0";
   document.getElementById("feedbackRatingText").textContent =
     "Seleziona una valutazione";
 
-  // Reset stelle
   document.querySelectorAll(".feedback-star").forEach((star) => {
     star.classList.remove("active");
     star.style.color = "rgba(33, 128, 141, 0.3)";
   });
 
-  // Popola info corsa
   const tipoMezzoLabel =
     rideData.tipo_mezzo === "monopattino"
       ? "Monopattino"
@@ -595,7 +566,6 @@ function openFeedbackModal(rideData) {
   document.getElementById("feedbackCosto").textContent =
     "€" + parseFloat(rideData.costo_finale || 0).toFixed(2);
 
-  // Mostra modal
   const feedbackModal = document.getElementById("feedbackModal");
   feedbackModal.classList.remove("hidden");
 }
@@ -613,7 +583,6 @@ function closeFeedbackModal() {
 
 // ===== INVIA FEEDBACK AL BACKEND =====
 async function submitFeedback() {
-  // Validazione
   if (feedbackState.selectedRating === 0) {
     showSnackbar("❌ Seleziona una valutazione!", "error");
     return;
@@ -669,7 +638,6 @@ async function submitFeedback() {
 
 // ===== SINCRONIZZAZIONE FILTRI TRA SELECT E BUTTONS =====
 function updateFilterUI() {
-  // Aggiorna i button
   filterButtons.forEach((btn) => {
     if (btn.getAttribute("data-filter") === state.currentFilter) {
       btn.classList.add("active");
@@ -678,7 +646,6 @@ function updateFilterUI() {
     }
   });
 
-  // Aggiorna il select
   const filterSelect = document.getElementById("filterSelect");
   if (filterSelect) {
     filterSelect.value = state.currentFilter;
@@ -691,7 +658,7 @@ function syncFilterUI() {
 
 // ===== MAP INITIALIZATION =====
 function initMap() {
-  // Centra sulla Novara (provincia di Matteo)
+  // Centra sulla Novara
   const defaultLat = 45.4458;
   const defaultLng = 8.6158;
 
@@ -699,7 +666,6 @@ function initMap() {
     scrollWheelZoom: false,
   }).setView([defaultLat, defaultLng], 13);
 
-  // OpenStreetMap tiles
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -711,26 +677,22 @@ function initMap() {
 function loadHomepageData() {
   showLoading(true);
 
-  // Carica parcheggi dal backend
   fetch("/parking/data")
     .then((res) => res.json())
     .then((data) => {
       state.parkings = data.parkings || [];
 
-      // Carica veicoli dal backend
       return fetch("/vehicles/data");
     })
     .then((res) => res.json())
     .then((data) => {
       state.vehicles = data.vehicles || [];
 
-      // Rendering
       renderParkingsOnMap(state.parkings);
       renderParkings(state.parkings);
       renderVehicles(state.vehicles);
       showLoading(false);
 
-      // ✅ NUOVO: Controlla corsa attiva e stato account DOPO caricamento
       checkActiveRideAndStatus();
 
       startAutoRefresh(15000);
@@ -760,7 +722,7 @@ function startAutoRefresh(interval = 15000) {
   }, interval);
 }
 
-// ✅ NUOVO: Auto-refresh banner corsa attiva ogni 15 secondi
+// Auto-refresh banner corsa attiva ogni 15 secondi
 function startBannerRefresh(interval = 15000) {
   setInterval(() => {
     // Aggiorna solo se c'è una corsa attiva
@@ -813,9 +775,8 @@ function refreshVehicleData() {
     });
 }
 
-// ===== RENDERING - 1️⃣ MAPPA PARCHEGGI CON LEAFLET =====
+// ===== RENDERING - MAPPA PARCHEGGI CON LEAFLET =====
 function renderParkingsOnMap(parkings) {
-  // Rimuovi marker precedenti
   Object.values(state.markers).forEach((marker) => {
     state.map.removeLayer(marker);
   });
@@ -830,7 +791,6 @@ function renderParkingsOnMap(parkings) {
     const disponibili = parking.capacita - vehiclesInParking.length;
     const isAvailable = disponibili > 0;
 
-    // Crea icona personalizzata
     const iconColor = isAvailable ? "#21808d" : "#c01527";
     const icon = L.divIcon({
       html: `
@@ -858,29 +818,25 @@ function renderParkingsOnMap(parkings) {
       popupAnchor: [0, -20],
     });
 
-    // Crea marker
     const marker = L.marker([parking.latitudine, parking.longitudine], {
       icon: icon,
     }).addTo(state.map);
 
-    // Popup con lista veicoli
     const popupContent = createParkingPopup(parking, vehiclesInParking);
     marker.bindPopup(popupContent, {
       maxWidth: 330,
       maxHeight: 200,
     });
 
-    // Salva riferimento marker
     state.markers[parking.id_parcheggio] = marker;
 
-    // Click per mostrare dettagli
     marker.on("click", () => {
       showParkingDetails(parking, vehiclesInParking);
     });
   });
 }
 
-// ===== RENDERING - 1️⃣ PARCHEGGI NELLA GRIGLIA =====
+// ===== RENDERING - PARCHEGGI NELLA GRIGLIA =====
 function renderParkings(parkings) {
   parkingGrid.innerHTML = "";
 
@@ -923,10 +879,10 @@ function createParkingPopup(parking, vehicles) {
       const batteryClass = getBatteryClass(v.stato_batteria);
       const icon = v.tipo_mezzo === "monopattino" ? "🛴" : "🚲";
 
-      // ✅ Se è bicicletta muscolare, spazio vuoto per mantenere allineamento
+      // Se è bicicletta muscolare, spazio vuoto per mantenere allineamento
       const batteryHTML =
         v.tipo_mezzo === "bicicletta_muscolare"
-          ? `<span style="width: 48px;"></span>` // Spazio fisso
+          ? `<span style="width: 48px;"></span>`
           : `<span class="battery-badge ${batteryClass}">${v.stato_batteria}%</span>`;
 
       return `
@@ -1005,7 +961,7 @@ function getBatteryClass(batteria) {
   return "battery-critical";
 }
 
-// ===== RENDERING - 3️⃣ LISTA MEZZI =====
+// ===== RENDERING - LISTA MEZZI =====
 function renderVehicles(vehicles) {
   const filtered = getVehiclesByType(state.currentFilter);
   vehiclesGrid.innerHTML = "";
@@ -1036,10 +992,8 @@ function renderVehicles(vehicles) {
 function createVehicleCard(vehicle) {
   const card = document.createElement("div");
   card.className = "vehicle-card";
-  // ✅ NUOVO: Aggiungi data-vehicle-id per identificare la card
   card.setAttribute("data-vehicle-id", vehicle.id_mezzo);
 
-  // Determina classe batteria
   let batteryClass = "vehicle-battery--good";
   if (vehicle.stato_batteria < 20) {
     batteryClass = "vehicle-battery--critical";
@@ -1047,7 +1001,6 @@ function createVehicleCard(vehicle) {
     batteryClass = "vehicle-battery--warning";
   }
 
-  // Icona mezzo e tipo visualizzato
   let vehicleIcon = "fas fa-bicycle";
   let vehicleLabel = "Bicicletta Muscolare";
 
@@ -1059,7 +1012,6 @@ function createVehicleCard(vehicle) {
     vehicleLabel = "Bicicletta Elettrica";
   }
 
-  // Disabilitazione
   const isDisabled =
     vehicle.stato !== "disponibile" ||
     (vehicle.tipo_mezzo !== "bicicletta_muscolare" &&
@@ -1069,12 +1021,10 @@ function createVehicleCard(vehicle) {
 
   const lockIcon = isDisabled ? "fas fa-lock" : "fas fa-lock-open";
 
-  // Cerca il parcheggio associato
   const parking = state.parkings.find(
     (p) => p.id_parcheggio === vehicle.id_parcheggio
   );
 
-  // ✅ NUOVO: Nascondi batteria se bicicletta muscolare
   const showBattery = vehicle.tipo_mezzo !== "bicicletta_muscolare";
   const batteryHTML = showBattery
     ? `<div class="vehicle-battery ${batteryClass}">
@@ -1135,7 +1085,7 @@ function createVehicleCard(vehicle) {
   return card;
 }
 
-// ===== FILTERING - 2️⃣ FILTRI MEZZI =====
+// ===== FILTERING - FILTRI MEZZI =====
 function filterVehiclesByType(event) {
   filterButtons.forEach((btn) => btn.classList.remove("active"));
   event.target.closest(".filter-btn").classList.add("active");
@@ -1162,15 +1112,15 @@ function getVehiclesByType(filter) {
   });
 }
 
-// ===== LOGIC - 4️⃣ PRENOTAZIONE =====
+// ===== LOGIC - PRENOTAZIONE =====
 async function reserveVehicle(vehicle) {
-  // ✅ Gate 1: Verifica stato account
+  // 1: Verifica stato account
   if (state.user.stato === "sospeso") {
     showSnackbar("❌ Account sospeso! Ricaricare il saldo e attendi.", "error");
     return;
   }
 
-  // ✅ Gate 2: Verifica stato account
+  // 2: Verifica stato account
   if (state.user.stato === "in_attesa_approvazione") {
     showSnackbar(
       "❌ Account in attesa di approvazione! Attendi l'approvazione del gestore.",
@@ -1179,20 +1129,20 @@ async function reserveVehicle(vehicle) {
     return;
   }
 
-  // ✅ Gate 3: Verifica credito
+  // 3: Verifica credito
   if (state.user.credito < 1) {
     showSnackbar("❌ Credito insufficiente! Ricarica il tuo saldo.", "error");
     return;
   }
 
-  // ✅ Gate 4: Verifica corsa attiva
+  // 4: Verifica corsa attiva
   const activeRide = await getActiveRide();
   if (activeRide) {
     showSnackbar("❌ Hai già una corsa attiva! Termina quella prima.", "error");
     return;
   }
 
-  // ✅ Se tutto ok: Salva mezzo e apri modal
+  // Salva mezzo e apri modal
   state.selectedVehicle = vehicle;
   openReservationModal(vehicle);
 }
@@ -1212,12 +1162,10 @@ async function getActiveRide() {
 
     const data = await response.json();
 
-    // Caso 1: struttura vecchia { success, activeRide, ... }
     if ("activeRide" in data) {
       return data.activeRide;
     }
 
-    // Caso 2: struttura attuale: se c'è id_corsa la corsa è attiva
     if (data.id_corsa) {
       return data;
     }
@@ -1261,12 +1209,10 @@ function closeReservationModal() {
 function confirmReservation() {
   if (!state.selectedVehicle) return;
 
-  // ✅ Disabilita il bottone durante il caricamento
   const confirmBtn = document.getElementById("confirmReservation");
   confirmBtn.disabled = true;
   confirmBtn.textContent = "Caricamento...";
 
-  // ✅ POST al backend per creare prenotazione
   fetch("/rides/start", {
     method: "POST",
     headers: {
@@ -1286,14 +1232,13 @@ function confirmReservation() {
       return res.json();
     })
     .then((data) => {
-      // ✅ Salva l'ID della corsa nello state
       state.activeRideId = data.id_corsa;
       state.selectedVehicle = null;
 
       closeReservationModal();
       showSnackbar(`✅ Mezzo prenotato! Iniziando la corsa...`, "success");
 
-      // ✅ Reindirizza a RideUI dopo 800ms
+      // Reindirizza a RideUI dopo 800ms
       setTimeout(() => {
         window.location.href = `/ride?ride_id=${data.id_corsa}`;
       }, 800);
@@ -1301,7 +1246,6 @@ function confirmReservation() {
     .catch((error) => {
       console.error("❌ Errore prenotazione:", error.message);
 
-      // ✅ Re-abilita il bottone
       confirmBtn.disabled = false;
       confirmBtn.textContent = "Conferma";
     });

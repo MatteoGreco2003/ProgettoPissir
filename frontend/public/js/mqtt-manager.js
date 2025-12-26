@@ -58,7 +58,7 @@ const MQTTManager = (() => {
         // Connetti
         instance.connect({
           onSuccess: () => {
-            console.log("✅ MQTT Connesso (Singleton)!");
+            console.log("✅ MQTT Connesso!");
             // ✅ Sottoscrivi automaticamente ai topic delle batterie
             instance.subscribe("Vehicles/+/battery");
             console.log("📡 Iscritto a: Vehicles/+/battery");

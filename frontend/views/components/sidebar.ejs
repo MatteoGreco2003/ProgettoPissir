@@ -1,26 +1,40 @@
-<!-- ===== SIDEBAR ===== -->
+<!-- ============================================================================
+     SIDEBAR - COMPONENTE RIUSABILE
+     ============================================================================
+     Sidebar responsive con navigazione principale e pulsante elimina profilo.
+     Incluso script inline per gestione nav attivo e modal eliminazione.
+     ========================================================================== -->
+
+<!-- ===== SIDEBAR CONTAINER ===== -->
 <aside class="sidebar" id="sidebar">
-  <!-- Navigazione principale -->
+  <!-- ===== NAVIGAZIONE PRINCIPALE ===== -->
   <nav class="sidebar-nav">
+    <!-- Homepage -->
     <a href="/home-utente" class="nav-item active" data-page="homepage">
       <i class="fas fa-home"></i>
       <span>Homepage</span>
     </a>
+
+    <!-- Profilo Utente -->
     <a href="/profile" class="nav-item" data-page="profile">
       <i class="fas fa-user"></i>
       <span>Profilo Utente</span>
     </a>
+
+    <!-- Gestione Credito -->
     <a href="/credit" class="nav-item" data-page="credit">
       <i class="fas fa-wallet"></i>
       <span>Gestione Credito</span>
     </a>
+
+    <!-- Feedback e Valutazioni -->
     <a href="/feedback" class="nav-item" data-page="feedback">
       <i class="fas fa-comment"></i>
       <span>Feedback</span>
     </a>
   </nav>
 
-  <!-- Pulsante Elimina Profilo in fondo -->
+  <!-- ===== SIDEBAR FOOTER ===== -->
   <div class="sidebar-footer">
     <button class="delete-profile-btn" id="deleteProfileBtn">
       <i class="fas fa-trash"></i>
@@ -29,18 +43,26 @@
   </div>
 </aside>
 
-<!-- ===== SCRIPT INLINE PER SIDEBAR ===== -->
+<!-- ============================================================================
+     SCRIPT INLINE - SIDEBAR LOGIC
+     ============================================================================
+     Gestisce:
+     - Evidenziazione nav item attivo in base al percorso
+     - Apertura/chiusura modal eliminazione profilo
+     - Eliminazione profilo con API call
+     - Gestione click overlay per chiudere modal
+     ========================================================================== -->
 <script>
-  // ===== ACTIVE NAV ITEM MANAGEMENT =====
   function setActiveNavItem() {
     const currentPath = window.location.pathname;
     const navItems = document.querySelectorAll(".nav-item");
 
+    // Rimuovi classe 'active' da tutti i nav item
     navItems.forEach((item) => {
       item.classList.remove("active");
     });
 
-    // Mappa dei percorsi
+    // Assegna 'active' al nav item corrispondente al percorso corrente
     if (currentPath === "/home-utente" || currentPath === "/") {
       document.querySelector('[data-page="homepage"]')?.classList.add("active");
     } else if (currentPath === "/profile") {
@@ -52,7 +74,11 @@
     }
   }
 
-  // Snackbar function
+  /**
+   * Mostra snackbar notifica temporanea
+   * @param {string} message - Messaggio da mostrare
+   * @param {string} type - Tipo: 'success', 'error', 'warning'
+   */
   function showSnackbar(message, type = "success") {
     const snackbar = document.getElementById("snackbar");
     if (snackbar) {
@@ -64,7 +90,6 @@
     }
   }
 
-  // Open modal
   function openDeleteModal() {
     const modal = document.getElementById("deleteProfileModal");
     if (modal) {
@@ -72,7 +97,6 @@
     }
   }
 
-  // Close modal
   function closeDeleteModal() {
     const modal = document.getElementById("deleteProfileModal");
     if (modal) {
@@ -80,7 +104,10 @@
     }
   }
 
-  // Delete profile function
+  /**
+   * Esegue l'eliminazione del profilo via API
+   * Mostra snackbar, esegue DELETE /users/me, reindirizza a home
+   */
   async function confirmDeleteProfile() {
     closeDeleteModal();
     showSnackbar("Eliminazione profilo in corso...", "success");
@@ -95,6 +122,7 @@
       });
 
       const data = await response.json();
+
       if (response.ok) {
         showSnackbar("✅ Profilo eliminato con successo", "success");
 
@@ -111,18 +139,19 @@
     }
   }
 
-  // Setup event listeners
+  // ===== INIT =====
   document.addEventListener("DOMContentLoaded", () => {
-    // Imposta il nav item attivo
+    // ===== IMPOSTA NAV ITEM ATTIVO =====
+    // Evidenzia il link corrispondente alla pagina corrente
     setActiveNavItem();
 
-    // Delete profile button
+    // ===== EVENT LISTENER: Delete Profile Button =====
     const deleteBtn = document.getElementById("deleteProfileBtn");
     if (deleteBtn) {
       deleteBtn.addEventListener("click", openDeleteModal);
     }
 
-    // Modal buttons
+    // ===== EVENT LISTENER: Modal Buttons =====
     const modalCancel = document.getElementById("modalCancel");
     const modalClose = document.getElementById("modalClose");
     const modalConfirm = document.getElementById("modalConfirmDelete");
@@ -139,7 +168,7 @@
       modalConfirm.addEventListener("click", confirmDeleteProfile);
     }
 
-    // Close modal quando clicchi su overlay
+    // Chiude modal quando clicchi fuori dal contenuto
     const modal = document.getElementById("deleteProfileModal");
     if (modal) {
       modal.addEventListener("click", (e) => {

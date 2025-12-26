@@ -1,29 +1,41 @@
-<!-- ===== NAVBAR ===== -->
+<!-- ============================================================================
+     NAVBAR - COMPONENTE RIUSABILE
+     ============================================================================
+     Navbar responsive con user info, avatar, e logout button.
+     Incluso script inline per caricamento dati utente e logout.
+     ========================================================================== -->
+
 <nav class="navbar">
   <div class="navbar-container">
-    <!-- Menu Toggle Mobile (SINISTRA) -->
+    <!-- ===== MENU TOGGLE MOBILE (SINISTRA) ===== -->
+    <!-- Bottone hamburger per aprire sidebar su mobile (visibile solo < 768px) -->
     <button class="menu-toggle" id="menuToggle">
       <i class="fas fa-bars"></i>
     </button>
 
-    <!-- User Info (CENTRO - scompare a 768px) - CLICKABLE -->
+    <!-- ===== USER INFO (CENTRO) ===== -->
+    <!-- Mostra avatar + nome utente, nascosto su mobile (< 768px) -->
+    <!-- Cliccabile per tornare a home-utente -->
     <div
       class="navbar-user-info"
       id="userProfileArea"
       style="cursor: pointer"
       title="Clicca per ricaricare"
     >
-      <!-- Avatar con iniziale -->
+      <!-- Avatar circolare con INIZIALE del nome -->
       <div class="user-avatar" id="userAvatar">
         <span id="userInitial">M</span>
       </div>
+
+      <!-- Nome e cognome + ruolo utente -->
       <div class="user-details">
         <span class="user-name" id="userNameNavbar">Matteo Rossi</span>
         <span class="user-role">Utente</span>
       </div>
     </div>
 
-    <!-- Logout (DESTRA) -->
+    <!-- ===== LOGOUT BUTTON (DESTRA) ===== -->
+    <!-- Bottone disconnessione sempre visibile -->
     <div class="navbar-right">
       <button class="logout-btn" id="logoutBtn">
         <i class="fas fa-sign-out-alt"></i>
@@ -33,9 +45,21 @@
   </div>
 </nav>
 
-<!-- ===== SCRIPT INLINE PER NAVBAR ===== -->
+<!-- ============================================================================
+     SCRIPT INLINE - NAVBAR LOGIC
+     ============================================================================
+     Gestisce:
+     - Caricamento dati utente all'avvio
+     - Aggiornamento nome/avatar nella navbar
+     - Redirect al click su profilo
+     - Logout con redirect a auth
+     ========================================================================== -->
 <script>
-  // Snackbar function
+  /**
+   * Mostra snackbar notifica temporanea
+   * @param {string} message - Messaggio da mostrare
+   * @param {string} type - Tipo: 'success', 'error', 'warning'
+   */
   function showSnackbar(message, type = "success") {
     const snackbar = document.getElementById("snackbar");
     if (snackbar) {
@@ -47,7 +71,10 @@
     }
   }
 
-  // Load user data and update navbar
+  /**
+   * Carica dati utente e aggiorna navbar con nome e avatar
+   * Eseguito all'avvio della pagina
+   */
   async function loadAndUpdateNavbar() {
     try {
       const response = await fetch("/users/me", {
@@ -61,13 +88,15 @@
       if (response.ok) {
         const userData = await response.json();
 
-        // Aggiorna nome e cognome nella navbar
+        // ===== AGGIORNA NOME NAVBAR =====
+        // Mostra "Nome Cognome" nella navbar
         const userNameNavbar = document.getElementById("userNameNavbar");
         if (userNameNavbar) {
           userNameNavbar.textContent = `${userData.nome} ${userData.cognome}`;
         }
 
-        // Aggiorna avatar con INIZIALE del nome
+        // ===== AGGIORNA AVATAR =====
+        // Mostra prima lettera del nome in maiuscolo
         const userInitial = document.getElementById("userInitial");
         if (userInitial && userData.nome) {
           userInitial.textContent = userData.nome.charAt(0).toUpperCase();
@@ -80,7 +109,10 @@
     }
   }
 
-  // Logout function
+  /**
+   * Esegue logout e reindirizza a home
+   * Mostra snackbar di conferma, poi redirect dopo 1.5s
+   */
   async function logout() {
     showSnackbar("Logout in corso...", "success");
 
@@ -107,11 +139,12 @@
     }
   }
 
-  // Carica dati all'avvio della pagina
+  // ===== INIT =====
   document.addEventListener("DOMContentLoaded", () => {
     loadAndUpdateNavbar();
 
-    // Click su avatar/nome per ricaricare la pagina
+    // ===== EVENT LISTENER: Click su profilo =====
+    // Redirect a /home-utente per ricaricare la navbar
     const userProfileArea = document.getElementById("userProfileArea");
     if (userProfileArea) {
       userProfileArea.addEventListener("click", () => {
@@ -119,7 +152,7 @@
       });
     }
 
-    // Logout button listener
+    // ===== EVENT LISTENER: Logout button =====
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", logout);

@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const newPasswordInput = document.getElementById("newPassword");
   const confirmNewPasswordInput = document.getElementById("confirmNewPassword");
 
-  // ===== PASSWORD VALIDATION =====
   /**
    * Controlla se la password rispetta i requisiti:
    * - Minimo 8 caratteri
@@ -25,7 +24,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return hasMinLength && hasUpperCase && hasLowerCase && hasNumber;
   }
 
-  // ===== DISPLAY ERRORS =====
   /**
    * Mostra gli errori di validazione nel DOM
    * @param {Array} errors - Array di messaggi di errore
@@ -41,14 +39,12 @@ document.addEventListener("DOMContentLoaded", function () {
       errorContainer.appendChild(errorDiv);
     });
 
-    // Aggiungi classe error agli input
     if (errors.length > 0) {
       newPasswordInput.classList.add("input-error");
       confirmNewPasswordInput.classList.add("input-error");
     }
   }
 
-  // ===== EXTRACT URL PARAMETERS =====
   /**
    * Estrae i parametri dalla URL (token e email)
    * @returns {Object} Oggetto con token e email
@@ -63,26 +59,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ===== FORM SUBMISSION =====
   resetForm.addEventListener("submit", async (e) => {
-    e.preventDefault(); // Previeni il reload della pagina
+    e.preventDefault();
 
-    // Estrai i valori dal form
     const { token, email } = getUrlParams();
     const newPassword = newPasswordInput.value;
     const confirmNewPassword = confirmNewPasswordInput.value;
 
-    // Pulisci gli errori e le classi precedenti
     document.getElementById("resetErrors").innerHTML = "";
     newPasswordInput.classList.remove("input-error");
     confirmNewPasswordInput.classList.remove("input-error");
 
-    // ===== VALIDATION CHECKS =====
-    // Controlla se il link è valido (token e email presenti)
     if (!token || !email) {
       showErrors(["Link non valido o scaduto"]);
       return;
     }
 
-    // Controlla i requisiti della password
     if (!isValidPassword(newPassword)) {
       showErrors([
         "Password deve contenere minimo 8 caratteri, almeno una maiuscola, una minuscola e un numero (es: Password123)",
@@ -91,14 +82,12 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Controlla se le password coincidono
     if (newPassword !== confirmNewPassword) {
       showErrors(["Le password non corrispondono"]);
       confirmNewPasswordInput.classList.add("input-error");
       return;
     }
 
-    // ===== SEND REQUEST TO SERVER =====
     try {
       const response = await fetch("/auth/reset-password", {
         method: "POST",
@@ -115,31 +104,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const data = await response.json();
 
-      // Gestisci la risposta dal server
       if (response.ok) {
-        // Successo: mostra il messaggio e nascondi il form
         document.getElementById("resetSuccess").style.display = "block";
         resetForm.style.display = "none";
 
-        // Reindirizza alla home dopo 2.5 secondi
         setTimeout(() => {
           window.location.href = "/";
         }, 2000);
       } else {
-        // Errore dal server
         showErrors([data.message || "Errore nel reset della password"]);
         newPasswordInput.classList.add("input-error");
         confirmNewPasswordInput.classList.add("input-error");
       }
     } catch (error) {
-      // Errore di connessione
       console.error("Errore:", error);
       showErrors(["Errore di connessione al server"]);
       newPasswordInput.classList.add("input-error");
     }
   });
 
-  // ===== PASSWORD VISIBILITY TOGGLE =====
   /**
    * Abilita il toggle della visibilità della password
    * L'icona cambia da lucchetto (lock) a occhio (eye) quando scrivi
@@ -171,20 +154,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // Aggiorna l'icona mentre scrivi
     input.addEventListener("input", updateIcon);
 
-    // Toggle visibilità quando clicki l'icona
     icon.addEventListener("click", () => {
       if (input.value.length > 0) {
-        // Alterna tra password visibile e nascosto
         input.type = input.type === "password" ? "text" : "password";
       }
     });
 
-    // Pulisci la classe error quando l'utente inizia a digitare
     input.addEventListener("input", () => {
       input.classList.remove("input-error");
     });
 
-    // Inizializza l'icona al caricamento
     updateIcon();
   });
 });
