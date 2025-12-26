@@ -62,6 +62,10 @@ const MQTTManager = (() => {
             // ✅ Sottoscrivi automaticamente ai topic delle batterie
             instance.subscribe("Vehicles/+/battery");
             console.log("📡 Iscritto a: Vehicles/+/battery");
+
+            // ✅ Sottoscrivi automaticamente ai topic degli alert di batteria
+            instance.subscribe("Alerts/+/battery");
+            console.log("📡 Iscritto a: Alerts/+/battery");
             isConnecting = false;
           },
           onFailure: (responseObject) => {

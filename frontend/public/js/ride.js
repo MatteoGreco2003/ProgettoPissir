@@ -84,25 +84,30 @@ function setupMQTTListener() {
     try {
       const msg = JSON.parse(payload);
 
+      // 🔥 Ascolta gli alert di batteria
+      const alertTopic = `Alerts/${rideState.rideData?.id_utente}/battery`;
+
+      if (topic === alertTopic && msg.tipo) {
+        handleBatteryAlert(msg);
+        return;
+      }
+
+      // Fallback vecchio sistema
       if (msg.level !== undefined && msg.id_mezzo !== undefined) {
         const newBattery = msg.level;
 
         console.log(`⚡ MQTT Ride: Batteria ${newBattery}%`);
 
-        // ✅ Aggiorna solo se è lo stesso mezzo della corsa
         if (
           rideState.vehicleData &&
           rideState.vehicleData.id_mezzo === msg.id_mezzo
         ) {
           rideState.vehicleData.stato_batteria = newBattery;
-
-          // ✅ Aggiorna UI
           document.getElementById("summaryBatteria").textContent =
             newBattery + "%";
           batteryValue.textContent = newBattery + "%";
           animateBatteryUpdate(newBattery);
 
-          // ✅ Se batteria = 0, blocca tutto
           if (
             newBattery <= 0 &&
             haBatteria(rideState.vehicleData?.tipo_mezzo)
@@ -142,8 +147,18 @@ function handleBatteryZero() {
 
   if (rideState.batteryZero) return;
   rideState.batteryZero = true;
+
   if (rideState.timerInterval) clearInterval(rideState.timerInterval);
+
   speedValue.textContent = "0";
+
+  batteryValue.textContent = "0%";
+  rideState.vehicleData.stato_batteria = 0;
+  document.getElementById("summaryBatteria").textContent = "0%";
+
+  // Cambia colore batteria a rosso
+  animateBatteryUpdate(0);
+
   endRideBtn.textContent = "Paga Ora";
   endRideBtn.style.background = "#dc2626";
   showBatteryZeroModal();
@@ -435,6 +450,11 @@ function simulateRideData() {
   }
 
   setInterval(() => {
+    // ⚠️ NUOVO: Salta tutto se batteria è a 0
+    if (rideState.batteryZero) {
+      return;
+    }
+
     if (!rideState.isPaused && rideState.vehicleData) {
       // ✅ Calcola km CORRETTAMENTE
       const minuti = rideState.elapsedSeconds / 60;
