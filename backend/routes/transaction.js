@@ -8,7 +8,7 @@ import {
   requestReactivation,
   approveReactivation,
 } from "../controllers/transactionsController.js";
-import { verifyToken } from "../middleware/auth.js";
+import { verifyToken, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -21,6 +21,7 @@ router.post("/request-reactivation", verifyToken, requestReactivation);
 router.patch(
   "/approve-reactivation/:id_utente",
   verifyToken,
+  isAdmin,
   approveReactivation
 );
 

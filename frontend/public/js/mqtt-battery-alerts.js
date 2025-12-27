@@ -24,9 +24,9 @@ function handleBatteryAlert(alert) {
   }
 
   // ✅ Aggiorna la batteria nel display
-  rideState.vehicleData.stato_batteria = batteria;
-  batteryValue.textContent = batteria + "%";
-  document.getElementById("summaryBatteria").textContent = batteria + "%";
+  //rideState.vehicleData.stato_batteria = batteria;
+  //batteryValue.textContent = batteria + "%";
+  //document.getElementById("summaryBatteria").textContent = batteria + "%";
 
   // ✅ Cambia colore della batteria (verde → arancio → rosso)
   animateBatteryUpdate(batteria);
@@ -191,7 +191,7 @@ function showBatteryCriticalSnackbar(batteryLevel, message) {
           margin-bottom: 3px;
           letter-spacing: 0.5px;
           text-transform: uppercase;
-        ">⚡ BATTERIA CRITICA</div>
+        ">⚠️ BATTERIA CRITICA</div>
         <div style="
           font-size: 13px;
           opacity: 0.95;

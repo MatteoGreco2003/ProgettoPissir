@@ -224,35 +224,23 @@
               <span class="feedback-ride-label">Mezzo:</span>
               <span class="feedback-ride-value" id="feedbackMezzoType">-</span>
             </div>
-            <div class="feedback-ride-item">
-              <span class="feedback-ride-label">Costo:</span>
-              <span class="feedback-ride-value" id="feedbackCosto">-</span>
-            </div>
-            <div class="feedback-ride-item">
-              <span class="feedback-ride-label">Distanza:</span>
-              <span class="feedback-ride-value" id="feedbackDistanza">-</span>
-            </div>
-            <div class="feedback-ride-item">
-              <span class="feedback-ride-label">Durata:</span>
-              <span class="feedback-ride-value" id="feedbackDurata">-</span>
-            </div>
           </div>
 
           <div class="feedback-divider"></div>
 
           <div class="feedback-rating-container">
-            <label class="feedback-label">Valuta il mezzo:</label>
+            <label class="feedback-label">Valuta la corsa:</label>
             <div class="feedback-stars" id="feedbackStars">
-              <button class="feedback-star" data-rating="1" title="Pessimo">
+              <button class="feedback-star" data-rating="1" title="Pessima">
                 <i class="fas fa-star"></i>
               </button>
-              <button class="feedback-star" data-rating="2" title="Cattivo">
+              <button class="feedback-star" data-rating="2" title="Cattiva">
                 <i class="fas fa-star"></i>
               </button>
-              <button class="feedback-star" data-rating="3" title="Medio">
+              <button class="feedback-star" data-rating="3" title="Normale">
                 <i class="fas fa-star"></i>
               </button>
-              <button class="feedback-star" data-rating="4" title="Buono">
+              <button class="feedback-star" data-rating="4" title="Buona">
                 <i class="fas fa-star"></i>
               </button>
               <button class="feedback-star" data-rating="5" title="Eccellente">
@@ -278,7 +266,45 @@
               <span id="feedbackCharCount">0</span>/500
             </div>
           </div>
+
+          <div class="feedback-divider"></div>
+
+          <div class="feedback-report-container">
+            <label class="feedback-label">
+              Segnala un problema (opzionale):
+            </label>
+            <select id="feedbackReportType" class="feedback-select">
+              <option value="">Nessun problema</option>
+              <option value="danno_fisico">🔨 Danno fisico</option>
+              <option value="batteria_scarica">🔋 Batteria scarica</option>
+              <option value="pneumatico_bucato">🛞 Pneumatico bucato</option>
+              <option value="non_funziona">⚙️ Non funziona</option>
+              <option value="sporco">🧹 Sporco</option>
+              <option value="altro">📝 Altro</option>
+            </select>
+          </div>
+
+          <div
+            class="feedback-description-container"
+            id="reportDescriptionContainer"
+            style="display: none"
+          >
+            <label class="feedback-label"
+              >Descrivi il problema (opzionale):</label
+            >
+            <textarea
+              id="feedbackReportDescription"
+              class="feedback-textarea"
+              placeholder="Raccontaci i dettagli del problema..."
+              maxlength="500"
+            ></textarea>
+            <div class="feedback-char-count">
+              <span id="feedbackReportCharCount">0</span>/500
+            </div>
+          </div>
         </div>
+
+        <div id="feedbackErrorContainer" class="feedback-error-container"></div>
 
         <div class="modal-footer">
           <button class="btn btn-primary" id="submitFeedback">

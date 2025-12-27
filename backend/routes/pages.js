@@ -21,27 +21,32 @@ router.get("/reset-password", (req, res) => {
 
 // GET /home-utente - Dashboard utente (protetto)
 router.get("/home-utente", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("home-utente");
 });
 
 // GET /profile - Profilo utente (protetto)
 router.get("/profile", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("profile-utente");
 });
 
 // GET /ride - Pagina corsa (protetto)
 router.get("/ride", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   const { ride_id } = req.query;
   res.render("ride", { rideId: ride_id });
 });
 
 // GET /credit - Pagina gestione credito (protetto)
 router.get("/credit", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("credit");
 });
 
 // GET /feedback - Pagina feedback (protetto)
 router.get("/feedback", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("feedback");
 });
 

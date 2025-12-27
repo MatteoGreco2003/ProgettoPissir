@@ -59,13 +59,17 @@ const MQTTManager = (() => {
         instance.connect({
           onSuccess: () => {
             console.log("✅ MQTT Connesso!");
-            // ✅ Sottoscrivi automaticamente ai topic delle batterie
+            // Sottoscrivi automaticamente ai topic delle batterie
             instance.subscribe("Vehicles/+/battery");
             console.log("📡 Iscritto a: Vehicles/+/battery");
 
-            // ✅ Sottoscrivi automaticamente ai topic degli alert di batteria
+            // Sottoscrivi automaticamente ai topic degli alert di batteria
             instance.subscribe("Alerts/+/battery");
             console.log("📡 Iscritto a: Alerts/+/battery");
+
+            // Sottoscrivi automaticamente ai topic di sblocco dei mezzi
+            instance.subscribe("Parking/+/StatoMezzi/+");
+            console.log("📡 Iscritto a: Parking/+/StatoMezzi/+");
             isConnecting = false;
           },
           onFailure: (responseObject) => {

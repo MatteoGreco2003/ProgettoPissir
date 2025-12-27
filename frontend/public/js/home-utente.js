@@ -2,6 +2,12 @@
 // HOME UTENTE - MOBISHARE (HOMEPAGE)
 // ==========================================
 
+// ========== DISABILITA BACK BUTTON ==========
+window.history.pushState(null, null, window.location.href);
+window.addEventListener("popstate", function () {
+  window.history.pushState(null, null, window.location.href);
+});
+
 // ===== STATE MANAGEMENT =====
 let state = {
   currentFilter: "all",
@@ -146,6 +152,10 @@ async function loadUserProfile() {
       };
 
       loadHomepageData();
+    } else if (response.status === 401 || response.status === 403) {
+      // Non autenticato o token scaduto - reindirizza al login
+      console.error("❌ Token non valido o scaduto");
+      window.location.href = "/";
     } else {
       console.error("❌ Errore caricamento profilo:", response.status);
       showSnackbar("❌ Errore nel caricamento del profilo", "error");
@@ -441,12 +451,40 @@ function setupEventListeners() {
   }
 }
 
+// Listener per comando UNLOCK del mezzo
+function setupUnlockListener(id_mezzo, onUnlockConfirmed) {
+  const handleUnlockMessage = (event) => {
+    const { topic, payload } = event.detail;
+
+    try {
+      const msg = JSON.parse(payload);
+
+      // Controlla solo il comando e l'id_mezzo
+      if (msg.id_mezzo == id_mezzo && msg.command === "unlock") {
+        onUnlockConfirmed();
+
+        document.removeEventListener("mqtt-message", handleUnlockMessage);
+      }
+    } catch (error) {
+      console.error("Errore parsing MQTT unlock:", error);
+    }
+  };
+
+  document.addEventListener("mqtt-message", handleUnlockMessage);
+
+  return () => {
+    document.removeEventListener("mqtt-message", handleUnlockMessage);
+  };
+}
+
 // ===== FEEDBACK MODAL STATE =====
 let feedbackState = {
   isOpen: false,
   rideData: null,
   selectedRating: 0,
   comment: "",
+  reportType: "",
+  reportDescription: "",
 };
 
 // ===== SETUP FEEDBACK MODAL EVENT LISTENERS =====
@@ -457,6 +495,13 @@ function setupFeedbackModalListeners() {
   const submitFeedbackBtn = document.getElementById("submitFeedback");
   const feedbackStars = document.querySelectorAll(".feedback-star");
   const feedbackComment = document.getElementById("feedbackComment");
+  const reportTypeSelect = document.getElementById("feedbackReportType");
+  const reportDescription = document.getElementById(
+    "feedbackReportDescription"
+  );
+  const reportDescriptionContainer = document.getElementById(
+    "reportDescriptionContainer"
+  );
 
   feedbackModalClose.addEventListener("click", closeFeedbackModal);
   skipFeedbackBtn.addEventListener("click", closeFeedbackModal);
@@ -509,6 +554,27 @@ function setupFeedbackModalListeners() {
     document.getElementById("feedbackCharCount").textContent = charCount;
   });
 
+  reportTypeSelect.addEventListener("change", (e) => {
+    feedbackState.reportType = e.target.value;
+
+    // 🆕 Mostra/nascondi textarea descrizione se c'è un problema
+    if (e.target.value && e.target.value !== "") {
+      reportDescriptionContainer.style.display = "block";
+      reportDescription.value = "";
+      document.getElementById("feedbackReportCharCount").textContent = "0";
+    } else {
+      reportDescriptionContainer.style.display = "none";
+      reportDescription.value = "";
+      feedbackState.reportDescription = "";
+    }
+  });
+
+  reportDescription?.addEventListener("input", (e) => {
+    feedbackState.reportDescription = e.target.value;
+    document.getElementById("feedbackReportCharCount").textContent =
+      e.target.value.length;
+  });
+
   submitFeedbackBtn.addEventListener("click", submitFeedback);
 }
 
@@ -539,12 +605,14 @@ function openFeedbackModal(rideData) {
   feedbackState.rideData = rideData;
   feedbackState.selectedRating = 0;
   feedbackState.comment = "";
+  feedbackState.reportType = "";
   feedbackState.isOpen = true;
 
   document.getElementById("feedbackComment").value = "";
   document.getElementById("feedbackCharCount").textContent = "0";
   document.getElementById("feedbackRatingText").textContent =
     "Seleziona una valutazione";
+  document.getElementById("feedbackReportType").value = "";
 
   document.querySelectorAll(".feedback-star").forEach((star) => {
     star.classList.remove("active");
@@ -559,12 +627,6 @@ function openFeedbackModal(rideData) {
       : "Bicicletta Muscolare";
 
   document.getElementById("feedbackMezzoType").textContent = tipoMezzoLabel;
-  document.getElementById("feedbackDistanza").textContent =
-    (rideData.km_percorsi || 0).toFixed(2) + " km";
-  document.getElementById("feedbackDurata").textContent =
-    rideData.durata_minuti + " min";
-  document.getElementById("feedbackCosto").textContent =
-    "€" + parseFloat(rideData.costo_finale || 0).toFixed(2);
 
   const feedbackModal = document.getElementById("feedbackModal");
   feedbackModal.classList.remove("hidden");
@@ -576,6 +638,8 @@ function closeFeedbackModal() {
   feedbackState.rideData = null;
   feedbackState.selectedRating = 0;
   feedbackState.comment = "";
+  feedbackState.reportType = "";
+  feedbackState.reportDescription = "";
 
   const feedbackModal = document.getElementById("feedbackModal");
   feedbackModal.classList.add("hidden");
@@ -583,13 +647,15 @@ function closeFeedbackModal() {
 
 // ===== INVIA FEEDBACK AL BACKEND =====
 async function submitFeedback() {
+  clearFeedbackErrors();
+
   if (feedbackState.selectedRating === 0) {
-    showSnackbar("❌ Seleziona una valutazione!", "error");
+    showFeedbackError("Seleziona una valutazione!");
     return;
   }
 
   if (!feedbackState.rideData) {
-    showSnackbar("❌ Errore: dati corsa mancanti", "error");
+    showFeedbackError("Errore: dati corsa mancanti");
     return;
   }
 
@@ -598,7 +664,8 @@ async function submitFeedback() {
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio...';
 
   try {
-    const response = await fetch("/feedback", {
+    // 1️⃣ Invia il feedback
+    const feedbackResponse = await fetch("/feedback", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -611,12 +678,31 @@ async function submitFeedback() {
       }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
+    if (!feedbackResponse.ok) {
+      const error = await feedbackResponse.json();
       throw new Error(error.error || "Errore nell'invio del feedback");
     }
 
-    const data = await response.json();
+    // 2️⃣ Se ha selezionato un report, invialo
+    if (feedbackState.reportType) {
+      const reportResponse = await fetch("/reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          tipo_problema: feedbackState.reportType,
+          id_mezzo: feedbackState.rideData.id_mezzo,
+          descrizione: feedbackState.reportDescription || "",
+        }),
+      });
+
+      if (!reportResponse.ok) {
+        const error = await reportResponse.json();
+        throw new Error(error.error || "Errore nell'invio del report");
+      }
+    }
 
     showSnackbar(
       "✅ Grazie per il tuo feedback! " +
@@ -625,15 +711,27 @@ async function submitFeedback() {
     );
     closeFeedbackModal();
   } catch (error) {
-    console.error("❌ Errore invio feedback:", error.message);
-    showSnackbar(
-      "❌ Errore nell'invio del feedback: " + error.message,
-      "error"
-    );
+    console.error("❌ Errore:", error.message);
+    showFeedbackError(error.message);
   } finally {
     submitBtn.disabled = false;
-    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Invia Feedback';
+    submitBtn.innerHTML = "Invia Feedback";
   }
+}
+
+function showFeedbackError(message) {
+  const container = document.getElementById("feedbackErrorContainer");
+
+  const errorDiv = document.createElement("div");
+  errorDiv.className = "feedback-error-message";
+  errorDiv.innerHTML = `<span>${message}</span>`;
+
+  container.appendChild(errorDiv);
+}
+
+function clearFeedbackErrors() {
+  const container = document.getElementById("feedbackErrorContainer");
+  container.innerHTML = "";
 }
 
 // ===== SINCRONIZZAZIONE FILTRI TRA SELECT E BUTTONS =====
@@ -1211,7 +1309,23 @@ function confirmReservation() {
 
   const confirmBtn = document.getElementById("confirmReservation");
   confirmBtn.disabled = true;
-  confirmBtn.textContent = "Caricamento...";
+  confirmBtn.textContent = "⏳ Sblocco mezzo...";
+
+  let unlockConfirmed = false;
+  let unsubscribe = null;
+  const unlockTimeout = setTimeout(() => {
+    if (!unlockConfirmed) {
+      console.warn("⚠️ Sblocco non confermato entro 5s - verifcare MQTT");
+      if (unsubscribe) unsubscribe();
+    }
+  }, 5000);
+
+  // Setup listener MQTT prima della richiesta
+  unsubscribe = setupUnlockListener(state.selectedVehicle.id_mezzo, () => {
+    unlockConfirmed = true;
+    clearTimeout(unlockTimeout);
+    confirmBtn.textContent = "✅ Mezzo sbloccato!";
+  });
 
   fetch("/rides/start", {
     method: "POST",
@@ -1232,22 +1346,29 @@ function confirmReservation() {
       return res.json();
     })
     .then((data) => {
+      console.log("✅ Corsa avviata:", data.id_corsa);
       state.activeRideId = data.id_corsa;
       state.selectedVehicle = null;
 
-      closeReservationModal();
       showSnackbar(`✅ Mezzo prenotato! Iniziando la corsa...`, "success");
 
-      // Reindirizza a RideUI dopo 800ms
       setTimeout(() => {
-        window.location.href = `/ride?ride_id=${data.id_corsa}`;
-      }, 800);
+        closeReservationModal();
+
+        setTimeout(() => {
+          window.location.href = `/ride?ride_id=${data.id_corsa}`;
+          if (unsubscribe) unsubscribe();
+        }, 500);
+      }, 3000);
     })
     .catch((error) => {
       console.error("❌ Errore prenotazione:", error.message);
 
       confirmBtn.disabled = false;
       confirmBtn.textContent = "Conferma";
+
+      clearTimeout(unlockTimeout);
+      if (unsubscribe) unsubscribe();
     });
 }
 
@@ -1289,4 +1410,18 @@ function formatVehicleStatus(stato) {
     non_prelevabile: "Non prelevabile",
   };
   return statusMap[stato] || stato;
+}
+
+// ========== FUNZIONE PER LEGGERE COOKIE ==========
+function getCookie(name) {
+  const nameEQ = name + "=";
+  const cookies = document.cookie.split(";");
+
+  for (let cookie of cookies) {
+    cookie = cookie.trim();
+    if (cookie.indexOf(nameEQ) === 0) {
+      return cookie.substring(nameEQ.length);
+    }
+  }
+  return null;
 }

@@ -11,21 +11,25 @@ import {
   getAllFeedbacks,
   getVehicleRating,
 } from "../controllers/feedbacksController.js";
-import { verifyToken } from "../middleware/auth.js";
+import { verifyToken, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// ✅ Rotte pubbliche (autenticazione richiesta)
-router.post("/", verifyToken, createFeedback); // 1️⃣ Crea feedback
-
-router.get("/my-feedback", verifyToken, getMyFeedback); // 2️⃣ Visualizza miei feedback
+// FEEDBACK CREATION - Solo utenti loggati
+router.post("/", verifyToken, createFeedback);
+// MY FEEDBACK - Solo miei feedback (già verificato nel controller)
+router.get("/my-feedback", verifyToken, getMyFeedback);
+// COMMUNITY FEEDBACK - Tutti i feedback
 router.get("/all", verifyToken, getAllFeedbacks);
-
-router.get("/vehicle/:id_mezzo", verifyToken, getFeedbackByVehicle); // 3️⃣ Feedback di un mezzo
-router.get("/vehicle/:id_mezzo/rating", verifyToken, getVehicleRating);
-router.get("/:id_feedback", verifyToken, getFeedbackById); // 4️⃣ Dettagli feedback
-
-router.patch("/:id_feedback", verifyToken, updateFeedback); // 5️⃣ Modifica feedback
-router.delete("/:id_feedback", verifyToken, deleteFeedback); // 6️⃣ Elimina feedback
+// VEHICLE RATING - Pubblico (ma verifichiamo il mezzo esista)
+router.get("/vehicle/:id_mezzo/rating", getVehicleRating);
+// FEEDBACK BY VEHICLE - Pubblico (leggi feedback di un mezzo)
+router.get("/vehicle/:id_mezzo", getFeedbackByVehicle);
+// FEEDBACK BY ID - Pubblico (leggi dettagli)
+router.get("/:id_feedback", getFeedbackById);
+// UPDATE - Solo utenti loggati (controller già verifica ownership)
+router.patch("/:id_feedback", verifyToken, updateFeedback);
+// DELETE - Solo utenti loggati (controller già verifica ownership)
+router.delete("/:id_feedback", verifyToken, deleteFeedback);
 
 export default router;

@@ -1,7 +1,7 @@
 // backend/routes/users.js
 
 import express from "express";
-import { verifyToken } from "../middleware/auth.js";
+import { verifyToken, isAdmin } from "../middleware/auth.js";
 import {
   getProfile,
   updateProfile,
@@ -24,7 +24,7 @@ router.delete("/me", verifyToken, deleteAccount);
 router.put("/change-password", verifyToken, changePassword);
 
 // ADMIN ENDPOINTS
-router.get("/admin/all", verifyToken, getAllUsers); // Lista tutti gli utenti
-router.get("/admin/pending", verifyToken, getPendingReactivations); // Utenti sospesi
-router.get("/admin/:id_utente", verifyToken, getUserById); // Dettagli utente
+router.get("/admin/all", verifyToken, isAdmin, getAllUsers); // Lista tutti gli utenti
+router.get("/admin/pending", verifyToken, isAdmin, getPendingReactivations); // Utenti sospesi
+router.get("/admin/:id_utente", verifyToken, isAdmin, getUserById); // Dettagli utente
 export default router;

@@ -9,18 +9,22 @@ import {
   updateReportStatus,
   deleteReport,
 } from "../controllers/reportsController.js";
-import { verifyToken } from "../middleware/auth.js";
+import { verifyToken, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// ✅ Rotte pubbliche (autenticazione richiesta)
-router.post("/", verifyToken, createReport); // 1️⃣ Crea segnalazione
-router.get("/my-reports", verifyToken, getMyReports); // 2️⃣ Visualizza mie segnalazioni
-router.get("/:id_segnalazione", verifyToken, getReportById); // 3️⃣ Visualizza dettagli segnalazione
+router.get("/my-reports", verifyToken, getMyReports);
+router.get("/:id_segnalazione", verifyToken, getReportById);
+router.post("/", verifyToken, createReport);
 
-// ✅ Rotte admin
-router.get("/admin/all-reports", verifyToken, getAllReports); // 4️⃣ Visualizza tutte (admin only)
-router.patch("/:id_segnalazione/status", verifyToken, updateReportStatus); // 5️⃣ Aggiorna stato (admin only)
-router.delete("/:id_segnalazione", verifyToken, deleteReport); // 6️⃣ Elimina segnalazione (admin only)
+// ADMIN ONLY
+router.get("/", verifyToken, isAdmin, getAllReports);
+router.patch(
+  "/:id_segnalazione/status",
+  verifyToken,
+  isAdmin,
+  updateReportStatus
+);
+router.delete("/:id_segnalazione", verifyToken, isAdmin, deleteReport);
 
 export default router;

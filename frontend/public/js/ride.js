@@ -92,6 +92,13 @@ function setupMQTTListener() {
         return;
       }
 
+      if (
+        msg.command === "lock" &&
+        msg.id_mezzo === rideState.vehicleData?.id_mezzo
+      ) {
+        showSnackbar("🔒 Mezzo bloccato! Corsa terminata.", "success", 2000);
+      }
+
       // Fallback vecchio sistema
       if (msg.level !== undefined && msg.id_mezzo !== undefined) {
         const newBattery = msg.level;
@@ -613,7 +620,7 @@ function endRideWithPayment(cost) {
       // ❌ NON disconnettere MQTT!
       setTimeout(() => {
         window.location.href = "/home-utente";
-      }, 2000);
+      }, 4000);
     })
     .catch((error) => {
       console.error("❌ Errore:", error);
@@ -1065,12 +1072,27 @@ function showError(title, message) {
   }, 10000);
 }
 
-// ===== SNACKBAR =====
-function showSnackbar(message, type = "success") {
+// ===== SNACKBAR QUEUE SYSTEM =====
+let snackbarQueue = [];
+let snackbarActive = false;
+
+function showSnackbar(message, type = "success", duration = 3500) {
+  snackbarQueue.push({ message, type, duration });
+  processSnackbarQueue();
+}
+
+function processSnackbarQueue() {
+  if (snackbarActive || snackbarQueue.length === 0) return;
+
+  snackbarActive = true;
+  const { message, type, duration } = snackbarQueue.shift();
+
   snackbar.textContent = message;
   snackbar.className = `snackbar show snackbar--${type}`;
 
   setTimeout(() => {
     snackbar.classList.remove("show");
-  }, 3500);
+    snackbarActive = false;
+    processSnackbarQueue(); // Mostra la prossima
+  }, duration);
 }

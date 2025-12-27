@@ -330,13 +330,6 @@ export const approveReactivation = async (req, res) => {
   try {
     const { id_utente } = req.params;
 
-    // Verifica che sia admin
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        error: "Solo gli admin possono approvare le riaperture",
-      });
-    }
-
     const user = await User.findByPk(id_utente);
     if (!user) {
       return res.status(404).json({ error: "Utente non trovato" });

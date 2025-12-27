@@ -139,10 +139,22 @@ export const updateParking = async (req, res) => {
     }
 
     if (nome) parking.nome = nome;
-    if (capacita) {
+    if (capacita !== undefined) {
       if (capacita < 1) {
         return res.status(400).json({ error: "Capacità minimo 1" });
       }
+
+      // Non puoi ridurre sotto i mezzi parcheggiati
+      const vehicleCount = await Vehicle.count({
+        where: { id_parcheggio: id },
+      });
+
+      if (capacita < vehicleCount) {
+        return res.status(400).json({
+          error: `Non puoi ridurre a ${capacita}: ci sono ${vehicleCount} mezzi parcheggiati`,
+        });
+      }
+
       parking.capacita = capacita;
     }
 

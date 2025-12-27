@@ -11,7 +11,7 @@ export const createReport = async (req, res) => {
     const id_utente = req.user.id_utente;
 
     // Validazione input
-    if (!tipo_problema || !id_mezzo || !descrizione) {
+    if (!tipo_problema || !id_mezzo) {
       return res.status(400).json({
         error: "tipo_problema, id_mezzo e descrizione sono obbligatori",
       });
@@ -43,7 +43,7 @@ export const createReport = async (req, res) => {
       id_utente,
       id_mezzo,
       tipo_problema,
-      descrizione,
+      descrizione: descrizione || null,
       stato_segnalazione: "aperta",
       data_ora: new Date(),
     });
@@ -139,13 +139,6 @@ export const getReportById = async (req, res) => {
 // ✅ GET ALL REPORTS (ADMIN ONLY) - Visualizza tutte le segnalazioni
 export const getAllReports = async (req, res) => {
   try {
-    // Verifica che sia admin
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        error: "Solo gli admin possono visualizzare tutte le segnalazioni",
-      });
-    }
-
     const { stato_segnalazione, tipo_problema } = req.query;
 
     // Costruisci filtri
@@ -187,13 +180,6 @@ export const updateReportStatus = async (req, res) => {
     const { id_segnalazione } = req.params;
     const { stato_segnalazione } = req.body;
 
-    // Verifica che sia admin
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        error: "Solo gli admin possono aggiornare lo stato delle segnalazioni",
-      });
-    }
-
     if (!stato_segnalazione) {
       return res
         .status(400)
@@ -234,13 +220,6 @@ export const updateReportStatus = async (req, res) => {
 export const deleteReport = async (req, res) => {
   try {
     const { id_segnalazione } = req.params;
-
-    // Verifica che sia admin
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        error: "Solo gli admin possono eliminare segnalazioni",
-      });
-    }
 
     const report = await Report.findByPk(id_segnalazione);
     if (!report) {

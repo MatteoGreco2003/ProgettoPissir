@@ -135,13 +135,6 @@ export const changePassword = async (req, res) => {
 // ✅ GET ALL USERS (ADMIN ONLY) - Visualizza tutti gli utenti
 export const getAllUsers = async (req, res) => {
   try {
-    // Verifica che sia admin
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        error: "Solo gli admin possono visualizzare la lista utenti",
-      });
-    }
-
     // Recupera tutti gli utenti, escludendo le password
     const users = await User.findAll({
       attributes: [
@@ -172,13 +165,6 @@ export const getAllUsers = async (req, res) => {
 // ✅ GET USERS PENDING REACTIVATION (ADMIN ONLY) - Filtra solo sospesi
 export const getPendingReactivations = async (req, res) => {
   try {
-    // Verifica che sia admin
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        error: "Solo gli admin possono visualizzare le richieste di riapertura",
-      });
-    }
-
     // Recupera utenti in attesa di approvazione o sospesi
     const pendingUsers = await User.findAll({
       where: {
@@ -230,12 +216,6 @@ export const getPendingReactivations = async (req, res) => {
 // ✅ GET USER BY ID (ADMIN ONLY) - Dettagli utente per admin
 export const getUserById = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        error: "Solo gli admin possono visualizzare dettagli utenti",
-      });
-    }
-
     const { id_utente } = req.params;
 
     const user = await User.findByPk(id_utente, {

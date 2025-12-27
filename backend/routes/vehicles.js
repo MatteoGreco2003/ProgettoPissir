@@ -16,9 +16,9 @@ const router = express.Router();
 router.get("/data", getAllVehicles);
 router.get("/:id", getVehicleById);
 router.get("/parking/:id_parcheggio", getVehiclesByParking);
-router.post("/", verifyToken, createVehicle); // admin/gestore
-router.put("/:id", verifyToken, updateVehicle); // admin/gestore
-router.delete("/:id", verifyToken, deleteVehicle); // admin/gestore
+router.post("/", verifyToken, isAdmin, createVehicle); // admin/gestore
+router.put("/:id", verifyToken, isAdmin, updateVehicle); // admin/gestore
+router.delete("/:id", verifyToken, isAdmin, deleteVehicle); // admin/gestore
 router.post("/mqtt/battery", updateBatteryFromMQTT); // from IoT
 router.post(
   "/:id/recharge-battery",

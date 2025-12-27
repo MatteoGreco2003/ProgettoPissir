@@ -10,6 +10,7 @@ import jwt from "jsonwebtoken";
  * - Per API REST: ritorna 401 JSON se non autenticato
  * - Per page routes: reindirizza a / se non autenticato
  */
+//Routes miste (sia API che server-side rendering)
 export const verifyToken = (req, res, next) => {
   try {
     // ✅ PRIORITÀ: Leggi token da cookie (per page routes)
@@ -74,7 +75,7 @@ export const verifyToken = (req, res, next) => {
 };
 
 /**
- * Middleware specifico per page routes
+ * Middleware specifico per page routes reindirizza a "/"
  * Reindirizza sempre a login se non autenticato
  */
 export const authMiddleware = (req, res, next) => {
@@ -91,6 +92,16 @@ export const authMiddleware = (req, res, next) => {
     );
 
     req.user = decoded;
+
+    //per non permettere di ricarica le pagine dalla cache e usare il tasto indietro del browser
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    res.setHeader("Surrogate-Control", "no-store");
+
     next();
   } catch (error) {
     res.clearCookie("token");
@@ -100,7 +111,7 @@ export const authMiddleware = (req, res, next) => {
 
 /**
  * Middleware specifico per API REST
- * Ritorna sempre JSON se non autenticato
+ * Ritorna sempre JSON se non autenticato  JSON 401
  */
 export const apiAuthMiddleware = (req, res, next) => {
   try {
@@ -135,6 +146,7 @@ export const apiAuthMiddleware = (req, res, next) => {
 
 /**
  * Middleware per verificare se utente è admin/gestore
+ * 	Dopo apiAuthMiddleware per verificare ruolo
  */
 export const isAdmin = (req, res, next) => {
   try {
