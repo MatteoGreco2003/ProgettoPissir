@@ -1296,6 +1296,7 @@ function openReservationModal(vehicle) {
   document.getElementById("summaryParking").textContent =
     parking?.nome || "N/A";
 
+  fetchAndDisplayReport(vehicle.id_mezzo);
   reservationModal.classList.remove("hidden");
 }
 
@@ -1370,6 +1371,65 @@ function confirmReservation() {
       clearTimeout(unlockTimeout);
       if (unsubscribe) unsubscribe();
     });
+}
+
+async function fetchAndDisplayReport(mezzoId) {
+  try {
+    const response = await fetch(`/reports/by-vehicle/${mezzoId}`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const activeReports = data.reports.filter(
+        (r) =>
+          r.stato_segnalazione === "aperta" ||
+          r.stato_segnalazione === "in_lavorazione"
+      );
+
+      if (activeReports.length > 0) {
+        const report = activeReports[0]; // Prendi il primo report
+
+        const tipiProblema = {
+          danno_fisico: "Danno Fisico",
+          batteria_scarica: "Batteria Scarica",
+          pneumatico_bucato: "Pneumatico Bucato",
+          non_funziona: "Non Funziona",
+          sporco: "Sporco",
+          altro: "Altro",
+        };
+
+        const tipoLabel =
+          tipiProblema[report.tipo_problema] || report.tipo_problema;
+        const statoLabel =
+          report.stato_segnalazione === "aperta" ? "Aperta" : "In Lavorazione";
+
+        const reportBox = document.getElementById("reportWarningBox");
+        const reportDetails = document.getElementById("reportDetails");
+
+        reportDetails.innerHTML = `
+          <strong>${tipoLabel}</strong> - Stato: ${statoLabel}
+          ${
+            report.descrizione
+              ? `<br><em style="font-size: 12px;">"${report.descrizione}"</em>`
+              : ""
+          }
+        `;
+
+        reportBox.classList.remove("hidden"); // 🆕 MOSTRO IL BOX
+      } else {
+        // Nessun report attivo - nascondi il box
+        document.getElementById("reportWarningBox").classList.add("hidden");
+      }
+    } else {
+      // Se errore, nascondi il box
+      document.getElementById("reportWarningBox").classList.add("hidden");
+    }
+  } catch (error) {
+    console.error("❌ Errore nel fetch dei report:", error);
+    document.getElementById("reportWarningBox").classList.add("hidden");
+  }
 }
 
 // ===== UTILITIES =====

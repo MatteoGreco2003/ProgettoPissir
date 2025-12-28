@@ -18,6 +18,7 @@ export const getProfile = async (req, res) => {
       nome: user.nome,
       cognome: user.cognome,
       email: user.email,
+      ruolo: user.role,
       saldo: user.saldo,
       stato_account: user.stato_account,
       data_registrazione: user.data_registrazione,

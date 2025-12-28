@@ -649,7 +649,8 @@ body {
 }
 
 /* ===== WARNING BOX ===== */
-.warning-box {
+.warning-box,
+.warning-box.report-warning {
   background: linear-gradient(
     135deg,
     rgba(230, 129, 97, 0.12),
@@ -661,16 +662,28 @@ body {
   display: flex;
   gap: 12px;
   align-items: center;
+  justify-content: flex-start;
 }
 
-.warning-box i {
+.warning-box i,
+.warning-box.report-warning i {
   color: var(--warning-orange);
   font-size: 18px;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
-.warning-box p {
+.warning-box div,
+.warning-box.report-warning div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.warning-box p,
+.warning-box.report-warning p {
   color: var(--dark-text);
   font-size: 14px;
   line-height: 1.5;
@@ -1005,6 +1018,11 @@ body {
   transform: translateY(0);
 }
 
+#reservationModal .modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
 /* ============================================================================
    MODAL FEEDBACK CORSA
    ========================================================================== */
@@ -1181,7 +1199,6 @@ body {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  padding-right: 36px;
 }
 
 .feedback-select:focus {
@@ -1190,8 +1207,8 @@ body {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.feedback-report-container  {
-  margin-bottom: 16px;
+.feedback-description-container {
+  margin-top: 16px;
 }
 
 .feedback-error-container {
@@ -1199,9 +1216,8 @@ body {
   min-height: auto;
 }
 
-.feedback-error-container.hidden {
+.feedback-error-container:empty {
   display: none;
-  padding: 0;
 }
 
 .feedback-error-message {

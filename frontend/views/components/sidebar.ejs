@@ -8,30 +8,8 @@
 <!-- ===== SIDEBAR CONTAINER ===== -->
 <aside class="sidebar" id="sidebar">
   <!-- ===== NAVIGAZIONE PRINCIPALE ===== -->
-  <nav class="sidebar-nav">
-    <!-- Homepage -->
-    <a href="/home-utente" class="nav-item active" data-page="homepage">
-      <i class="fas fa-home"></i>
-      <span>Homepage</span>
-    </a>
-
-    <!-- Profilo Utente -->
-    <a href="/profile" class="nav-item" data-page="profile">
-      <i class="fas fa-user"></i>
-      <span>Profilo Utente</span>
-    </a>
-
-    <!-- Gestione Credito -->
-    <a href="/credit" class="nav-item" data-page="credit">
-      <i class="fas fa-wallet"></i>
-      <span>Gestione Credito</span>
-    </a>
-
-    <!-- Feedback e Valutazioni -->
-    <a href="/feedback" class="nav-item" data-page="feedback">
-      <i class="fas fa-comment"></i>
-      <span>Feedback</span>
-    </a>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <!-- I nav-item generati dinamicamente in base al ruolo -->
   </nav>
 
   <!-- ===== SIDEBAR FOOTER ===== -->
@@ -47,30 +25,161 @@
      SCRIPT INLINE - SIDEBAR LOGIC
      ============================================================================
      Gestisce:
+     - Carica il ruolo utente via API
+     - Genera dinamicamente i nav item in base al ruolo
      - Evidenziazione nav item attivo in base al percorso
      - Apertura/chiusura modal eliminazione profilo
      - Eliminazione profilo con API call
-     - Gestione click overlay per chiudere modal
      ========================================================================== -->
 <script>
+  /**
+   * Configurazione navigazione per UTENTE
+   */
+  const UTENTE_NAV = [
+    {
+      href: "/home-utente",
+      icon: "fas fa-home",
+      label: "Homepage",
+      dataPage: "homepage",
+    },
+    {
+      href: "/profile",
+      icon: "fas fa-user",
+      label: "Profilo Utente",
+      dataPage: "profile",
+    },
+    {
+      href: "/credit",
+      icon: "fas fa-wallet",
+      label: "Gestione Credito",
+      dataPage: "credit",
+    },
+    {
+      href: "/feedback",
+      icon: "fas fa-comment",
+      label: "Feedback",
+      dataPage: "feedback",
+    },
+  ];
+
+  /**
+   * Configurazione navigazione per ADMIN
+   */
+  const ADMIN_NAV = [
+    {
+      href: "/home-admin",
+      icon: "fas fa-home",
+      label: "Dashboard",
+      dataPage: "dashboard",
+    },
+    {
+      href: "/profile",
+      icon: "fas fa-user",
+      label: "Profilo Utente",
+      dataPage: "profile",
+    },
+    {
+      href: "/gestione-utenti",
+      icon: "fas fa-users",
+      label: "Gestione Utenti",
+      dataPage: "users",
+    },
+    {
+      href: "/gestione-mezzi",
+      icon: "fas fa-bicycle",
+      label: "Gestione Mezzi",
+      dataPage: "bikes",
+    },
+    {
+      href: "/admin/stations",
+      icon: "fas fa-parking",
+      label: "Gestione Parcheggi",
+      dataPage: "stations",
+    },
+    {
+      href: "/gestione-segnalazioni",
+      icon: "fas fa-chart-bar",
+      label: "Gestione Report",
+      dataPage: "reports",
+    },
+  ];
+
+  /**
+   * Genera dinamicamente i nav item in base al ruolo
+   * @param {string} userRole - Ruolo dell'utente ('utente' o 'admin')
+   */
+  function generateNavItems(userRole) {
+    const sidebarNav = document.getElementById("sidebarNav");
+    if (!sidebarNav) return;
+
+    // Seleziona la configurazione in base al ruolo
+    const navConfig = userRole === "admin" ? ADMIN_NAV : UTENTE_NAV;
+
+    // Pulisci nav precedente
+    sidebarNav.innerHTML = "";
+
+    // Crea e inserisci i nav item
+    navConfig.forEach((item) => {
+      const navLink = document.createElement("a");
+      navLink.href = item.href;
+      navLink.className = "nav-item";
+      navLink.setAttribute("data-page", item.dataPage);
+      navLink.innerHTML = `
+        <i class="${item.icon}"></i>
+        <span>${item.label}</span>
+      `;
+      sidebarNav.appendChild(navLink);
+    });
+
+    // Dopo la generazione, evidenzia il link attivo
+    setActiveNavItem();
+  }
+
+  /**
+   * Evidenzia il nav item corrispondente alla pagina corrente
+   */
   function setActiveNavItem() {
     const currentPath = window.location.pathname;
     const navItems = document.querySelectorAll(".nav-item");
 
-    // Rimuovi classe 'active' da tutti i nav item
     navItems.forEach((item) => {
       item.classList.remove("active");
     });
 
-    // Assegna 'active' al nav item corrispondente al percorso corrente
-    if (currentPath === "/home-utente" || currentPath === "/") {
-      document.querySelector('[data-page="homepage"]')?.classList.add("active");
-    } else if (currentPath === "/profile") {
-      document.querySelector('[data-page="profile"]')?.classList.add("active");
-    } else if (currentPath === "/credit") {
-      document.querySelector('[data-page="credit"]')?.classList.add("active");
-    } else if (currentPath === "/feedback") {
-      document.querySelector('[data-page="feedback"]')?.classList.add("active");
+    // Cerca il nav item che corrisponde al percorso
+    navItems.forEach((item) => {
+      const href = item.getAttribute("href");
+      if (
+        currentPath === href ||
+        (currentPath === "/" && href === "/home-utente")
+      ) {
+        item.classList.add("active");
+      }
+    });
+  }
+
+  /**
+   * Carica il ruolo utente e genera la navigazione
+   */
+  async function loadAndGenerateNavigation() {
+    try {
+      const response = await fetch("/users/me", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        // Genera nav in base al ruolo
+        generateNavItems(userData.ruolo);
+      } else {
+        console.error("❌ Errore caricamento profilo:", response.status);
+      }
+    } catch (error) {
+      console.error("❌ Errore di connessione:", error);
     }
   }
 
@@ -141,9 +250,8 @@
 
   // ===== INIT =====
   document.addEventListener("DOMContentLoaded", () => {
-    // ===== IMPOSTA NAV ITEM ATTIVO =====
-    // Evidenzia il link corrispondente alla pagina corrente
-    setActiveNavItem();
+    // ===== CARICA NAV IN BASE AL RUOLO =====
+    loadAndGenerateNavigation();
 
     // ===== EVENT LISTENER: Delete Profile Button =====
     const deleteBtn = document.getElementById("deleteProfileBtn");

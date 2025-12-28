@@ -186,6 +186,17 @@
               <span class="summary-value" id="summaryParking">-</span>
             </div>
           </div>
+          <div
+            id="reportWarningBox"
+            class="warning-box report-warning hidden"
+            style="margin-bottom: 20px"
+          >
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+              <p>Segnalazione attiva</p>
+              <p id="reportDetails"></p>
+            </div>
+          </div>
           <div class="warning-box">
             <i class="fas fa-info-circle"></i>
             <p>
@@ -273,7 +284,7 @@
             <label class="feedback-label">
               Segnala un problema (opzionale):
             </label>
-            <select id="feedbackReportType" class="feedback-select">
+            <select id="feedbackReportType" class="feedback-select" size="3">
               <option value="">Nessun problema</option>
               <option value="danno_fisico">🔨 Danno fisico</option>
               <option value="batteria_scarica">🔋 Batteria scarica</option>

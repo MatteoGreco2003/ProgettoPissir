@@ -50,31 +50,18 @@ router.get("/feedback", authMiddleware, (req, res) => {
   res.render("feedback");
 });
 
-/*
-// ✅ CORSA ATTIVA (protetto)
-router.get("/active-ride", authMiddleware, (req, res) => {
-  res.render("user/active-ride", {
-    title: "Corsa Attiva - Mobishare",
-    user: req.user,
-  });
-});
-
 // ✅ DASHBOARD MANAGER (protetto + solo gestori)
-router.get("/manager", authMiddleware, (req, res) => {
+router.get("/home-admin", authMiddleware, (req, res) => {
   // Verifica se è gestore (da implementare in future)
-  if (req.user.role !== "manager" && req.user.role !== "admin") {
+  /*if (req.user.role !== "manager" && req.user.role !== "admin") {
     return res.status(403).render("404", {
       title: "Accesso Negato",
     });
-  }
+  }*/
 
-  res.render("manager/dashboard", {
-    title: "Dashboard Manager - Mobishare",
-    user: req.user,
-    isAdmin: true,
-  });
+  res.render("admin-dashboard");
 });
-
+/*
 // ✅ GESTIONE MEZZI (protetto + solo gestori)
 router.get("/manager/vehicles", authMiddleware, (req, res) => {
   if (req.user.role !== "manager" && req.user.role !== "admin") {

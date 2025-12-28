@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Admin</title>
+
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+
+    <!-- Stili Admin -->
+    <link rel="stylesheet" href="/css/admin-dashboard.css" />
+  </head>
+
+  <body>
+    <!-- ========== NAVBAR (COMPONENTE IMPORTATO) ========== -->
+    <%- include('./components/navbar') %>
+
+    <!-- ========== SIDEBAR (COMPONENTE IMPORTATO) ========== -->
+    <%- include('./components/sidebar') %>
+
+    <!-- ====================================================================
+       MAIN CONTENT
+       ==================================================================== -->
+    <main>
+      <!-- KPI Cards Grid -->
+      <div class="kpi-grid" id="kpiGrid">
+        <!-- Mezzi Totali -->
+        <div class="kpi-card">
+          <div class="kpi-icon">🚲</div>
+          <div class="kpi-label">Mezzi</div>
+          <div class="kpi-value" id="meziCount">--</div>
+          <div class="kpi-meta">
+            <span id="meziKO">3 non disponibili</span>
+          </div>
+          <div class="status-badge unavailable" id="meziStatus">
+            ⚠️ Malfunzionamenti
+          </div>
+        </div>
+
+        <!-- Corse Oggi -->
+        <div class="kpi-card">
+          <div class="kpi-icon">🏃</div>
+          <div class="kpi-label">Corse Oggi</div>
+          <div class="kpi-value" id="rideCount">--</div>
+          <div class="kpi-meta" id="rideMeta">23 completate</div>
+        </div>
+
+        <!-- Utenti Sospesi -->
+        <div class="kpi-card">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-label">Utenti Sospesi</div>
+          <div class="kpi-value" id="suspendedCount">--</div>
+          <div class="kpi-meta negative">In attesa di approvazione</div>
+          <div class="status-badge unavailable" id="suspendedStatus">
+            ⚠️ Azione richiesta
+          </div>
+        </div>
+
+        <!-- Segnalazioni Aperte -->
+        <div class="kpi-card">
+          <div class="kpi-icon">📋</div>
+          <div class="kpi-label">Segnalazioni Aperte</div>
+          <div class="kpi-value" id="reportCount">--</div>
+          <div class="kpi-meta negative">Da gestire</div>
+          <div class="status-badge unavailable" id="reportStatus">
+            ⚠️ Azione richiesta
+          </div>
+        </div>
+
+        <!-- Incassi -->
+        <div class="kpi-card">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-label">Incassi Oggi</div>
+          <div class="kpi-value" id="earningsCount">--</div>
+          <div class="kpi-meta positive">Totale giornaliero</div>
+        </div>
+
+        <!-- Parcheggi -->
+        <div class="kpi-card">
+          <div class="kpi-icon">📍</div>
+          <div class="kpi-label">Parcheggi Attivi</div>
+          <div class="kpi-value" id="parkingCount">--</div>
+          <div class="kpi-meta">Dislocazioni</div>
+        </div>
+      </div>
+
+      <!-- Actions Row -->
+      <div class="actions-row">
+        <button class="btn btn-primary" id="refreshBtn">
+          <i class="fas fa-sync"></i>
+          Aggiorna Dati
+        </button>
+        <button
+          class="btn btn-secondary"
+          onclick="navigateTo('/admin/reports')"
+        >
+          <i class="fas fa-exclamation-circle"></i>
+          Vedi Segnalazioni
+        </button>
+        <button class="btn btn-secondary">
+          <i class="fas fa-user-check"></i>
+          Approva Utenti
+        </button>
+      </div>
+
+      <!-- Quick Stats Section -->
+      <div class="section">
+        <div class="section-title">
+          <i class="fas fa-activity"></i>
+          Statistiche Rapide
+        </div>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-lg);
+          "
+        >
+          <div>
+            <div
+              style="
+                font-size: 12px;
+                color: var(--text-secondary);
+                margin-bottom: var(--space-sm);
+              "
+            >
+              Percentuale Disponibilità
+            </div>
+            <div
+              style="font-size: 24px; font-weight: 700; color: var(--success)"
+              id="availabilityPercent"
+            >
+              --
+            </div>
+          </div>
+          <div>
+            <div
+              style="
+                font-size: 12px;
+                color: var(--text-secondary);
+                margin-bottom: var(--space-sm);
+              "
+            >
+              Utilizzo Medio
+            </div>
+            <div
+              style="
+                font-size: 24px;
+                font-weight: 700;
+                color: var(--primary-teal);
+              "
+              id="usagePercent"
+            >
+              --
+            </div>
+          </div>
+          <div>
+            <div
+              style="
+                font-size: 12px;
+                color: var(--text-secondary);
+                margin-bottom: var(--space-sm);
+              "
+            >
+              Affidabilità Utenti
+            </div>
+            <div
+              style="font-size: 24px; font-weight: 700; color: var(--info)"
+              id="reliabilityPercent"
+            >
+              --
+            </div>
+          </div>
+          <div>
+            <div
+              style="
+                font-size: 12px;
+                color: var(--text-secondary);
+                margin-bottom: var(--space-sm);
+              "
+            >
+              Rating Medio
+            </div>
+            <div
+              style="font-size: 24px; font-weight: 700; color: var(--warning)"
+              id="ratingAvg"
+            >
+              --
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Snackbar -->
+    <div id="snackbar" class="snackbar"></div>
+
+    <!-- ===== MODAL ELIMINA PROFILO ===== -->
+    <div id="deleteProfileModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Elimina Profilo</h2>
+          <button class="modal-close" id="modalClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Sei sicuro di voler eliminare il tuo profilo?</p>
+          <p class="modal-warning">
+            <strong>Questa azione non può essere annullata.</strong>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" id="modalConfirmDelete">
+            Elimina Profilo
+          </button>
+          <button class="btn btn-secondary" id="modalCancel">Annulla</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+       SCRIPT
+       ==================================================================== -->
+    <script src="/js/admin-dashboard.js"></script>
+  </body>
+</html>

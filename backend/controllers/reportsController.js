@@ -136,6 +136,40 @@ export const getReportById = async (req, res) => {
   }
 };
 
+// ✅ GET REPORTS BY VEHICLE ID - Visualizza segnalazioni per un mezzo
+export const getReportsByVehicleId = async (req, res) => {
+  try {
+    const { id_mezzo } = req.params;
+
+    // Verifica che mezzo esista
+    const vehicle = await Vehicle.findByPk(id_mezzo);
+    if (!vehicle) {
+      return res.status(404).json({ error: "Mezzo non trovato" });
+    }
+
+    const reports = await Report.findAll({
+      where: { id_mezzo },
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id_utente", "nome", "cognome"],
+        },
+      ],
+      order: [["data_ora", "DESC"]],
+    });
+
+    res.status(200).json({
+      message: "Segnalazioni recuperate",
+      count: reports.length,
+      reports: reports,
+    });
+  } catch (error) {
+    console.error("❌ Errore GET reports by vehicle:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 // ✅ GET ALL REPORTS (ADMIN ONLY) - Visualizza tutte le segnalazioni
 export const getAllReports = async (req, res) => {
   try {

@@ -30,7 +30,7 @@
       <!-- Nome e cognome + ruolo utente -->
       <div class="user-details">
         <span class="user-name" id="userNameNavbar">Matteo Rossi</span>
-        <span class="user-role">Utente</span>
+        <span class="user-role" id="userRoleNavbar">Utente</span>
       </div>
     </div>
 
@@ -88,11 +88,32 @@
       if (response.ok) {
         const userData = await response.json();
 
+        // ===== MEMORIZZA IL RUOLO COME DATA ATTRIBUTE =====
+        // Serve per il redirect dinamico nel click del profilo
+        const userProfileArea = document.getElementById("userProfileArea");
+        if (userProfileArea) {
+          userProfileArea.setAttribute("data-user-role", userData.ruolo);
+        }
+
         // ===== AGGIORNA NOME NAVBAR =====
         // Mostra "Nome Cognome" nella navbar
         const userNameNavbar = document.getElementById("userNameNavbar");
         if (userNameNavbar) {
-          userNameNavbar.textContent = `${userData.nome} ${userData.cognome}`;
+          if (userData.ruolo === "admin") {
+            userNameNavbar.textContent = userData.nome;
+          } else {
+            userNameNavbar.textContent = `${userData.nome} ${userData.cognome}`;
+          }
+        }
+
+        // ===== AGGIORNA RUOLO NAVBAR =====
+        const userRoleNavbar = document.getElementById("userRoleNavbar");
+        if (userRoleNavbar) {
+          if (userData.ruolo === "admin") {
+            userRoleNavbar.textContent = "Gestore";
+          } else {
+            userRoleNavbar.textContent = "Utente";
+          }
         }
 
         // ===== AGGIORNA AVATAR =====
@@ -144,11 +165,17 @@
     loadAndUpdateNavbar();
 
     // ===== EVENT LISTENER: Click su profilo =====
-    // Redirect a /home-utente per ricaricare la navbar
+    // Redirect dinamico in base al ruolo
     const userProfileArea = document.getElementById("userProfileArea");
     if (userProfileArea) {
       userProfileArea.addEventListener("click", () => {
-        window.location.href = "/home-utente";
+        const userRole = userProfileArea.getAttribute("data-user-role");
+
+        if (userRole === "admin") {
+          window.location.href = "/home-admin";
+        } else {
+          window.location.href = "/home-utente";
+        }
       });
     }
 

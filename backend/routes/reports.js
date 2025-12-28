@@ -8,12 +8,14 @@ import {
   getAllReports,
   updateReportStatus,
   deleteReport,
+  getReportsByVehicleId,
 } from "../controllers/reportsController.js";
 import { verifyToken, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
 router.get("/my-reports", verifyToken, getMyReports);
+router.get("/by-vehicle/:id_mezzo", getReportsByVehicleId);
 router.get("/:id_segnalazione", verifyToken, getReportById);
 router.post("/", verifyToken, createReport);
 
