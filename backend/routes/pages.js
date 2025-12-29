@@ -28,7 +28,7 @@ router.get("/home-utente", authMiddleware, (req, res) => {
 // GET /profile - Profilo utente (protetto)
 router.get("/profile", authMiddleware, (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
-  res.render("profile-utente");
+  res.render("profile-utente", { user: req.user });
 });
 
 // GET /ride - Pagina corsa (protetto)

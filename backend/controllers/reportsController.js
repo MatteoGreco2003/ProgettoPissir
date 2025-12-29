@@ -208,7 +208,7 @@ export const getAllReports = async (req, res) => {
   }
 };
 
-// ✅ UPDATE REPORT STATUS (ADMIN ONLY) - Aggiorna stato segnalazione
+// ✅ UPDATE REPORT STATUS (ADMIN ONLY) - Aggiorna stato segnalazione + stato veicolo
 export const updateReportStatus = async (req, res) => {
   try {
     const { id_segnalazione } = req.params;
@@ -239,10 +239,30 @@ export const updateReportStatus = async (req, res) => {
     report.stato_segnalazione = stato_segnalazione;
     await report.save();
 
+    // AGGIORNAMENTO AUTOMATICO STATO VEICOLO
+    const vehicle = await Vehicle.findByPk(report.id_mezzo);
+    if (vehicle) {
+      if (stato_segnalazione === "in_lavorazione") {
+        // Se segnalazione in lavorazione → veicolo in manutenzione
+        vehicle.stato = "in_manutenzione";
+      } else if (stato_segnalazione === "risolta") {
+        // Se segnalazione risolta → veicolo torna disponibile
+        vehicle.stato = "disponibile";
+      }
+      // Se "aperta" non cambia lo stato del veicolo
+      await vehicle.save();
+    }
+
     res.status(200).json({
       message: "Segnalazione aggiornata con successo",
       id_segnalazione: report.id_segnalazione,
       stato_segnalazione: report.stato_segnalazione,
+      vehicle_updated: vehicle
+        ? {
+            id_mezzo: vehicle.id_mezzo,
+            nuovo_stato: vehicle.stato,
+          }
+        : null,
     });
   } catch (error) {
     console.error("❌ Errore UPDATE report status:", error.message);

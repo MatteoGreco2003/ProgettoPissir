@@ -5,6 +5,7 @@ import Parking from "../models/Parking.js";
 import Transaction from "../models/Transaction.js";
 import PuntiFedelta from "../models/LoyaltyPoints.js";
 import mqtt from "mqtt";
+import { Op } from "sequelize";
 
 // Helper: Determina la tariffa base in base al tipo di mezzo
 const getTariffaBaseByMezzo = (tipo_mezzo) => {
@@ -991,6 +992,69 @@ export const getUserRideStatistics = async (req, res) => {
   }
 };
 
+// ✅ GET RIDES TODAY (ADMIN ONLY) - Tutte le corse di oggi
+export const getRidesToday = async (req, res) => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const rides = await Ride.findAll({
+      where: {
+        data_ora_inizio: {
+          [Op.between]: [startOfDay, endOfDay],
+        },
+      },
+      include: [
+        {
+          model: Vehicle,
+          as: "vehicle",
+          attributes: ["id_mezzo", "tipo_mezzo"],
+        },
+      ],
+      order: [["data_ora_inizio", "DESC"]],
+    });
+
+    res.status(200).json({
+      message: "Corse di oggi recuperate",
+      count: rides.length,
+      rides,
+    });
+  } catch (error) {
+    console.error("❌ Errore GET rides today:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+// ✅ GET ALL COMPLETED RIDES (ADMIN ONLY) - Tutte le corse completate
+export const getAllCompletedRides = async (req, res) => {
+  try {
+    const rides = await Ride.findAll({
+      where: { stato_corsa: "completata" },
+      include: [
+        {
+          model: Vehicle,
+          as: "vehicle",
+          attributes: ["id_mezzo", "tipo_mezzo"],
+        },
+      ],
+      attributes: ["id_corsa", "id_utente", "costo"],
+      order: [["data_ora_fine", "DESC"]],
+    });
+
+    res.status(200).json({
+      message: "Tutte le corse completate recuperate",
+      count: rides.length,
+      rides,
+    });
+  } catch (error) {
+    console.error("❌ Errore GET all completed rides:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 export default {
   startRide,
   checkPayment,
@@ -1001,4 +1065,6 @@ export default {
   cancelRide,
   getUserRideStatistics,
   endRideWithDebt,
+  getRidesToday,
+  getAllCompletedRides,
 };

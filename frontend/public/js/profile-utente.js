@@ -59,8 +59,12 @@ let userData = null;
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   loadUserProfile();
-  loadRideStatistics();
-  loadRideHistory(ridesPerPage, 0);
+
+  // Carica statistiche e cronologia SOLO se NON admin
+  if (document.getElementById("userTotalRides")) {
+    loadRideStatistics();
+    loadRideHistory(ridesPerPage, 0);
+  }
 });
 
 // ===== EVENT LISTENERS SETUP =====
@@ -77,27 +81,36 @@ function setupEventListeners() {
     }
   });
 
-  // Modify profile modal events
-  modifyProfileBtn.addEventListener("click", openModifyProfileModal);
-  modalProfileClose.addEventListener("click", closeModifyProfileModal);
-  modalProfileCancel.addEventListener("click", closeModifyProfileModal);
-  modalProfileSave.addEventListener("click", saveProfileChanges);
+  // ===== Modify profile modal events - SOLO SE UTENTE (non admin) =====
+  if (modifyProfileBtn) {
+    modifyProfileBtn.addEventListener("click", openModifyProfileModal);
+  }
+  if (modalProfileClose) {
+    modalProfileClose.addEventListener("click", closeModifyProfileModal);
+  }
+  if (modalProfileCancel) {
+    modalProfileCancel.addEventListener("click", closeModifyProfileModal);
+  }
+  if (modalProfileSave) {
+    modalProfileSave.addEventListener("click", saveProfileChanges);
+  }
 
+  // Close modals on overlay click
+  if (modifyProfileModal) {
+    modifyProfileModal.addEventListener("click", (e) => {
+      if (
+        e.target === modifyProfileModal ||
+        e.target.classList.contains("modal-overlay")
+      ) {
+        closeModifyProfileModal();
+      }
+    });
+  }
   // Modify password modal events
   modifyPasswordBtn.addEventListener("click", openModifyPasswordModal);
   modalPasswordClose.addEventListener("click", closeModifyPasswordModal);
   modalPasswordCancel.addEventListener("click", closeModifyPasswordModal);
   modalPasswordSave.addEventListener("click", savePasswordChanges);
-
-  // Close modals on overlay click
-  modifyProfileModal.addEventListener("click", (e) => {
-    if (
-      e.target === modifyProfileModal ||
-      e.target.classList.contains("modal-overlay")
-    ) {
-      closeModifyProfileModal();
-    }
-  });
 
   modifyPasswordModal.addEventListener("click", (e) => {
     if (
@@ -139,70 +152,83 @@ function displayUserProfile() {
   if (!userData) return;
 
   // Nome e Cognome
-  userNome.textContent = userData.nome || "N/A";
-  userCognome.textContent = userData.cognome || "N/A";
+  if (userNome) userNome.textContent = userData.nome || "N/A";
+  if (userCognome) userCognome.textContent = userData.cognome || "N/A";
 
   // Email
-  userEmail.textContent = userData.email || "N/A";
+  if (userEmail) userEmail.textContent = userData.email || "N/A";
 
   // Data registrazione formattata DD/MM/YYYY
-  const dataReg = new Date(userData.data_registrazione);
-  const dataFormattata = dataReg.toLocaleDateString("it-IT");
-  userDataReg.textContent = dataFormattata;
-
-  // Saldo con stato dinamico
-  const saldo = parseFloat(userData.saldo || 0);
-  userBalance.textContent = `€ ${saldo.toFixed(2)}`;
-
-  // Reset classi stato saldo
-  balanceContainer.classList.remove(
-    "balance-container--danger",
-    "balance-container--warning",
-    "balance-container--ok"
-  );
-
-  userBalance.classList.remove(
-    "balance-amount--danger",
-    "balance-amount--warning",
-    "balance-amount--ok"
-  );
-
-  // Assegna classe in base al saldo
-  if (saldo <= 0) {
-    balanceContainer.classList.add("balance-container--danger");
-    userBalance.classList.add("balance-amount--danger");
-  } else if (saldo > 0 && saldo <= 1) {
-    balanceContainer.classList.add("balance-container--warning");
-    userBalance.classList.add("balance-amount--warning");
-  } else {
-    balanceContainer.classList.add("balance-container--ok");
-    userBalance.classList.add("balance-amount--ok");
+  if (userDataReg) {
+    const dataReg = new Date(userData.data_registrazione);
+    const dataFormattata = dataReg.toLocaleDateString("it-IT");
+    userDataReg.textContent = dataFormattata;
   }
 
-  // ✅ PUNTI FEDELTÀ
-  const punti = userData.punti || 0;
-  userLoyaltyPoints.textContent = punti;
+  // Saldo con stato dinamico
+  if (userBalance && balanceContainer) {
+    const saldo = parseFloat(userData.saldo || 0);
+    userBalance.textContent = `€ ${saldo.toFixed(2)}`;
 
-  // 1 punto = €0.05 di sconto
-  const valoreSconto = punti * 0.05;
-  userLoyaltyValue.textContent = `€ ${valoreSconto.toFixed(2)}`;
+    // Reset classi stato saldo
+    balanceContainer.classList.remove(
+      "balance-container--danger",
+      "balance-container--warning",
+      "balance-container--ok"
+    );
 
-  // Progress bar verso 100 punti (€5,00)
-  const percentuale = Math.min((punti / 100) * 100, 100);
-  loyaltyProgressBar.style.width = `${percentuale}%`;
+    userBalance.classList.remove(
+      "balance-amount--danger",
+      "balance-amount--warning",
+      "balance-amount--ok"
+    );
 
-  const puntiRimanenti = Math.max(100 - punti, 0);
-  loyaltyProgressText.textContent = `${punti} / 100 punti verso € 5,00 di sconto`;
+    // Assegna classe in base al saldo
+    if (saldo <= 0) {
+      balanceContainer.classList.add("balance-container--danger");
+      userBalance.classList.add("balance-amount--danger");
+    } else if (saldo > 0 && saldo <= 1) {
+      balanceContainer.classList.add("balance-container--warning");
+      userBalance.classList.add("balance-amount--warning");
+    } else {
+      balanceContainer.classList.add("balance-container--ok");
+      userBalance.classList.add("balance-amount--ok");
+    }
+  }
+
+  // ✅ PUNTI FEDELTÀ - SOLO SE UTENTE
+  if (
+    userLoyaltyPoints &&
+    userLoyaltyValue &&
+    loyaltyProgressBar &&
+    loyaltyProgressText
+  ) {
+    const punti = userData.punti || 0;
+    userLoyaltyPoints.textContent = punti;
+
+    // 1 punto = €0.05 di sconto
+    const valoreSconto = punti * 0.05;
+    userLoyaltyValue.textContent = `€ ${valoreSconto.toFixed(2)}`;
+
+    // Progress bar verso 100 punti (€5,00)
+    const percentuale = Math.min((punti / 100) * 100, 100);
+    loyaltyProgressBar.style.width = `${percentuale}%`;
+
+    const puntiRimanenti = Math.max(100 - punti, 0);
+    loyaltyProgressText.textContent = `${punti} / 100 punti verso € 5,00 di sconto`;
+  }
 
   // Stato account con badge dinamico
-  const statusMap = {
-    attivo: "Attivo",
-    sospeso: "Sospeso",
-    in_attesa_approvazione: "In attesa di approvazione",
-    eliminato: "Eliminato",
-  };
-  userStatus.textContent = statusMap[userData.stato_account] || "N/A";
-  userStatus.className = `status-badge status-${userData.stato_account}`;
+  if (userStatus) {
+    const statusMap = {
+      attivo: "Attivo",
+      sospeso: "Sospeso",
+      in_attesa_approvazione: "In attesa di approvazione",
+      eliminato: "Eliminato",
+    };
+    userStatus.textContent = statusMap[userData.stato_account] || "N/A";
+    userStatus.className = `status-badge status-${userData.stato_account}`;
+  }
 }
 
 // ===== LOAD RIDE STATISTICS =====
@@ -221,18 +247,18 @@ async function loadRideStatistics() {
 
       const vehicleNameFormatted = formatVehicleName(stats.ultimo_mezzo);
 
-      // Aggiorna gli elementi statistici
-      document.getElementById("userTotalRides").textContent =
-        stats.corse_totali;
-      document.getElementById("userLastVehicle").textContent =
-        vehicleNameFormatted;
-      document.getElementById(
-        "userTotalSpent"
-      ).textContent = `€ ${stats.spesa_totale.toFixed(2)}`;
+      // Aggiorna gli elementi statistici SOLO se esistono
+      const userTotalRides = document.getElementById("userTotalRides");
+      const userLastVehicle = document.getElementById("userLastVehicle");
+      const userTotalSpent = document.getElementById("userTotalSpent");
+      const userTotalKm = document.getElementById("userTotalKm");
 
-      document.getElementById("userTotalKm").textContent = `${(
-        stats.km_totali ?? 0
-      ).toFixed(1)} km`;
+      if (userTotalRides) userTotalRides.textContent = stats.corse_totali;
+      if (userLastVehicle) userLastVehicle.textContent = vehicleNameFormatted;
+      if (userTotalSpent)
+        userTotalSpent.textContent = `€ ${stats.spesa_totale.toFixed(2)}`;
+      if (userTotalKm)
+        userTotalKm.textContent = `${(stats.km_totali ?? 0).toFixed(1)} km`;
     } else {
       console.warn("⚠️ Errore caricamento statistiche");
     }
@@ -392,11 +418,16 @@ function openModifyProfileModal() {
   // Pulisci errori precedenti
   clearProfileErrors();
 
-  modifyProfileModal.classList.remove("hidden");
+  if (modifyProfileModal) {
+    modifyProfileModal.classList.remove("hidden");
+  }
 }
 
 function closeModifyProfileModal() {
-  modifyProfileModal.classList.add("hidden");
+  if (modifyProfileModal) {
+    modifyProfileModal.classList.add("hidden");
+  }
+
   clearProfileErrors();
 }
 
@@ -406,8 +437,8 @@ function clearProfileErrors() {
   errorContainer.innerHTML = "";
 
   // Rimuovi classe errore dai campi
-  inputNome.classList.remove("input-error");
-  inputCognome.classList.remove("input-error");
+  if (inputNome) inputNome.classList.remove("input-error");
+  if (inputCognome) inputCognome.classList.remove("input-error");
 }
 
 // ===== FUNZIONE PER MOSTRARE ERRORI PROFILE =====
@@ -425,8 +456,9 @@ function showProfileError(errorMessage, fieldsWithError = []) {
 
   // Aggiungi classe errore ai campi interessati
   fieldsWithError.forEach((field) => {
-    if (field === "nome") inputNome.classList.add("input-error");
-    if (field === "cognome") inputCognome.classList.add("input-error");
+    if (field === "nome" && inputNome) inputNome.classList.add("input-error");
+    if (field === "cognome" && inputCognome)
+      inputCognome.classList.add("input-error");
   });
 }
 

@@ -29,170 +29,413 @@
     <main>
       <!-- KPI Cards Grid -->
       <div class="kpi-grid" id="kpiGrid">
-        <!-- Mezzi Totali -->
-        <div class="kpi-card">
-          <div class="kpi-icon">🚲</div>
-          <div class="kpi-label">Mezzi</div>
-          <div class="kpi-value" id="meziCount">--</div>
-          <div class="kpi-meta">
-            <span id="meziKO">3 non disponibili</span>
+        <!-- UTENTI CARD -->
+        <div class="kpi-card kpi-card--users" id="usersCard">
+          <div class="kpi-header">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-title-group">
+              <div class="kpi-label">Utenti Registrati</div>
+              <div class="kpi-value" id="totalUsersCount">--</div>
+            </div>
           </div>
-          <div class="status-badge unavailable" id="meziStatus">
-            ⚠️ Malfunzionamenti
+
+          <div class="kpi-divider"></div>
+
+          <!-- Status Breakdown -->
+          <div class="users-status-breakdown">
+            <!-- Utenti Attivi -->
+            <div class="status-item">
+              <div class="status-dot active"></div>
+              <div class="status-info">
+                <div class="status-label">Attivi</div>
+                <div class="status-count" id="activeUsersCount">0</div>
+              </div>
+            </div>
+
+            <!-- Utenti Sospesi -->
+            <div class="status-item">
+              <div class="status-dot suspended"></div>
+              <div class="status-info">
+                <div class="status-label">Sospesi</div>
+                <div class="status-count" id="suspendedUsersCount">0</div>
+              </div>
+            </div>
+
+            <!-- In Attesa di Approvazione -->
+            <div class="status-item">
+              <div class="status-dot pending"></div>
+              <div class="status-info">
+                <div class="status-label">In attesa di approvazione</div>
+                <div class="status-count" id="pendingUsersCount">0</div>
+              </div>
+            </div>
           </div>
+
+          <div class="kpi-divider"></div>
+
+          <div class="top-user-info">
+            <span class="top-user-icon">🏆</span>
+            <div class="top-user-content">
+              <div class="top-user-label">Utente Top</div>
+              <div class="top-user-detail" id="topUserDetail">--</div>
+            </div>
+          </div>
+
+          <div style="flex-grow: 1"></div>
+
+          <div class="kpi-divider"></div>
+
+          <!-- Action Button -->
+          <button
+            class="btn btn-sm btn-outline"
+            id="viewUsersBtn"
+            onclick="navigateTo('/gestione-utenti')"
+          >
+            <i class="fas fa-arrow-right"></i>
+            Gestisci Utenti
+          </button>
         </div>
 
-        <!-- Corse Oggi -->
-        <div class="kpi-card">
-          <div class="kpi-icon">🏃</div>
-          <div class="kpi-label">Corse Oggi</div>
-          <div class="kpi-value" id="rideCount">--</div>
-          <div class="kpi-meta" id="rideMeta">23 completate</div>
-        </div>
-
-        <!-- Utenti Sospesi -->
-        <div class="kpi-card">
-          <div class="kpi-icon">👥</div>
-          <div class="kpi-label">Utenti Sospesi</div>
-          <div class="kpi-value" id="suspendedCount">--</div>
-          <div class="kpi-meta negative">In attesa di approvazione</div>
-          <div class="status-badge unavailable" id="suspendedStatus">
-            ⚠️ Azione richiesta
-          </div>
-        </div>
-
-        <!-- Segnalazioni Aperte -->
-        <div class="kpi-card">
-          <div class="kpi-icon">📋</div>
-          <div class="kpi-label">Segnalazioni Aperte</div>
-          <div class="kpi-value" id="reportCount">--</div>
-          <div class="kpi-meta negative">Da gestire</div>
-          <div class="status-badge unavailable" id="reportStatus">
-            ⚠️ Azione richiesta
-          </div>
-        </div>
-
-        <!-- Incassi -->
-        <div class="kpi-card">
-          <div class="kpi-icon">💰</div>
-          <div class="kpi-label">Incassi Oggi</div>
-          <div class="kpi-value" id="earningsCount">--</div>
-          <div class="kpi-meta positive">Totale giornaliero</div>
-        </div>
-
-        <!-- Parcheggi -->
-        <div class="kpi-card">
-          <div class="kpi-icon">📍</div>
-          <div class="kpi-label">Parcheggi Attivi</div>
-          <div class="kpi-value" id="parkingCount">--</div>
-          <div class="kpi-meta">Dislocazioni</div>
-        </div>
-      </div>
-
-      <!-- Actions Row -->
-      <div class="actions-row">
-        <button class="btn btn-primary" id="refreshBtn">
-          <i class="fas fa-sync"></i>
-          Aggiorna Dati
-        </button>
-        <button
-          class="btn btn-secondary"
-          onclick="navigateTo('/admin/reports')"
-        >
-          <i class="fas fa-exclamation-circle"></i>
-          Vedi Segnalazioni
-        </button>
-        <button class="btn btn-secondary">
-          <i class="fas fa-user-check"></i>
-          Approva Utenti
-        </button>
-      </div>
-
-      <!-- Quick Stats Section -->
-      <div class="section">
-        <div class="section-title">
-          <i class="fas fa-activity"></i>
-          Statistiche Rapide
-        </div>
-        <div
-          style="
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: var(--space-lg);
-          "
-        >
-          <div>
-            <div
-              style="
-                font-size: 12px;
-                color: var(--text-secondary);
-                margin-bottom: var(--space-sm);
-              "
-            >
-              Percentuale Disponibilità
-            </div>
-            <div
-              style="font-size: 24px; font-weight: 700; color: var(--success)"
-              id="availabilityPercent"
-            >
-              --
+        <!-- SEGNALAZIONI CARD - COMPLETA E MODERNA -->
+        <div class="kpi-card kpi-card--reports" id="reportsCard">
+          <div class="kpi-header">
+            <div class="kpi-icon">📋</div>
+            <div class="kpi-title-group">
+              <div class="kpi-label">Segnalazioni Aperte</div>
+              <div class="kpi-value" id="totalOpenReportsCount">--</div>
             </div>
           </div>
-          <div>
-            <div
-              style="
-                font-size: 12px;
-                color: var(--text-secondary);
-                margin-bottom: var(--space-sm);
-              "
-            >
-              Utilizzo Medio
+
+          <div class="kpi-divider"></div>
+
+          <!-- Reports Status Breakdown -->
+          <div class="reports-status-breakdown">
+            <!-- Aperte -->
+            <div class="status-item">
+              <div class="status-dot report-open"></div>
+              <div class="status-info">
+                <div class="status-label">Aperte</div>
+                <div class="status-count" id="openReportsCount">0</div>
+              </div>
             </div>
-            <div
-              style="
-                font-size: 24px;
-                font-weight: 700;
-                color: var(--primary-teal);
-              "
-              id="usagePercent"
-            >
-              --
+
+            <!-- In Lavorazione -->
+            <div class="status-item">
+              <div class="status-dot report-in-progress"></div>
+              <div class="status-info">
+                <div class="status-label">In Lavorazione</div>
+                <div class="status-count" id="inProgressReportsCount">0</div>
+              </div>
             </div>
-          </div>
-          <div>
-            <div
-              style="
-                font-size: 12px;
-                color: var(--text-secondary);
-                margin-bottom: var(--space-sm);
-              "
-            >
-              Affidabilità Utenti
-            </div>
-            <div
-              style="font-size: 24px; font-weight: 700; color: var(--info)"
-              id="reliabilityPercent"
-            >
-              --
+
+            <!-- Risolte -->
+            <div class="status-item">
+              <div class="status-dot report-resolved"></div>
+              <div class="status-info">
+                <div class="status-label">Risolte</div>
+                <div class="status-count" id="resolvedReportsCount">0</div>
+              </div>
             </div>
           </div>
-          <div>
-            <div
-              style="
-                font-size: 12px;
-                color: var(--text-secondary);
-                margin-bottom: var(--space-sm);
-              "
-            >
-              Rating Medio
+
+          <!-- Reports by Problem Type -->
+          <div class="kpi-divider"></div>
+          <div class="reports-problems-grid">
+            <div class="problem-badge" id="damagoBadge">
+              <span class="problem-icon">🔨</span>
+              <span class="problem-count">0</span>
             </div>
-            <div
-              style="font-size: 24px; font-weight: 700; color: var(--warning)"
-              id="ratingAvg"
-            >
-              --
+            <div class="problem-badge" id="batteryBadge">
+              <span class="problem-icon">🔋</span>
+              <span class="problem-count">0</span>
+            </div>
+            <div class="problem-badge" id="tyreBadge">
+              <span class="problem-icon">🛞</span>
+              <span class="problem-count">0</span>
+            </div>
+            <div class="problem-badge" id="malfunctionBadge">
+              <span class="problem-icon">⚙️</span>
+              <span class="problem-count">0</span>
+            </div>
+            <div class="problem-badge" id="dirtyBadge">
+              <span class="problem-icon">🧹</span>
+              <span class="problem-count">0</span>
+            </div>
+            <div class="problem-badge" id="otherBadge">
+              <span class="problem-icon">❓</span>
+              <span class="problem-count">0</span>
             </div>
           </div>
+
+          <!-- Divider before button -->
+          <div class="kpi-divider"></div>
+
+          <!-- Action Button -->
+          <button
+            class="btn btn-sm btn-outline"
+            id="viewReportsBtn"
+            onclick="navigateTo('/gestione-segnalazioni')"
+          >
+            <i class="fas fa-arrow-right"></i>
+            Gestisci Segnalazioni
+          </button>
+        </div>
+
+        <!-- MEZZI CARD -->
+        <div class="kpi-card kpi-card--vehicles" id="vehiclesCard">
+          <div class="kpi-header">
+            <div class="kpi-icon">🚲</div>
+            <div class="kpi-title-group">
+              <div class="kpi-label">Mezzi Totali</div>
+              <div class="kpi-value" id="totalVehiclesCount">--</div>
+            </div>
+          </div>
+
+          <div class="kpi-divider"></div>
+
+          <!-- Status Breakdown -->
+          <div class="vehicles-status-breakdown">
+            <!-- Disponibili -->
+            <div class="status-item">
+              <div class="status-dot available"></div>
+              <div class="status-info">
+                <div class="status-label">Disponibili</div>
+                <div class="status-count" id="availableVehiclesCount">0</div>
+              </div>
+            </div>
+
+            <!-- Non Prelevabili -->
+            <div class="status-item">
+              <div class="status-dot unavailable"></div>
+              <div class="status-info">
+                <div class="status-label">Non Prelevabili</div>
+                <div class="status-count" id="unavailableVehiclesCount">0</div>
+              </div>
+            </div>
+
+            <!-- In Manutenzione -->
+            <div class="status-item">
+              <div class="status-dot maintenance"></div>
+              <div class="status-info">
+                <div class="status-label">In Manutenzione</div>
+                <div class="status-count" id="maintenanceVehiclesCount">0</div>
+              </div>
+            </div>
+
+            <!-- In Uso -->
+            <div class="status-item">
+              <div class="status-dot in-use"></div>
+              <div class="status-info">
+                <div class="status-label">In Uso</div>
+                <div class="status-count" id="inUseVehiclesCount">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vehicle Types Distribution -->
+          <div class="vehicles-types">
+            <div class="type-badge" id="bikeBadge">
+              <span class="type-icon">🚴</span>
+              <span class="type-count">0</span>
+            </div>
+            <div class="type-badge" id="ebikeBadge">
+              <span class="type-icon">⚡</span>
+              <span class="type-count">0</span>
+            </div>
+            <div class="type-badge" id="scooterBadge">
+              <span class="type-icon">🛴</span>
+              <span class="type-count">0</span>
+            </div>
+          </div>
+
+          <div class="kpi-divider"></div>
+
+          <!-- Action Button -->
+          <button
+            class="btn btn-sm btn-outline"
+            id="viewVehiclesBtn"
+            onclick="navigateTo('/gestione-mezzi')"
+          >
+            <i class="fas fa-arrow-right"></i>
+            Gestisci Mezzi
+          </button>
+        </div>
+
+        <!-- PARCHEGGI CARD -->
+        <div class="kpi-card kpi-card--parkings" id="parkingsCard">
+          <div class="kpi-header">
+            <div class="kpi-icon">📍</div>
+            <div class="kpi-title-group">
+              <div class="kpi-label">Parcheggi Attivi</div>
+              <div class="kpi-value" id="totalParkingsCount">--</div>
+            </div>
+          </div>
+
+          <div class="kpi-divider"></div>
+
+          <!-- Parking Capacity Overview -->
+          <div class="parkings-overview">
+            <!-- Total Capacity -->
+            <div class="capacity-item">
+              <div class="capacity-label">Posti Totali</div>
+              <div class="capacity-value" id="totalCapacity">0</div>
+            </div>
+
+            <!-- Occupied -->
+            <div class="capacity-item">
+              <div class="capacity-label">Occupati</div>
+              <div class="capacity-value occupied" id="totalOccupied">0</div>
+            </div>
+
+            <!-- Available -->
+            <div class="capacity-item">
+              <div class="capacity-label">Disponibili</div>
+              <div class="capacity-value available" id="totalAvailable">0</div>
+            </div>
+          </div>
+
+          <!-- Global Occupancy Progress Bar -->
+          <div class="occupancy-container">
+            <div class="occupancy-label">
+              <span>Occupazione Media</span>
+              <span class="occupancy-percent" id="occupancyPercent">0%</span>
+            </div>
+            <div class="occupancy-bar">
+              <div class="occupancy-fill" id="occupancyFill"></div>
+            </div>
+          </div>
+
+          <!-- Divider before button -->
+          <div class="kpi-divider"></div>
+
+          <!-- Action Button -->
+          <button
+            class="btn btn-sm btn-outline"
+            id="viewParkingsBtn"
+            onclick="navigateTo('/gestione-parcheggi')"
+          >
+            <i class="fas fa-arrow-right"></i>
+            Gestisci Parcheggi
+          </button>
+        </div>
+
+        <!-- CORSE OGGI CARD -->
+        <div class="kpi-card kpi-card--rides" id="ridesCard">
+          <div class="kpi-header">
+            <div class="kpi-icon">🏃</div>
+            <div class="kpi-title-group">
+              <div class="kpi-label">Corse Oggi</div>
+              <div class="kpi-value" id="totalRidesTodayCount">--</div>
+            </div>
+          </div>
+
+          <div class="kpi-divider"></div>
+
+          <!-- Rides Status Breakdown -->
+          <div class="rides-status-breakdown">
+            <!-- Completate -->
+            <div class="status-item">
+              <div class="status-dot completed"></div>
+              <div class="status-info">
+                <div class="status-label">Completate</div>
+                <div class="status-count" id="completedRidesCount">0</div>
+              </div>
+            </div>
+
+            <!-- In Corso -->
+            <div class="status-item">
+              <div class="status-dot in-use"></div>
+              <div class="status-info">
+                <div class="status-label">In Corso</div>
+                <div class="status-count" id="activeRidesCount">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rides Stats Grid -->
+          <div class="rides-stats-grid">
+            <div class="rides-stat-item">
+              <div class="rides-stat-label">km Percorsi</div>
+              <div class="rides-stat-value" id="totalKmToday">0</div>
+            </div>
+          </div>
+
+          <!-- Divider before button -->
+          <div class="kpi-divider"></div>
+
+          <!-- Action Button -->
+          <button
+            class="btn btn-sm btn-outline"
+            id="viewRidesBtn"
+            onclick="navigateTo('/gestione-corse')"
+          >
+            <i class="fas fa-arrow-right"></i>
+            Gestisci Corse
+          </button>
+        </div>
+
+        <!-- INCASSI OGGI CARD -->
+        <div class="kpi-card kpi-card--earnings" id="earningsCard">
+          <div class="kpi-header">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-title-group">
+              <div class="kpi-label">Incassi Oggi</div>
+              <div class="kpi-value" id="totalEarningsValue">€--</div>
+            </div>
+          </div>
+
+          <div class="kpi-divider"></div>
+
+          <!-- Earnings Stats Grid -->
+          <div class="earnings-stats-grid">
+            <div class="earnings-stat-item">
+              <div class="earnings-stat-label">Corse</div>
+              <div class="earnings-stat-value" id="paidRidesCount">0</div>
+            </div>
+            <div class="earnings-stat-item">
+              <div class="earnings-stat-label">Media/Corsa</div>
+              <div class="earnings-stat-value" id="avgPerRide">€0.00</div>
+            </div>
+            <div class="earnings-stat-item">
+              <div class="earnings-stat-label">Corsa Max</div>
+              <div class="earnings-stat-value" id="maxRideEarning">€0.00</div>
+            </div>
+          </div>
+
+          <!-- Earnings by Vehicle Type -->
+          <div class="kpi-divider"></div>
+          <div class="earnings-by-type">
+            <div class="earnings-type-item">
+              <span class="earnings-type-icon">🚴</span>
+              <span class="earnings-type-label">Bicicletta Muscolare</span>
+              <span class="earnings-type-value" id="earningsBike">€0.00</span>
+            </div>
+            <div class="earnings-type-item">
+              <span class="earnings-type-icon">⚡</span>
+              <span class="earnings-type-label">Bicicletta Elettrica</span>
+              <span class="earnings-type-value" id="earningsEbike">€0.00</span>
+            </div>
+            <div class="earnings-type-item">
+              <span class="earnings-type-icon">🛴</span>
+              <span class="earnings-type-label">Monopattino Elettrico</span>
+              <span class="earnings-type-value" id="earningsScooter"
+                >€0.00</span
+              >
+            </div>
+          </div>
+
+          <!-- Divider before button -->
+          <div class="kpi-divider"></div>
+
+          <!-- Action Button -->
+          <button
+            class="btn btn-sm btn-outline"
+            id="viewEarningsBtn"
+            onclick="navigateTo('/gestione-incassi')"
+          >
+            <i class="fas fa-arrow-right"></i>
+            Dettagli Incassi
+          </button>
         </div>
       </div>
     </main>

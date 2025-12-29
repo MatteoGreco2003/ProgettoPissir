@@ -43,21 +43,13 @@ main {
   padding: 24px;
 }
 
-@media (max-width: 768px) {
-  main {
-    margin-left: 0;
-    padding: 16px;
-  }
-}
-
 /* ============================================================================
    KPI CARDS GRID
    ========================================================================== */
 .kpi-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
-  margin-bottom: 32px;
 }
 
 .kpi-card {
@@ -78,138 +70,618 @@ main {
   border-color: var(--primary-teal);
 }
 
+.kpi-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+}
+
 .kpi-icon {
-  font-size: 28px;
-  margin-bottom: 16px;
+  font-size: 32px;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.kpi-title-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .kpi-label {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--light-text);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .kpi-value {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--dark-text);
-  margin-bottom: 8px;
 }
 
-.kpi-meta {
-  font-size: 12px;
-  color: var(--light-text);
-}
-
-.kpi-meta.positive {
-  color: var(--success-green);
-}
-
-.kpi-meta.negative {
-  color: var(--error-red);
-}
-
-/* Status Badge */
-.status-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 4px;
-  margin-top: 8px;
-}
-
-.status-badge.available {
-  background: linear-gradient(
-    135deg,
-    rgba(33, 128, 141, 0.15),
-    rgba(33, 128, 141, 0.08)
-  );
-  color: var(--success-green);
-}
-
-.status-badge.unavailable {
-  background: linear-gradient(
-    135deg,
-    rgba(192, 21, 47, 0.15),
-    rgba(192, 21, 47, 0.08)
-  );
-  color: var(--error-red);
+.kpi-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-color);
+  margin: 16px 0;
 }
 
 /* ============================================================================
-   ACTIONS ROW
+   USERS CARD IMPROVEMENTS
    ========================================================================== */
-.actions-row {
+
+.kpi-card--users {
+  padding: 20px;
+  flex-direction: column;
   display: flex;
-  gap: 16px;
-  margin-bottom: 32px;
-  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
-/* ============================================================================
-   SECTION CONTAINER
-   ========================================================================== */
-.section {
-  background-color: var(--white);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 32px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.section-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--dark-text);
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.section-title i {
-  color: var(--primary-teal);
-  font-size: 24px;
-}
-
-/* ============================================================================
-   QUICK STATS GRID
-   ========================================================================== */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 24px;
-}
-
-.stat-item {
+/* Status Breakdown */
+.users-status-breakdown {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  width: 100%;
 }
 
-.stat-label {
-  font-size: 12px;
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  transition: background-color 150ms ease;
+  border-radius: 6px;
+}
+
+.status-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.active {
+  background-color: var(--success-green);
+  box-shadow: 0 0 8px rgba(33, 128, 141, 0.3);
+}
+
+.status-dot.suspended {
+  background-color: var(--error-red);
+  box-shadow: 0 0 8px rgba(192, 21, 47, 0.3);
+}
+
+.status-dot.pending {
+  background-color: var(--warning-orange);
+  box-shadow: 0 0 8px rgba(230, 129, 97, 0.3);
+}
+
+.status-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+}
+
+.status-label {
+  font-size: 13px;
   color: var(--light-text);
   font-weight: 500;
+}
+
+.status-count {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark-text);
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Top User Info */
+.top-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.08),
+    rgba(245, 158, 11, 0.02)
+  );
+  border-radius: 8px;
+  border: 2px solid var(--warning-orange);
+  width: 100%;
+}
+
+.top-user-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.top-user-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.top-user-label {
+  font-size: 10px;
+  color: var(--light-text);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.stat-value {
-  font-size: 24px;
+.top-user-detail {
+  font-size: 12px;
+  color: var(--dark-text);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Button styles */
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 12px;
+  border-radius: 6px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 150ms ease;
+}
+
+.btn-outline {
+  background-color: var(--primary-teal);
+  color: var(--white);
+  border: 1.5px solid var(--primary-teal);
+}
+
+/* ============================================================================
+   VEHICLES CARD IMPROVEMENTS
+   ========================================================================== */
+
+.kpi-card--vehicles {
+  padding: 20px;
+  flex-direction: column;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Vehicle Types Distribution */
+.vehicles-status-breakdown {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.vehicles-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.type-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: rgba(33, 128, 141, 0.08);
+  border: 1px solid rgba(33, 128, 141, 0.2);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dark-text);
+  transition: all 150ms ease;
+  flex: 1;
+  min-width: 90px;
+  justify-content: center;
+  text-align: center;
+}
+
+.type-badge:hover {
+  background-color: rgba(33, 128, 141, 0.15);
+  border-color: var(--primary-teal);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(33, 128, 141, 0.15);
+}
+
+.type-icon {
+  font-size: 16px;
+}
+
+.type-label {
+  display: none;
+}
+
+.type-count {
+  font-weight: 700;
+  color: var(--primary-teal);
+}
+
+/* Status dots per vehicles */
+.status-dot.available {
+  background-color: var(--success-green);
+  box-shadow: 0 0 8px rgba(33, 128, 141, 0.3);
+}
+
+.status-dot.unavailable {
+  background-color: var(--error-red);
+  box-shadow: 0 0 8px rgba(192, 21, 47, 0.3);
+}
+
+.status-dot.maintenance {
+  background-color: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.status-dot.in-use {
+  background-color: var(--warning-orange);
+  box-shadow: 0 0 8px rgba(230, 129, 97, 0.3);
+}
+
+/* ============================================================================
+   PARKINGS CARD IMPROVEMENTS
+   ========================================================================== */
+
+.kpi-card--parkings {
+  padding: 20px;
+  flex-direction: column;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Parking Capacity Overview */
+.parkings-overview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.capacity-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background-color: rgba(33, 128, 141, 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(33, 128, 141, 0.15);
+  transition: all 150ms ease;
+}
+
+.capacity-item:hover {
+  background-color: rgba(33, 128, 141, 0.1);
+  border-color: rgba(33, 128, 141, 0.25);
+}
+
+.capacity-label {
+  font-size: 11px;
+  color: var(--light-text);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.capacity-value {
+  font-size: 18px;
   font-weight: 700;
   color: var(--dark-text);
 }
 
+.capacity-value.occupied {
+  color: var(--warning-orange);
+}
+
+.capacity-value.available {
+  color: var(--success-green);
+}
+
+/* Occupancy Progress Bar */
+.occupancy-container {
+  width: 100%;
+  margin-bottom: 16px;
+  flex-grow: 1;
+}
+
+.occupancy-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--light-text);
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.occupancy-percent {
+  color: var(--dark-text);
+  font-weight: 700;
+}
+
+.occupancy-bar {
+  width: 100%;
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.occupancy-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(
+    90deg,
+    var(--success-green),
+    var(--warning-orange)
+  );
+  border-radius: 4px;
+  transition: width 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.occupancy-fill.high {
+  background: linear-gradient(90deg, var(--warning-orange), var(--error-red));
+}
+
 /* ============================================================================
-   SNACKBAR (NOTIFICHE TOAST)
+   RIDES CARD IMPROVEMENTS
    ========================================================================== */
-#snackbar {
+
+.kpi-card--rides {
+  padding: 20px;
+  flex-direction: column;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Rides Status Breakdown */
+.rides-status-breakdown {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+/* Rides Stats Grid */
+.rides-stats-grid {
+  margin-bottom: 16px;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.rides-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background-color: rgba(33, 128, 141, 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(33, 128, 141, 0.15);
+  transition: all 150ms ease;
+}
+
+.rides-stat-item:hover {
+  background-color: rgba(33, 128, 141, 0.1);
+  border-color: rgba(33, 128, 141, 0.25);
+}
+
+.rides-stat-label {
+  font-size: 11px;
+  color: var(--light-text);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.rides-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark-text);
+}
+
+/* Status dots per rides */
+.status-dot.completed {
+  background-color: var(--success-green);
+  box-shadow: 0 0 8px rgba(33, 128, 141, 0.3);
+}
+
+.status-dot.in-use {
+  background-color: var(--warning-orange);
+  box-shadow: 0 0 8px rgba(230, 129, 97, 0.3);
+}
+
+/* ============================================================================
+   EARNINGS CARD IMPROVEMENTS
+   ========================================================================== */
+
+.kpi-card--earnings {
+  padding: 20px;
+  flex-direction: column;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Earnings Stats Grid */
+.earnings-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.earnings-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background-color: rgba(33, 128, 141, 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(33, 128, 141, 0.15);
+  transition: all 150ms ease;
+}
+
+.earnings-stat-item:hover {
+  background-color: rgba(33, 128, 141, 0.1);
+  border-color: rgba(33, 128, 141, 0.25);
+}
+
+.earnings-stat-label {
+  font-size: 11px;
+  color: var(--light-text);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.earnings-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--success-green);
+}
+
+/* Earnings by Type */
+.earnings-by-type {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.earnings-type-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background-color: rgba(33, 128, 141, 0.04);
+  border-radius: 6px;
+  border-left: 3px solid var(--primary-teal);
+  transition: all 150ms ease;
+}
+
+.earnings-type-item:hover {
+  background-color: rgba(33, 128, 141, 0.08);
+  transform: translateX(4px);
+}
+
+.earnings-type-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.earnings-type-label {
+  font-size: 12px;
+  color: var(--light-text);
+  font-weight: 500;
+  flex: 1;
+}
+
+.earnings-type-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--success-green);
+  min-width: 70px;
+  text-align: right;
+}
+
+/* ============================================================================
+   REPORTS CARD IMPROVEMENTS
+   ========================================================================== */
+
+.kpi-card--reports {
+  padding: 20px;
+  flex-direction: column;
+  display: flex;
+  justify-content: space-between;
+  min-height: 380px;
+}
+
+/* Reports Status Breakdown */
+.reports-status-breakdown {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Reports by Problem Type Grid */
+.reports-problems-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.problem-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  background-color: rgba(33, 128, 141, 0.06);
+  border: 1px solid rgba(33, 128, 141, 0.15);
+  border-radius: 8px;
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.problem-badge:hover {
+  background-color: rgba(33, 128, 141, 0.12);
+  border-color: rgba(33, 128, 141, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(33, 128, 141, 0.15);
+}
+
+.problem-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.problem-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark-text);
+  text-align: center;
+}
+
+/* Status dots per reports */
+.status-dot.report-open {
+  background-color: var(--error-red);
+  box-shadow: 0 0 8px rgba(192, 21, 47, 0.3);
+}
+
+.status-dot.report-in-progress {
+  background-color: var(--warning-orange);
+  box-shadow: 0 0 8px rgba(230, 129, 97, 0.4);
+}
+
+.status-dot.report-resolved {
+  background-color: var(--success-green);
+  box-shadow: 0 0 8px rgba(33, 128, 141, 0.3);
+}
+
+/* ===== SNACKBAR ===== */
+.snackbar {
   position: fixed;
   bottom: 16px;
   right: 16px;
@@ -222,30 +694,22 @@ main {
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
   opacity: 0;
   transform: translateY(100px);
-  transition: all var(--transition);
+  transition: all 250ms ease;
   z-index: 1000;
   max-width: 400px;
 }
 
-#snackbar.show {
+.snackbar.show {
   opacity: 1;
   transform: translateY(0);
 }
 
-#snackbar.snackbar--success {
-  background-color: var(--success-green);
-}
-
-#snackbar.snackbar--error {
+.snackbar--error {
   background-color: var(--error-red);
 }
 
-#snackbar.snackbar--warning {
-  background-color: var(--warning-orange);
-}
-
-#snackbar.snackbar--info {
-  background-color: var(--primary-teal);
+.snackbar--warning {
+  background-color: #e68161;
 }
 
 /* ============================================================================
@@ -396,145 +860,330 @@ main {
   flex: 1;
 }
 
-/* ============================================================================
-   RESPONSIVE - TABLET (768px)
-   ========================================================================== */
-@media (max-width: 768px) {
-  main {
-    padding: 16px;
-  }
-
+/* Responsive */
+@media (max-width: 1045px) {
   .kpi-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .kpi-card {
-    padding: 16px;
-  }
-
-  .kpi-icon {
-    font-size: 24px;
-    margin-bottom: 12px;
-  }
-
-  .kpi-value {
-    font-size: 24px;
-  }
-
-  .actions-row {
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .section {
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-
-  .section-title {
-    font-size: 16px;
-    margin-bottom: 16px;
-  }
-
-  .stats-grid {
-    gap: 16px;
-  }
-
-  .stat-value {
-    font-size: 20px;
-  }
-
-  #snackbar {
-    left: 16px;
-    right: 16px;
-    max-width: none;
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 }
 
-/* ============================================================================
-   RESPONSIVE - MOBILE (480px)
-   ========================================================================== */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   main {
-    padding: 12px;
+    margin-left: 0;
+    padding: 16px;
   }
 
-  .kpi-grid {
-    grid-template-columns: 1fr;
+  .kpi-header {
     gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .kpi-card {
-    padding: 14px;
   }
 
   .kpi-icon {
-    font-size: 20px;
-    margin-bottom: 8px;
-  }
-
-  .kpi-label {
-    font-size: 11px;
-    margin-bottom: 4px;
+    font-size: 28px;
   }
 
   .kpi-value {
-    font-size: 20px;
-    margin-bottom: 4px;
+    font-size: 28px;
   }
 
-  .kpi-meta {
-    font-size: 11px;
+  .status-item {
+    padding: 6px 8px;
   }
 
-  .status-badge {
-    font-size: 10px;
-    padding: 3px 6px;
-    margin-top: 6px;
+  .status-label {
+    font-size: 12px;
   }
 
-  .actions-row {
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .section {
-    padding: 14px;
-    margin-bottom: 12px;
-  }
-
-  .section-title {
+  .status-count {
     font-size: 14px;
-    margin-bottom: 12px;
-    gap: 12px;
   }
 
-  .section-title i {
-    font-size: 20px;
+  .user-status-item {
+    padding: 10px;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+  .user-status-label {
+    font-size: 10px;
   }
 
-  .stat-label {
+  .user-status-value {
+    font-size: 16px;
+  }
+
+  .kpi-card--parkings {
+    min-height: auto;
+  }
+
+  .parkings-overview {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .capacity-item {
+    padding: 8px;
+  }
+
+  .capacity-label {
+    font-size: 10px;
+  }
+
+  .capacity-value {
+    font-size: 16px;
+  }
+
+  .occupancy-label {
     font-size: 11px;
   }
 
-  .stat-value {
+  .kpi-card--rides {
+    min-height: auto;
+  }
+
+  .rides-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .rides-stat-item {
+    padding: 8px;
+  }
+
+  .rides-stat-label {
+    font-size: 10px;
+  }
+
+  .rides-stat-value {
+    font-size: 16px;
+  }
+
+  .kpi-card--earnings {
+    min-height: auto;
+  }
+
+  .earnings-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .earnings-stat-item {
+    padding: 8px;
+  }
+
+  .earnings-stat-label {
+    font-size: 10px;
+  }
+
+  .earnings-stat-value {
+    font-size: 14px;
+  }
+
+  .earnings-type-item {
+    padding: 8px 10px;
+  }
+
+  .earnings-type-label {
+    font-size: 11px;
+  }
+
+  .earnings-type-value {
+    font-size: 12px;
+  }
+
+  .kpi-card--reports {
+    min-height: auto;
+  }
+
+  .reports-problems-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .problem-badge {
+    padding: 10px 6px;
+  }
+
+  .problem-icon {
     font-size: 18px;
   }
 
-  #snackbar {
-    bottom: 12px;
-    left: 12px;
-    right: 12px;
-    padding: 14px;
+  .problem-count {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .kpi-title-group {
+    align-items: center;
+  }
+
+  .status-item {
+    padding: 6px;
+  }
+
+  .status-info {
+    width: 100%;
+  }
+
+  .status-label {
+    font-size: 11px;
+  }
+
+  .user-status-item {
+    padding: 8px;
+  }
+
+  .user-status-label {
+    font-size: 9px;
+  }
+
+  .user-status-value {
+    font-size: 14px;
+  }
+
+  .top-user-info {
+    padding: 8px;
+  }
+
+  .top-user-icon {
+    font-size: 18px;
+  }
+
+  .top-user-detail {
+    font-size: 11px;
+  }
+
+  .vehicles-types {
+    gap: 8px;
+  }
+
+  .type-badge {
+    padding: 6px 8px;
+    font-size: 10px;
+    min-width: 70px;
+  }
+
+  .type-icon {
+    font-size: 14px;
+  }
+
+  .kpi-card--parkings {
+    min-height: auto;
+  }
+
+  .parkings-overview {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .capacity-item {
+    padding: 6px;
+  }
+
+  .capacity-label {
+    font-size: 9px;
+  }
+
+  .capacity-value {
+    font-size: 14px;
+  }
+
+  .occupancy-label {
+    font-size: 10px;
+  }
+
+  .kpi-card--rides {
+    min-height: auto;
+  }
+
+  .rides-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .rides-stat-item {
+    padding: 6px;
+  }
+
+  .rides-stat-label {
+    font-size: 9px;
+  }
+
+  .rides-stat-value {
+    font-size: 14px;
+  }
+
+  .kpi-card--earnings {
+    min-height: auto;
+  }
+
+  .earnings-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .earnings-stat-item {
+    padding: 6px;
+  }
+
+  .earnings-stat-label {
+    font-size: 9px;
+  }
+
+  .earnings-stat-value {
+    font-size: 12px;
+  }
+
+  .earnings-type-item {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+
+  .earnings-type-icon {
+    font-size: 14px;
+  }
+
+  .earnings-type-label {
+    font-size: 10px;
+  }
+
+  .earnings-type-value {
+    font-size: 11px;
+    min-width: 50px;
+  }
+
+  .kpi-card--reports {
+    min-height: auto;
+  }
+
+  .reports-problems-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .problem-badge {
+    padding: 8px 4px;
+  }
+
+  .problem-icon {
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .problem-count {
+    font-size: 11px;
+  }
+
+  .snackbar {
+    left: 16px;
+    right: 16px;
+    max-width: none;
     font-size: 12px;
   }
 }
