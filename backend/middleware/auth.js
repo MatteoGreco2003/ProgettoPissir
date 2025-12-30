@@ -2,21 +2,15 @@
 
 import jwt from "jsonwebtoken";
 
-/**
- * Middleware di autenticazione universale
- * Funziona sia per API REST che per renderizzazione pagine server-side
- *
- * - Legge token da: cookie, Authorization header, o localStorage
- * - Per API REST: ritorna 401 JSON se non autenticato
- * - Per page routes: reindirizza a / se non autenticato
- */
-//Routes miste (sia API che server-side rendering)
+// Middleware di autenticazione universale
+// Funziona sia per API REST che per server-side rendering
+// Legge token da: cookie (page routes), Authorization header (API), o localStorage
 export const verifyToken = (req, res, next) => {
   try {
-    // ✅ PRIORITÀ: Leggi token da cookie (per page routes)
+    // Priorità: token da cookie (per page routes)
     let token = req.cookies?.token;
 
-    // ✅ ALTERNATIVA: Leggi da Authorization header (per API)
+    // Alternativa: token da Authorization header (per API)
     if (!token && req.headers.authorization) {
       const authHeader = req.headers.authorization;
       const parts = authHeader.split(" ");
@@ -26,9 +20,8 @@ export const verifyToken = (req, res, next) => {
       }
     }
 
-    // ✅ Se nessun token trovato
     if (!token) {
-      // Se è una richiesta API, ritorna JSON
+      // Se è API REST, ritorna JSON 401
       if (
         req.headers.accept?.includes("application/json") ||
         req.path.startsWith("/api/")
@@ -36,21 +29,20 @@ export const verifyToken = (req, res, next) => {
         return res.status(401).json({ error: "Token mancante" });
       }
 
-      // Se è una page route, reindirizza a login
+      // Se è page route, reindirizza a login
       return res.redirect("/");
     }
 
-    // ✅ Verifica il token
+    // Verifica il token
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET || "your_secret_key"
     );
 
-    // ✅ Salva i dati dell'utente nella request
+    // Salva dati utente nella request
     req.user = decoded;
     next();
   } catch (error) {
-    // ✅ Gestisci i diversi tipi di errore
     const isApiRequest =
       req.headers.accept?.includes("application/json") ||
       req.path.startsWith("/api/");
@@ -64,7 +56,7 @@ export const verifyToken = (req, res, next) => {
       }
     }
 
-    // Token invalido o altro errore
+    // Token invalido
     if (isApiRequest) {
       return res.status(401).json({ error: "Token non valido" });
     } else {
@@ -74,10 +66,8 @@ export const verifyToken = (req, res, next) => {
   }
 };
 
-/**
- * Middleware specifico per page routes reindirizza a "/"
- * Reindirizza sempre a login se non autenticato
- */
+// Middleware per page routes
+// Reindirizza sempre a "/" se non autenticato
 export const authMiddleware = (req, res, next) => {
   try {
     const token = req.cookies?.token;
@@ -93,7 +83,7 @@ export const authMiddleware = (req, res, next) => {
 
     req.user = decoded;
 
-    //per non permettere di ricarica le pagine dalla cache e usare il tasto indietro del browser
+    // Disabilita cache per prevenire utilizzo del tasto indietro del browser
     res.setHeader(
       "Cache-Control",
       "no-store, no-cache, must-revalidate, proxy-revalidate"
@@ -109,10 +99,8 @@ export const authMiddleware = (req, res, next) => {
   }
 };
 
-/**
- * Middleware specifico per API REST
- * Ritorna sempre JSON se non autenticato  JSON 401
- */
+// Middleware per API REST
+// Ritorna sempre JSON 401 se non autenticato
 export const apiAuthMiddleware = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -144,17 +132,14 @@ export const apiAuthMiddleware = (req, res, next) => {
   }
 };
 
-/**
- * Middleware per verificare se utente è admin/gestore
- * 	Dopo apiAuthMiddleware per verificare ruolo
- */
+// Middleware di autorizzazione
+// Verifica se utente è admin/gestore (usa dopo apiAuthMiddleware)
 export const isAdmin = (req, res, next) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: "Non autenticato" });
     }
 
-    // Controlla se il ruolo è admin
     if (req.user.role !== "admin") {
       return res
         .status(403)

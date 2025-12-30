@@ -1,4 +1,5 @@
 // backend/setup-db.js
+
 import sequelize from "./config/database.js";
 import User from "./models/User.js";
 import Vehicle from "./models/Vehicle.js";

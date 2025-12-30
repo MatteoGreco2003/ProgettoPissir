@@ -10,21 +10,33 @@ import {
   getAllUsers,
   getPendingReactivations,
   getUserById,
+  deleteUserAsAdmin,
 } from "../controllers/usersController.js";
 
 const router = express.Router();
 
-// GET /users/me
+// Profilo utente corrente (protetto)
 router.get("/me", verifyToken, getProfile);
-// PUT /users/me
+
+// Modifica profilo (protetto)
 router.put("/me", verifyToken, updateProfile);
-// DELETE /users/me
+
+// Elimina account (protetto)
 router.delete("/me", verifyToken, deleteAccount);
-// PUT /users/change-password
+
+// Cambio password (protetto)
 router.put("/change-password", verifyToken, changePassword);
 
-// ADMIN ENDPOINTS
-router.get("/admin/all", verifyToken, isAdmin, getAllUsers); // Lista tutti gli utenti
-router.get("/admin/pending", verifyToken, isAdmin, getPendingReactivations); // Utenti sospesi
-router.get("/admin/:id_utente", verifyToken, isAdmin, getUserById); // Dettagli utente
+//ADMIN ENDPOINTS
+// Lista tutti gli utenti (solo admin)
+router.get("/admin/all", verifyToken, isAdmin, getAllUsers);
+
+// Utenti in attesa di approvazione (solo admin)
+router.get("/admin/pending", verifyToken, isAdmin, getPendingReactivations);
+
+// Dettagli utente specifico (solo admin)
+router.get("/admin/:id_utente", verifyToken, isAdmin, getUserById);
+
+// Elimina utente specifico (solo admin)
+router.delete("/admin/:id_utente", verifyToken, isAdmin, deleteUserAsAdmin);
 export default router;

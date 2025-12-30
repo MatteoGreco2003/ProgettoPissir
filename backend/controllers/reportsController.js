@@ -4,20 +4,19 @@ import Report from "../models/Report.js";
 import User from "../models/User.js";
 import Vehicle from "../models/Vehicle.js";
 
-// ✅ CREATE REPORT - Crea una nuova segnalazione
+// CREATE REPORT - Crea nuova segnalazione per un mezzo
 export const createReport = async (req, res) => {
   try {
     const { tipo_problema, id_mezzo, descrizione } = req.body;
     const id_utente = req.user.id_utente;
 
-    // Validazione input
     if (!tipo_problema || !id_mezzo) {
       return res.status(400).json({
         error: "tipo_problema, id_mezzo e descrizione sono obbligatori",
       });
     }
 
-    // Validazione tipo_problema
+    // Valida tipo di problema
     const tipiValidi = [
       "danno_fisico",
       "batteria_scarica",
@@ -32,13 +31,12 @@ export const createReport = async (req, res) => {
       });
     }
 
-    // Verifica che mezzo esista
+    // Verifica che il mezzo esista
     const vehicle = await Vehicle.findByPk(id_mezzo);
     if (!vehicle) {
       return res.status(404).json({ error: "Mezzo non trovato" });
     }
 
-    // Crea segnalazione
     const report = await Report.create({
       id_utente,
       id_mezzo,
@@ -61,7 +59,7 @@ export const createReport = async (req, res) => {
   }
 };
 
-// ✅ GET MY REPORTS - Visualizza le mie segnalazioni
+// GET MY REPORTS - Le mie segnalazioni
 export const getMyReports = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -89,7 +87,7 @@ export const getMyReports = async (req, res) => {
   }
 };
 
-// ✅ GET REPORT BY ID - Visualizza dettagli segnalazione
+// GET REPORT BY ID - Dettagli singola segnalazione
 export const getReportById = async (req, res) => {
   try {
     const { id_segnalazione } = req.params;
@@ -119,7 +117,7 @@ export const getReportById = async (req, res) => {
       return res.status(404).json({ error: "Segnalazione non trovata" });
     }
 
-    // Verifica che l'utente sia proprietario o admin
+    // Controlla autorizzazioni
     if (report.id_utente !== id_utente && req.user.role !== "admin") {
       return res.status(403).json({
         error: "Non hai permessi per visualizzare questa segnalazione",
@@ -136,12 +134,11 @@ export const getReportById = async (req, res) => {
   }
 };
 
-// ✅ GET REPORTS BY VEHICLE ID - Visualizza segnalazioni per un mezzo
+// GET REPORTS BY VEHICLE ID - Segnalazioni di un mezzo
 export const getReportsByVehicleId = async (req, res) => {
   try {
     const { id_mezzo } = req.params;
 
-    // Verifica che mezzo esista
     const vehicle = await Vehicle.findByPk(id_mezzo);
     if (!vehicle) {
       return res.status(404).json({ error: "Mezzo non trovato" });
@@ -170,12 +167,11 @@ export const getReportsByVehicleId = async (req, res) => {
   }
 };
 
-// ✅ GET ALL REPORTS (ADMIN ONLY) - Visualizza tutte le segnalazioni
+// GET ALL REPORTS - Tutte le segnalazioni (solo admin)
 export const getAllReports = async (req, res) => {
   try {
     const { stato_segnalazione, tipo_problema } = req.query;
 
-    // Costruisci filtri
     const where = {};
     if (stato_segnalazione) where.stato_segnalazione = stato_segnalazione;
     if (tipo_problema) where.tipo_problema = tipo_problema;
@@ -208,7 +204,7 @@ export const getAllReports = async (req, res) => {
   }
 };
 
-// ✅ UPDATE REPORT STATUS (ADMIN ONLY) - Aggiorna stato segnalazione + stato veicolo
+// UPDATE REPORT STATUS - Aggiorna stato segnalazione e mezzo (admin)
 export const updateReportStatus = async (req, res) => {
   try {
     const { id_segnalazione } = req.params;
@@ -220,7 +216,7 @@ export const updateReportStatus = async (req, res) => {
         .json({ error: "stato_segnalazione è obbligatorio" });
     }
 
-    // Validazione stato
+    // Valida stato
     const statiValidi = ["aperta", "in_lavorazione", "risolta"];
     if (!statiValidi.includes(stato_segnalazione)) {
       return res.status(400).json({
@@ -235,21 +231,17 @@ export const updateReportStatus = async (req, res) => {
       return res.status(404).json({ error: "Segnalazione non trovata" });
     }
 
-    // Aggiorna segnalazione
     report.stato_segnalazione = stato_segnalazione;
     await report.save();
 
-    // AGGIORNAMENTO AUTOMATICO STATO VEICOLO
+    // Aggiorna automaticamente lo stato del mezzo
     const vehicle = await Vehicle.findByPk(report.id_mezzo);
     if (vehicle) {
       if (stato_segnalazione === "in_lavorazione") {
-        // Se segnalazione in lavorazione → veicolo in manutenzione
         vehicle.stato = "in_manutenzione";
       } else if (stato_segnalazione === "risolta") {
-        // Se segnalazione risolta → veicolo torna disponibile
         vehicle.stato = "disponibile";
       }
-      // Se "aperta" non cambia lo stato del veicolo
       await vehicle.save();
     }
 
@@ -270,7 +262,7 @@ export const updateReportStatus = async (req, res) => {
   }
 };
 
-// ✅ DELETE REPORT (ADMIN ONLY) - Elimina segnalazione
+// DELETE REPORT - Elimina segnalazione (admin)
 export const deleteReport = async (req, res) => {
   try {
     const { id_segnalazione } = req.params;
@@ -296,6 +288,7 @@ export default {
   createReport,
   getMyReports,
   getReportById,
+  getReportsByVehicleId,
   getAllReports,
   updateReportStatus,
   deleteReport,

@@ -6,13 +6,12 @@ import Vehicle from "../models/Vehicle.js";
 import Ride from "../models/Ride.js";
 import { Op } from "sequelize";
 
-// ✅ CREATE FEEDBACK - Lascia feedback su un mezzo dopo una corsa
+// CREATE FEEDBACK - Lascia feedback su un mezzo dopo una corsa
 export const createFeedback = async (req, res) => {
   try {
     const { id_mezzo, rating, commento } = req.body;
     const id_utente = req.user.id_utente;
 
-    // Validazione input
     if (!id_mezzo || !rating) {
       return res.status(400).json({
         error: "id_mezzo e rating sono obbligatori",
@@ -25,13 +24,13 @@ export const createFeedback = async (req, res) => {
       });
     }
 
-    // Verifica che mezzo esista
+    // Verifica che il mezzo esista
     const vehicle = await Vehicle.findByPk(id_mezzo);
     if (!vehicle) {
       return res.status(404).json({ error: "Mezzo non trovato" });
     }
 
-    // Verifica che l'utente abbia effettivamente usato il mezzo
+    // Verifica che l'utente abbia usato il mezzo
     const rideExists = await Ride.findOne({
       where: {
         id_utente,
@@ -46,7 +45,6 @@ export const createFeedback = async (req, res) => {
       });
     }
 
-    // Crea feedback
     const feedback = await Feedback.create({
       id_utente,
       id_mezzo,
@@ -67,12 +65,11 @@ export const createFeedback = async (req, res) => {
   }
 };
 
-// ✅ GET FEEDBACK BY VEHICLE - Visualizza tutti i feedback di un mezzo
+// GET FEEDBACK BY VEHICLE - Visualizza i feedback di un mezzo
 export const getFeedbackByVehicle = async (req, res) => {
   try {
     const { id_mezzo } = req.params;
 
-    // Verifica che mezzo esista
     const vehicle = await Vehicle.findByPk(id_mezzo);
     if (!vehicle) {
       return res.status(404).json({ error: "Mezzo non trovato" });
@@ -95,7 +92,7 @@ export const getFeedbackByVehicle = async (req, res) => {
       order: [["data_ora", "DESC"]],
     });
 
-    // Calcola media rating
+    // Calcola rating medio
     const avgRating =
       feedbacks.length > 0
         ? (
@@ -116,11 +113,11 @@ export const getFeedbackByVehicle = async (req, res) => {
   }
 };
 
-// ✅ GET MY FEEDBACK - Visualizza i miei feedback
+// GET MY FEEDBACK - I miei feedback con paginazione
 export const getMyFeedback = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
-    const { limit = 10, offset = 0 } = req.query; // ← AGGIUNGI QUESTO
+    const { limit = 10, offset = 0 } = req.query;
 
     const { count, rows } = await Feedback.findAndCountAll({
       where: { id_utente },
@@ -132,17 +129,17 @@ export const getMyFeedback = async (req, res) => {
         },
       ],
       order: [["data_ora", "DESC"]],
-      limit: parseInt(limit), // ← AGGIUNGI QUESTO
-      offset: parseInt(offset), // ← AGGIUNGI QUESTO
-      subQuery: false, // ← AGGIUNGI QUESTO
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      subQuery: false,
     });
 
     res.status(200).json({
       message: "I miei feedback recuperati",
-      total: count, // ← IMPORTANTE: ritorna il TOTALE
+      total: count,
       limit: parseInt(limit),
       offset: parseInt(offset),
-      count: rows.length, // Quanti feedback in questa pagina
+      count: rows.length,
       feedbacks: rows,
     });
   } catch (error) {
@@ -151,7 +148,7 @@ export const getMyFeedback = async (req, res) => {
   }
 };
 
-// ✅ GET FEEDBACK BY ID - Visualizza dettagli feedback
+// GET FEEDBACK BY ID - Dettagli di un singolo feedback
 export const getFeedbackById = async (req, res) => {
   try {
     const { id_feedback } = req.params;
@@ -190,7 +187,7 @@ export const getFeedbackById = async (req, res) => {
   }
 };
 
-// ✅ UPDATE FEEDBACK - Modifica il tuo feedback
+// UPDATE FEEDBACK - Modifica il tuo feedback
 export const updateFeedback = async (req, res) => {
   try {
     const { id_feedback } = req.params;
@@ -214,14 +211,13 @@ export const updateFeedback = async (req, res) => {
       return res.status(404).json({ error: "Feedback non trovato" });
     }
 
-    // Verifica che sia il proprietario del feedback
+    // Controlla proprietà del feedback
     if (feedback.id_utente !== id_utente) {
       return res.status(403).json({
         error: "Non hai permessi per modificare questo feedback",
       });
     }
 
-    // Aggiorna feedback
     if (rating) feedback.rating = rating;
     if (commento !== undefined) feedback.commento = commento;
     await feedback.save();
@@ -238,7 +234,7 @@ export const updateFeedback = async (req, res) => {
   }
 };
 
-// ✅ DELETE FEEDBACK - Elimina il tuo feedback
+// DELETE FEEDBACK - Elimina il tuo feedback
 export const deleteFeedback = async (req, res) => {
   try {
     const { id_feedback } = req.params;
@@ -249,7 +245,7 @@ export const deleteFeedback = async (req, res) => {
       return res.status(404).json({ error: "Feedback non trovato" });
     }
 
-    // Verifica che sia il proprietario del feedback
+    // Controlla proprietà del feedback
     if (feedback.id_utente !== id_utente) {
       return res.status(403).json({
         error: "Non hai permessi per eliminare questo feedback",
@@ -268,7 +264,7 @@ export const deleteFeedback = async (req, res) => {
   }
 };
 
-// ✅ GET ALL FEEDBACKS (Tranne quelli dell'utente corrente)
+// GET ALL FEEDBACKS - Feedback della community (escluso l'utente corrente)
 export const getAllFeedbacks = async (req, res) => {
   try {
     const {
@@ -280,8 +276,6 @@ export const getAllFeedbacks = async (req, res) => {
     } = req.query;
 
     const currentUserId = req.user.id_utente;
-
-    // Costruisci filtri
     const where = {};
 
     if (rating) {
@@ -291,15 +285,14 @@ export const getAllFeedbacks = async (req, res) => {
       }
     }
 
-    // Determina l'ordinamento
     let order = [["data_ora", "DESC"]];
     if (sort_by === "rating") {
       order = [["rating", "DESC"]];
     }
 
+    // Esclude i feedback dell'utente corrente
     where.id_utente = { [Op.ne]: currentUserId };
 
-    // Recupera i feedback con filtri
     const { count, rows } = await Feedback.findAndCountAll({
       where,
       include: [
@@ -322,13 +315,12 @@ export const getAllFeedbacks = async (req, res) => {
       subQuery: false,
     });
 
-    // Calcola statistiche
+    // Statistiche globali
     const allFeedbacks = await Feedback.findAll({
       attributes: ["rating"],
       raw: true,
     });
 
-    // Average rating
     const averageRating =
       allFeedbacks.length > 0
         ? (
@@ -337,7 +329,6 @@ export const getAllFeedbacks = async (req, res) => {
           ).toFixed(1)
         : 0;
 
-    // Count by rating
     const countByRating = {
       5: 0,
       4: 0,
@@ -370,25 +361,22 @@ export const getAllFeedbacks = async (req, res) => {
   }
 };
 
-// ✅ GET VEHICLE RATING - Per mostrare le stellette
+// GET VEHICLE RATING - Rating e distribuzioni stellette per un mezzo
 export const getVehicleRating = async (req, res) => {
   try {
     const { id_mezzo } = req.params;
 
-    // Verifica che il mezzo esista
     const vehicle = await Vehicle.findByPk(id_mezzo);
     if (!vehicle) {
       return res.status(404).json({ error: "Mezzo non trovato" });
     }
 
-    // Recupera tutti i feedback per questo mezzo
     const feedbacks = await Feedback.findAll({
       where: { id_mezzo },
       attributes: ["rating"],
       raw: true,
     });
 
-    // Se nessun feedback
     if (feedbacks.length === 0) {
       return res.status(200).json({
         id_mezzo,
@@ -405,11 +393,11 @@ export const getVehicleRating = async (req, res) => {
       });
     }
 
-    // Calcola average rating
+    // Calcola media
     const totalRating = feedbacks.reduce((sum, f) => sum + f.rating, 0);
     const averageRating = (totalRating / feedbacks.length).toFixed(1);
 
-    // Calcola distribuzione per rating
+    // Distribuzioni per rating
     const ratingDistribution = {
       5: 0,
       4: 0,

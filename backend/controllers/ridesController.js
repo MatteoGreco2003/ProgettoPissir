@@ -7,31 +7,31 @@ import PuntiFedelta from "../models/LoyaltyPoints.js";
 import mqtt from "mqtt";
 import { Op } from "sequelize";
 
-// Helper: Determina la tariffa base in base al tipo di mezzo
+// Helper: Tariffe per tipo di mezzo
 const getTariffaBaseByMezzo = (tipo_mezzo) => {
   switch (tipo_mezzo) {
     case "bicicletta_muscolare":
-      return 0.15; // €0.15 per minuto (la più economica)
+      return 0.15;
     case "bicicletta_elettrica":
-      return 0.25; // €0.25 per minuto
+      return 0.25;
     case "monopattino":
-      return 0.2; // €0.20 per minuto
+      return 0.2;
     default:
-      return 0.25; // Default
+      return 0.25;
   }
 };
 
-// Helper: Determina la velocità media in base al tipo di mezzo
+// Helper: Velocità media per tipo di mezzo
 const getVelocitaMediaByMezzo = (tipo_mezzo) => {
   switch (tipo_mezzo) {
     case "bicicletta_muscolare":
-      return 15; // km/h
+      return 15;
     case "bicicletta_elettrica":
-      return 25; // km/h
+      return 25;
     case "monopattino":
-      return 20; // km/h
+      return 20;
     default:
-      return 15; // Default
+      return 15;
   }
 };
 
@@ -41,24 +41,22 @@ const calcolaKmPercorsi = (durataMinuti, tipo_mezzo) => {
   return (durataMinuti / 60) * velocitaMedia;
 };
 
-// ✅ START RIDE - Inizio corsa con sblocco MQTT
+// START RIDE - Inizio corsa con sblocco MQTT
 export const startRide = async (req, res) => {
   try {
     const { id_mezzo } = req.body;
     const id_utente = req.user.id_utente;
 
-    // Validazione
     if (!id_mezzo) {
       return res.status(400).json({ error: "id_mezzo è obbligatorio" });
     }
 
-    // 1️⃣ Verifica utente esiste
     const user = await User.findByPk(id_utente);
     if (!user) {
       return res.status(404).json({ error: "Utente non trovato" });
     }
 
-    // 2️⃣ Verifica che account non sia sospeso
+    // Controlla stato account
     if (
       user.stato_account === "sospeso" ||
       user.stato_account === "in_attesa_approvazione"
@@ -71,7 +69,7 @@ export const startRide = async (req, res) => {
       });
     }
 
-    // 2️⃣ Verifica saldo minimo (almeno 1.00€)
+    // Verifica saldo minimo
     const saldoNumero = parseFloat(user.saldo);
     if (saldoNumero < 1.0) {
       return res.status(402).json({
@@ -82,7 +80,7 @@ export const startRide = async (req, res) => {
       });
     }
 
-    // 3️⃣ Controlla se utente ha già una corsa attiva
+    // Controlla se ha già una corsa attiva
     const activeRide = await Ride.findOne({
       where: { id_utente, stato_corsa: "in_corso" },
     });
@@ -94,7 +92,7 @@ export const startRide = async (req, res) => {
       });
     }
 
-    // 4️⃣ Verifica mezzo esiste e è disponibile
+    // Verifica disponibilità mezzo
     const vehicle = await Vehicle.findByPk(id_mezzo, {
       include: [{ model: Parking, as: "parking" }],
     });
@@ -109,7 +107,7 @@ export const startRide = async (req, res) => {
       });
     }
 
-    // 4️⃣B NUOVO - Verifica batteria minima (almeno 20%)
+    // Verifica batteria minima
     if (
       vehicle.stato_batteria < 20 &&
       vehicle.tipo_mezzo != "bicicletta_muscolare"
@@ -121,7 +119,6 @@ export const startRide = async (req, res) => {
       });
     }
 
-    // 5️⃣ Crea record corsa
     const ride = await Ride.create({
       id_utente,
       id_mezzo,
@@ -130,11 +127,10 @@ export const startRide = async (req, res) => {
       stato_corsa: "in_corso",
     });
 
-    // 6️⃣ Aggiorna stato mezzo a "in_uso"
     vehicle.stato = "in_uso";
     await vehicle.save();
 
-    // 7️⃣ MQTT: Pubblica comando UNLOCK
+    // Invia comando MQTT UNLOCK
     try {
       const mqttClient = mqtt.connect(
         process.env.MQTT_BROKER_URL || "mqtt://localhost:1883"
@@ -156,7 +152,7 @@ export const startRide = async (req, res) => {
       });
 
       mqttClient.on("error", (err) => {
-        console.warn("⚠️ MQTT connection error (non critico):", err.message);
+        console.warn("⚠️ MQTT connection error:", err.message);
       });
     } catch (mqttError) {
       console.warn("⚠️ MQTT publish fallito:", mqttError.message);
@@ -177,28 +173,24 @@ export const startRide = async (req, res) => {
   }
 };
 
-// ✅ CHECK PAYMENT - Controlla se ha credito sufficiente
+// CHECK PAYMENT - Verifica saldo sufficiente per pagare
 export const checkPayment = async (req, res) => {
   try {
     const { ride_id } = req.params;
     const id_utente = req.user.id_utente;
 
-    // Validazione
     if (!ride_id) {
       return res.status(400).json({ error: "ride_id è obbligatorio" });
     }
 
-    // 1️⃣ Verifica corsa esiste (CON INCLUDE!)
     const ride = await Ride.findByPk(ride_id, {
       include: [{ model: Vehicle, as: "vehicle" }],
     });
 
-    // 2️⃣ Verifica che la corsa appartiene all'utente
     if (ride.id_utente !== id_utente) {
       return res.status(403).json({ error: "Questa corsa non ti appartiene" });
     }
 
-    // 3️⃣ Verifica che la corsa è ancora in corso o sospesa
     if (
       ride.stato_corsa !== "in_corso" &&
       ride.stato_corsa !== "sospesa_batteria_esaurita"
@@ -208,13 +200,11 @@ export const checkPayment = async (req, res) => {
       });
     }
 
-    // 4️⃣ Calcola durata e costo
     const dataFine = new Date();
     const durataMinuti = Math.ceil(
       (dataFine - ride.data_ora_inizio) / (1000 * 60)
     );
 
-    // Determina la tariffa in base al tipo di mezzo
     const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
 
     let costo;
@@ -224,11 +214,9 @@ export const checkPayment = async (req, res) => {
       costo = 1.0 + (durataMinuti - 30) * tariffa;
     }
 
-    // 5️⃣ Recupera saldo utente
     const user = await User.findByPk(id_utente);
     const saldoNumero = parseFloat(user.saldo);
 
-    // 6️⃣ Ritorna check result
     res.status(200).json({
       success: true,
       costo: parseFloat(costo.toFixed(2)),
@@ -244,21 +232,19 @@ export const checkPayment = async (req, res) => {
   }
 };
 
-// ✅ END RIDE WITH PAYMENT - Fine corsa, pagamento immediato
+// END RIDE WITH PAYMENT - Fine corsa con pagamento immediato
 export const endRideWithPayment = async (req, res) => {
   try {
     const { ride_id } = req.params;
     const { id_parcheggio_fine, importo_ricarica } = req.body;
     const id_utente = req.user.id_utente;
 
-    // Validazione
     if (!ride_id || !id_parcheggio_fine) {
       return res.status(400).json({
         error: "ride_id e id_parcheggio_fine sono obbligatori",
       });
     }
 
-    // 1️⃣ Verifica corsa esiste
     const ride = await Ride.findByPk(ride_id, {
       include: [
         { model: Vehicle, as: "vehicle" },
@@ -270,12 +256,10 @@ export const endRideWithPayment = async (req, res) => {
       return res.status(404).json({ error: "Corsa non trovata" });
     }
 
-    // 2️⃣ Verifica che la corsa appartiene all'utente
     if (ride.id_utente !== id_utente) {
       return res.status(403).json({ error: "Questa corsa non ti appartiene" });
     }
 
-    // 3️⃣ Verifica che la corsa è ancora in corso (O sospesa per batteria)
     if (
       ride.stato_corsa !== "in_corso" &&
       ride.stato_corsa !== "sospesa_batteria_esaurita"
@@ -285,7 +269,6 @@ export const endRideWithPayment = async (req, res) => {
       });
     }
 
-    // 4️⃣ Verifica parcheggio fine esiste
     const parkingFine = await Parking.findByPk(id_parcheggio_fine);
     if (!parkingFine) {
       return res.status(404).json({
@@ -293,19 +276,18 @@ export const endRideWithPayment = async (req, res) => {
       });
     }
 
-    // 5️⃣ Calcola durata e costo
     let durataMinuti;
     let costo;
     let kmPercorsi;
     const dataFine = new Date();
 
+    // Se corsa sospesa, usa i valori congelati
     if (ride.stato_corsa === "sospesa_batteria_esaurita") {
-      //  USA I DATI CONGELATI
       durataMinuti = ride.durata_minuti;
       costo = parseFloat(ride.costo);
       kmPercorsi = ride.km_percorsi;
     } else {
-      //  CALCOLA I DATI LIVE
+      // Calcola i valori live
       durataMinuti = Math.ceil((dataFine - ride.data_ora_inizio) / (1000 * 60));
 
       const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
@@ -319,16 +301,14 @@ export const endRideWithPayment = async (req, res) => {
       kmPercorsi = calcolaKmPercorsi(durataMinuti, ride.vehicle.tipo_mezzo);
     }
 
-    // 6️⃣ Recupera utente
     const user = await User.findByPk(id_utente);
     let saldoDisponibile = parseFloat(user.saldo);
     let punti_utilizzati = 0;
 
-    // 7️⃣ Se l'utente chiede di ricaricare, aggiungi l'importo
+    // Se ricarica, aggiorna saldo
     if (importo_ricarica && importo_ricarica > 0) {
       saldoDisponibile += importo_ricarica;
 
-      // Crea transaction ricarica
       await Transaction.create({
         id_utente,
         tipo_transazione: "ricarica",
@@ -337,21 +317,18 @@ export const endRideWithPayment = async (req, res) => {
       });
     }
 
-    // 7️⃣B Se l'utente vuole usare punti come sconto
-    const { usa_punti } = req.body; // Boolean dal frontend
+    // Se vuole usare punti come sconto
+    const { usa_punti } = req.body;
     if (usa_punti && user.punti > 0) {
-      // Calcola quanti punti servono per coprire il costo (1 punto = €0.05)
       const puntiNecessari = Math.ceil(costo / 0.05);
-
-      // Usa solo i punti necessari (o tutti se ne ha meno)
       punti_utilizzati = Math.min(puntiNecessari, user.punti);
       const sconto_punti = punti_utilizzati * 0.05;
 
       saldoDisponibile += sconto_punti;
-      user.punti -= punti_utilizzati; // Decrementa solo i punti usati
+      user.punti -= punti_utilizzati;
     }
 
-    // 8️⃣ Verifica se ha abbastanza per pagare
+    // Verifica se ha abbastanza per pagare
     if (saldoDisponibile < costo) {
       return res.status(402).json({
         error: "Saldo insufficiente anche dopo la ricarica",
@@ -362,7 +339,6 @@ export const endRideWithPayment = async (req, res) => {
       });
     }
 
-    // 9️⃣ PAGAMENTO CONFERMATO - Aggiorna tutto
     // Completa la ride
     ride.id_parcheggio_fine = id_parcheggio_fine;
     ride.data_ora_fine = dataFine;
@@ -373,10 +349,9 @@ export const endRideWithPayment = async (req, res) => {
     ride.stato_corsa = "completata";
     await ride.save();
 
-    // 🔟 Aggiorna mezzo
+    // Aggiorna mezzo
     const vehicle = ride.vehicle;
 
-    // Controllo batteria: se < 20% → non prelevabile (SOLO PER MEZZI CON BATTERIA)
     if (vehicle.stato_batteria !== null && vehicle.stato_batteria < 20) {
       vehicle.stato = "non_prelevabile";
     } else {
@@ -386,7 +361,7 @@ export const endRideWithPayment = async (req, res) => {
     vehicle.id_parcheggio = id_parcheggio_fine;
     await vehicle.save();
 
-    // Crea transaction pagamento corsa
+    // Crea transaction pagamento
     await Transaction.create({
       id_utente,
       tipo_transazione: "pagamento_corsa",
@@ -395,17 +370,15 @@ export const endRideWithPayment = async (req, res) => {
       descrizione: `Pagamento corsa: ${durataMinuti} minuti`,
     });
 
-    //  Calcola e salva punti fedeltà se è bicicletta muscolare
-    // ?MA SOLO SE NON HA USATO PUNTI IN QUESTA CORSA
+    // Guadagna punti se bicicletta muscolare
     if (
       ride.vehicle.tipo_mezzo === "bicicletta_muscolare" &&
       punti_utilizzati === 0
     ) {
-      const punti_guadagnati = Math.floor(durataMinuti / 5); // 1 punto ogni 5 minuti
+      const punti_guadagnati = Math.floor(durataMinuti / 5);
 
       user.punti += punti_guadagnati;
 
-      // Traccia l'operazione nella tabella punti_fedelta
       await PuntiFedelta.create({
         id_utente,
         id_corsa: ride.id_corsa,
@@ -415,7 +388,7 @@ export const endRideWithPayment = async (req, res) => {
       });
     }
 
-    // Se ha usato punti, traccia l'utilizzo
+    // Traccia utilizzo punti
     if (punti_utilizzati > 0) {
       await PuntiFedelta.create({
         id_utente,
@@ -428,7 +401,7 @@ export const endRideWithPayment = async (req, res) => {
       });
     }
 
-    // 1️⃣1️⃣ MQTT Lock
+    // Invia comando MQTT LOCK
     try {
       const mqttClient = mqtt.connect(
         process.env.MQTT_BROKER_URL || "mqtt://localhost:1883"
@@ -450,7 +423,7 @@ export const endRideWithPayment = async (req, res) => {
       });
 
       mqttClient.on("error", (err) => {
-        console.warn("⚠️ MQTT error (non critico):", err.message);
+        console.warn("⚠️ MQTT error:", err.message);
       });
     } catch (mqttError) {
       console.warn("⚠️ MQTT publish fallito:", mqttError.message);
@@ -458,10 +431,9 @@ export const endRideWithPayment = async (req, res) => {
 
     // Aggiorna saldo utente
     user.saldo = saldoDisponibile - costo;
-    user.stato_account = "attivo"; // Rimane attivo perché ha pagato
+    user.stato_account = "attivo";
     await user.save();
 
-    // ✅ Risposta successo
     res.status(200).json({
       success: true,
       message: "Corsa completata e pagata con successo",
@@ -501,21 +473,19 @@ export const endRideWithPayment = async (req, res) => {
   }
 };
 
-// ✅ END RIDE WITH DEBT - Fine corsa, crea debito e sospende account
+// END RIDE WITH DEBT - Fine corsa con debito e sospensione account
 export const endRideWithDebt = async (req, res) => {
   try {
     const { ride_id } = req.params;
     const { id_parcheggio_fine } = req.body;
     const id_utente = req.user.id_utente;
 
-    // Validazione
     if (!ride_id || !id_parcheggio_fine) {
       return res.status(400).json({
         error: "ride_id e id_parcheggio_fine sono obbligatori",
       });
     }
 
-    // 1️⃣ Verifica corsa esiste
     const ride = await Ride.findByPk(ride_id, {
       include: [
         { model: Vehicle, as: "vehicle" },
@@ -527,12 +497,10 @@ export const endRideWithDebt = async (req, res) => {
       return res.status(404).json({ error: "Corsa non trovata" });
     }
 
-    // 2️⃣ Verifica che la corsa appartiene all'utente
     if (ride.id_utente !== id_utente) {
       return res.status(403).json({ error: "Questa corsa non ti appartiene" });
     }
 
-    // 3️⃣ Verifica che la corsa è ancora in corso (O sospesa per batteria)
     if (
       ride.stato_corsa !== "in_corso" &&
       ride.stato_corsa !== "sospesa_batteria_esaurita"
@@ -542,7 +510,6 @@ export const endRideWithDebt = async (req, res) => {
       });
     }
 
-    // 4️⃣ Verifica parcheggio fine esiste
     const parkingFine = await Parking.findByPk(id_parcheggio_fine);
     if (!parkingFine) {
       return res.status(404).json({
@@ -550,13 +517,11 @@ export const endRideWithDebt = async (req, res) => {
       });
     }
 
-    // 5️⃣ Calcola durata e costo
     const dataFine = new Date();
     const durataMinuti = Math.ceil(
       (dataFine - ride.data_ora_inizio) / (1000 * 60)
     );
 
-    // Determina la tariffa in base al tipo di mezzo
     const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
 
     let costo;
@@ -566,25 +531,19 @@ export const endRideWithDebt = async (req, res) => {
       costo = 1.0 + (durataMinuti - 30) * tariffa;
     }
 
-    // 6️⃣ Recupera utente
     const user = await User.findByPk(id_utente);
 
-    // 7️⃣ Calcola il debito totale
-    // Debito = costo corsa + costo prima 30 min della prossima corsa
+    // Calcola debito totale (corsa attuale + prima 30min della prossima)
     const costoPrimaCorsa = 1.0;
     const debitoTotale = costo + costoPrimaCorsa;
 
-    // 8️⃣ Aggiorna saldo (diventa negativo = debito)
-    const saldoNuovo = user.saldo - debitoTotale;
-
-    user.saldo = saldoNuovo;
-    user.stato_account = "sospeso"; // Account sospeso immediatamente
+    user.saldo = user.saldo - debitoTotale;
+    user.stato_account = "sospeso";
+    user.data_riapertura = null;
     user.data_sospensione = new Date();
-    user.numero_sospensioni = (user.numero_sospensioni || 0) + 1; // aggiorna counter sospensioni
+    user.numero_sospensioni = (user.numero_sospensioni || 0) + 1;
     await user.save();
 
-    // 9️⃣ Completa la ride
-    // Calcola km percorsi
     const kmPercorsi = calcolaKmPercorsi(durataMinuti, ride.vehicle.tipo_mezzo);
 
     ride.id_parcheggio_fine = id_parcheggio_fine;
@@ -595,10 +554,8 @@ export const endRideWithDebt = async (req, res) => {
     ride.stato_corsa = "completata";
     await ride.save();
 
-    // 🔟 Aggiorna mezzo
     const vehicle = ride.vehicle;
 
-    // Controllo batteria: se < 20% → non prelevabile (SOLO PER MEZZI CON BATTERIA)
     if (vehicle.stato_batteria !== null && vehicle.stato_batteria < 20) {
       vehicle.stato = "non_prelevabile";
     } else {
@@ -608,7 +565,7 @@ export const endRideWithDebt = async (req, res) => {
     vehicle.id_parcheggio = id_parcheggio_fine;
     await vehicle.save();
 
-    // 1️⃣1️⃣ Crea transaction per il pagamento corsa
+    // Crea transactions
     await Transaction.create({
       id_utente,
       tipo_transazione: "pagamento_corsa",
@@ -617,7 +574,6 @@ export const endRideWithDebt = async (req, res) => {
       descrizione: `Pagamento corsa: ${durataMinuti} minuti (non pagato - conto sospeso)`,
     });
 
-    // 1️⃣2️⃣ Crea transaction per il debito della prossima corsa
     await Transaction.create({
       id_utente,
       tipo_transazione: "debito_prossima_corsa",
@@ -627,7 +583,7 @@ export const endRideWithDebt = async (req, res) => {
         "Debito preventivo: costo prima 30 minuti della prossima corsa",
     });
 
-    // 1️⃣3️⃣ MQTT Lock
+    // Invia comando MQTT LOCK
     try {
       const mqttClient = mqtt.connect(
         process.env.MQTT_BROKER_URL || "mqtt://localhost:1883"
@@ -649,13 +605,12 @@ export const endRideWithDebt = async (req, res) => {
       });
 
       mqttClient.on("error", (err) => {
-        console.warn("⚠️ MQTT error (non critico):", err.message);
+        console.warn("⚠️ MQTT error:", err.message);
       });
     } catch (mqttError) {
       console.warn("⚠️ MQTT publish fallito:", mqttError.message);
     }
 
-    // 🔴 Risposta: Account sospeso
     res.status(202).json({
       success: false,
       message: "Corsa completata ma account sospeso per debito",
@@ -664,20 +619,20 @@ export const endRideWithDebt = async (req, res) => {
       costo_corsa: parseFloat(costo.toFixed(2)),
       costo_prossima_corsa_preventivo: costoPrimaCorsa,
       debito_totale: parseFloat(debitoTotale.toFixed(2)),
-      saldo_dopo: parseFloat(saldoNuovo.toFixed(2)),
+      saldo_dopo: parseFloat(user.saldo.toFixed(2)),
       parcheggio_fine: parkingFine.nome,
       punti_totali: user.punti,
       account_status: {
         stato_account: "sospeso",
         data_sospensione: user.data_sospensione,
-        debito: Math.abs(saldoNuovo),
+        debito: Math.abs(user.saldo),
         importo_minimo_ricarica: parseFloat(
-          (Math.abs(saldoNuovo) + costoPrimaCorsa).toFixed(2)
+          (Math.abs(user.saldo) + costoPrimaCorsa).toFixed(2)
         ),
         messaggio: `Account sospeso. Debito totale: ${debitoTotale.toFixed(
           2
         )}€. Per riaprire ricaricare almeno ${(
-          Math.abs(saldoNuovo) + costoPrimaCorsa
+          Math.abs(user.saldo) + costoPrimaCorsa
         ).toFixed(2)}€`,
       },
     });
@@ -687,7 +642,7 @@ export const endRideWithDebt = async (req, res) => {
   }
 };
 
-// ✅ GET ACTIVE RIDE
+// GET ACTIVE RIDE - Corsa attiva in corso
 export const getActiveRide = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -719,7 +674,7 @@ export const getActiveRide = async (req, res) => {
       });
     }
 
-    // ⚠️ SE SOSPESA, USA I VALORI CONGELATI DAL DB
+    // Se sospesa, usa i valori congelati dal database
     if (ride.stato_corsa === "sospesa_batteria_esaurita") {
       return res.status(200).json({
         id_corsa: ride.id_corsa,
@@ -730,15 +685,15 @@ export const getActiveRide = async (req, res) => {
         durata_corrente_minuti: ride.durata_minuti || 0,
         km_percorsi: ride.km_percorsi
           ? parseFloat(ride.km_percorsi).toFixed(2)
-          : 0, // ← Convertito perche dava errore toFixed
-        costo_stimato: ride.costo ? parseFloat(ride.costo).toFixed(2) : 0, // ← Convertito perche dava errore toFixed
+          : 0,
+        costo_stimato: ride.costo ? parseFloat(ride.costo).toFixed(2) : 0,
         parcheggio_inizio: ride.parkingInizio.nome,
         tariffa_minuto: ride.vehicle.tariffa_minuto,
         avviso: "🛑 Batteria esaurita! Procedi al pagamento.",
       });
     }
 
-    // SE ATTIVA, CALCOLA LIVE
+    // Se attiva, calcola live
     const durataCorrenteMinuti = Math.ceil(
       (new Date() - ride.data_ora_inizio) / (1000 * 60)
     );
@@ -775,7 +730,7 @@ export const getActiveRide = async (req, res) => {
   }
 };
 
-// ✅ GET RIDE HISTORY
+// GET RIDE HISTORY - Storico delle corse completate
 export const getRideHistory = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -805,7 +760,6 @@ export const getRideHistory = async (req, res) => {
       offset: parseInt(offset),
     });
 
-    //formatta le rides per farle uscire come vogliamo
     const ridesFormatted = rows.map((ride) => ({
       id_corsa: ride.id_corsa,
       id_utente: ride.id_utente,
@@ -841,7 +795,7 @@ export const getRideHistory = async (req, res) => {
   }
 };
 
-// ✅ GET RIDE BY ID
+// GET RIDE BY ID - Dettagli singola corsa
 export const getRideById = async (req, res) => {
   try {
     const { ride_id } = req.params;
@@ -859,7 +813,6 @@ export const getRideById = async (req, res) => {
       return res.status(404).json({ error: "Corsa non trovata" });
     }
 
-    // Verifica ownership
     if (ride.id_utente !== id_utente) {
       return res.status(403).json({ error: "Accesso negato" });
     }
@@ -874,7 +827,7 @@ export const getRideById = async (req, res) => {
   }
 };
 
-// ✅ CANCEL RIDE (cancella corsa in corso)
+// CANCEL RIDE - Annulla corsa in corso
 export const cancelRide = async (req, res) => {
   try {
     const { ride_id } = req.params;
@@ -901,10 +854,8 @@ export const cancelRide = async (req, res) => {
       });
     }
 
-    // Aggiorna mezzo
     const vehicle = ride.vehicle;
 
-    // Controllo batteria: se < 20% → non prelevabile (SOLO PER MEZZI CON BATTERIA)
     if (vehicle.stato_batteria !== null && vehicle.stato_batteria < 20) {
       vehicle.stato = "non_prelevabile";
     } else {
@@ -913,7 +864,6 @@ export const cancelRide = async (req, res) => {
 
     await vehicle.save();
 
-    // Cancella corsa
     ride.stato_corsa = "cancellata";
     await ride.save();
 
@@ -927,17 +877,15 @@ export const cancelRide = async (req, res) => {
   }
 };
 
-// ✅ GET USER RIDE STATISTICS (per profilo utente)
+// GET USER RIDE STATISTICS - Statistiche corse per profilo utente
 export const getUserRideStatistics = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
 
-    // 1️⃣ Conta corse totali completate
     const totalRides = await Ride.count({
       where: { id_utente, stato_corsa: "completata" },
     });
 
-    // 2️⃣ Ottieni ultima corsa per il mezzo usato
     const lastRide = await Ride.findOne({
       where: { id_utente, stato_corsa: "completata" },
       include: [
@@ -951,7 +899,6 @@ export const getUserRideStatistics = async (req, res) => {
       limit: 1,
     });
 
-    // 3️⃣ Calcola spesa totale
     const rideTransactions = await Transaction.findAll({
       where: {
         id_utente,
@@ -965,7 +912,6 @@ export const getUserRideStatistics = async (req, res) => {
       0
     );
 
-    // 4️⃣ Calcola km totali percorsi
     const rides = await Ride.findAll({
       where: {
         id_utente,
@@ -992,7 +938,7 @@ export const getUserRideStatistics = async (req, res) => {
   }
 };
 
-// ✅ GET RIDES TODAY (ADMIN ONLY) - Tutte le corse di oggi
+// GET RIDES TODAY - Tutte le corse di oggi (admin)
 export const getRidesToday = async (req, res) => {
   try {
     const startOfDay = new Date();
@@ -1028,7 +974,7 @@ export const getRidesToday = async (req, res) => {
   }
 };
 
-// ✅ GET ALL COMPLETED RIDES (ADMIN ONLY) - Tutte le corse completate
+// GET ALL COMPLETED RIDES - Tutte le corse completate (admin)
 export const getAllCompletedRides = async (req, res) => {
   try {
     const rides = await Ride.findAll({

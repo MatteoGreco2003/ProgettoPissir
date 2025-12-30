@@ -7,70 +7,75 @@ import Report from "./Report.js";
 import Ride from "./Ride.js";
 import Feedback from "./Feedback.js";
 
-// ✅ Vehicle appartiene a Parking
+// Vehicle appartiene a un Parking
 Vehicle.belongsTo(Parking, {
   foreignKey: "id_parcheggio",
   as: "parking",
 });
 
-// ✅ Parking ha molti Vehicle
+// Parking contiene molti Vehicle
 Parking.hasMany(Vehicle, {
   foreignKey: "id_parcheggio",
   as: "vehicles",
 });
 
-// ✅ Report associations
+// Report è collegato a User
 Report.belongsTo(User, {
   foreignKey: "id_utente",
   as: "user",
 });
 
+// Report è collegato a Vehicle
 Report.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
 });
 
-// ✅ Ride associations
+// Ride è collegato a User
 Ride.belongsTo(User, {
   foreignKey: "id_utente",
   as: "user",
 });
 
-// ✅ AGGIORNATO: Vehicle può essere cancellato senza problemi
+// Ride è collegato a Vehicle - se Vehicle è cancellato, id_mezzo diventa NULL
 Ride.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
-  onDelete: "SET NULL", // ✅ id_mezzo diventa NULL se Vehicle è cancellato
+  onDelete: "SET NULL",
 });
 
+// Ride è collegato a Parking di inizio
 Ride.belongsTo(Parking, {
   foreignKey: "id_parcheggio_inizio",
   as: "parkingInizio",
 });
 
+// Ride è collegato a Parking di fine
 Ride.belongsTo(Parking, {
   foreignKey: "id_parcheggio_fine",
   as: "parkingFine",
 });
 
-// ✅ Feedback associations
+// Feedback è collegato a User
 Feedback.belongsTo(User, {
   foreignKey: "id_utente",
   as: "user",
 });
 
+// Feedback è collegato a Vehicle - se Vehicle è cancellato, id_mezzo diventa NULL
 Feedback.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
-  onDelete: "SET NULL", // ✅ id_mezzo diventa NULL se Vehicle è cancellato
+  onDelete: "SET NULL",
 });
 
-//Associazioni inverse (hasMany) per Feedback
+// User ha molti Feedback
 User.hasMany(Feedback, {
   foreignKey: "id_utente",
   as: "feedbacks",
 });
 
+// Vehicle ha molti Feedback
 Vehicle.hasMany(Feedback, {
   foreignKey: "id_mezzo",
   as: "feedbacks",

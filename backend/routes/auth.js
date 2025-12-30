@@ -7,17 +7,22 @@ import {
   logout,
 } from "../controllers/authController.js";
 import { verifyToken } from "../middleware/auth.js";
+
 const router = express.Router();
 
-// POST /api/auth/register
+// Registrazione utente
 router.post("/register", register);
-// POST /api/auth/login
+
+// Login utente
 router.post("/login", login);
-// POST /auth/forgot-password - Richiedi reset password
+
+// Richiesta reset password
 router.post("/forgot-password", forgotPassword);
-// POST /auth/reset-password - Reimposta password
+
+// Reimposta password con token
 router.post("/reset-password", resetPassword);
-// GET auth/logout
+
+// Logout (richiede autenticazione)
 router.get("/logout", verifyToken, logout);
 
 export default router;

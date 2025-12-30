@@ -1,6 +1,7 @@
 import mqtt from "mqtt";
 import Vehicle from "../models/Vehicle.js";
 
+// Listener MQTT per ricevere aggiornamenti di batteria dai dispositivi IoT
 export const initBatteryListener = () => {
   const client = mqtt.connect(
     process.env.MQTT_BROKER_URL || "mqtt://localhost:1883"
@@ -24,7 +25,7 @@ export const initBatteryListener = () => {
       // Aggiorna la batteria nel DB
       const vehicle = await Vehicle.findByPk(idMezzo);
       if (vehicle) {
-        vehicle.stato_batteria = Math.max(0, batteryData.level); // Non scendere sotto 0
+        vehicle.stato_batteria = Math.max(0, batteryData.level);
         await vehicle.save();
         console.log(`⚡ Batteria mezzo ${idMezzo}: ${batteryData.level}%`);
       }

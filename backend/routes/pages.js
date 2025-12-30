@@ -1,68 +1,91 @@
 import express from "express";
 import authMiddleware from "../middleware/auth.js";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
-// HOME / LOGIN
+// Home / Login - Reindirizza a dashboard se già autenticato
 router.get("/", (req, res) => {
   const token = req.cookies?.token || null;
 
   if (token) {
-    return res.redirect("/home-utente");
+    // Decodifica il token per leggere il ruolo
+    try {
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET || "your_secret_key"
+      );
+
+      // Se è admin, reindirizza a home-admin
+      if (decoded.role === "admin" || decoded.role === "manager") {
+        return res.redirect("/home-admin");
+      }
+
+      // Altrimenti reindirizza a home-utente
+      return res.redirect("/home-utente");
+    } catch (error) {
+      // Token invalido, mostra login
+      res.clearCookie("token");
+      return res.render("auth");
+    }
   }
 
   res.render("auth");
 });
 
-// GET /reset-password - Pagina reset password (pubblica)
+// Reset password - Pagina pubblica
 router.get("/reset-password", (req, res) => {
   res.render("reset-password");
 });
 
-// GET /home-utente - Dashboard utente (protetto)
+// Dashboard utente (protetto)
 router.get("/home-utente", authMiddleware, (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("home-utente");
 });
 
-// GET /profile - Profilo utente (protetto)
+// Profilo utente (protetto)
 router.get("/profile", authMiddleware, (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("profile-utente", { user: req.user });
 });
 
-// GET /ride - Pagina corsa (protetto)
+// Pagina corsa (protetto)
 router.get("/ride", authMiddleware, (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   const { ride_id } = req.query;
   res.render("ride", { rideId: ride_id });
 });
 
-// GET /credit - Pagina gestione credito (protetto)
+// Gestione credito (protetto)
 router.get("/credit", authMiddleware, (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("credit");
 });
 
-// GET /feedback - Pagina feedback (protetto)
+// Feedback (protetto)
 router.get("/feedback", authMiddleware, (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("feedback");
 });
 
-// ✅ DASHBOARD MANAGER (protetto + solo gestori)
+// Dashboard admin (protetto)
 router.get("/home-admin", authMiddleware, (req, res) => {
-  // Verifica se è gestore (da implementare in future)
-  /*if (req.user.role !== "manager" && req.user.role !== "admin") {
-    return res.status(403).render("404", {
-      title: "Accesso Negato",
-    });
-  }*/
-
   res.render("admin-dashboard");
 });
+
+// Gestione utenti (protetto)
+router.get("/gestione-utenti", authMiddleware, (req, res) => {
+  res.render("gestione-utenti");
+});
+
+// Gestione mezzi (protetto)
+router.get("/gestione-mezzi", authMiddleware, (req, res) => {
+  res.render("gestione-mezzi");
+});
+
 /*
-// ✅ GESTIONE MEZZI (protetto + solo gestori)
+// Gestione mezzi (protetto + solo gestori)
 router.get("/manager/vehicles", authMiddleware, (req, res) => {
   if (req.user.role !== "manager" && req.user.role !== "admin") {
     return res.status(403).render("404", {
@@ -76,7 +99,7 @@ router.get("/manager/vehicles", authMiddleware, (req, res) => {
   });
 });
 
-// ✅ GESTIONE PARCHEGGI (protetto + solo gestori)
+// Gestione parcheggi (protetto + solo gestori)
 router.get("/manager/parkings", authMiddleware, (req, res) => {
   if (req.user.role !== "manager" && req.user.role !== "admin") {
     return res.status(403).render("404", {
@@ -90,7 +113,7 @@ router.get("/manager/parkings", authMiddleware, (req, res) => {
   });
 });
 
-// ✅ GESTIONE SEGNALAZIONI (protetto + solo gestori)
+// Gestione segnalazioni (protetto + solo gestori)
 router.get("/manager/reports", authMiddleware, (req, res) => {
   if (req.user.role !== "manager" && req.user.role !== "admin") {
     return res.status(403).render("404", {
@@ -102,6 +125,7 @@ router.get("/manager/reports", authMiddleware, (req, res) => {
     title: "Segnalazioni - Mobishare",
     user: req.user,
   });
-});*/
+});
+*/
 
 export default router;

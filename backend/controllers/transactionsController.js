@@ -2,7 +2,7 @@ import Transaction from "../models/Transaction.js";
 import User from "../models/User.js";
 import Ride from "../models/Ride.js";
 
-// ✅ RECHARGE CREDIT
+// RECHARGE CREDIT - Ricarica credito account
 export const rechargeCredit = async (req, res) => {
   try {
     const { importo } = req.body;
@@ -24,27 +24,24 @@ export const rechargeCredit = async (req, res) => {
       return res.status(400).json({ error: "Importo massimo €500.00" });
     }
 
-    // Trova utente
     const user = await User.findByPk(id_utente);
     if (!user) {
       return res.status(404).json({ error: "Utente non trovato" });
     }
 
-    // Aggiorna saldo
     const saldoPrecedente = user.saldo;
     const nuovoSaldo = parseFloat(
       (parseFloat(user.saldo) + importoNumerico).toFixed(2)
     );
     user.saldo = nuovoSaldo;
 
-    // ✅ NUOVO: Se era sospeso, passa a "in_attesa_approvazione" (non attivo subito!)
+    // Se era sospeso, passa a "in_attesa_approvazione"
     if (user.stato_account === "sospeso") {
       user.stato_account = "in_attesa_approvazione";
     }
 
     await user.save();
 
-    // Crea transaction record
     const transaction = await Transaction.create({
       id_utente,
       tipo_transazione: "ricarica",
@@ -70,13 +67,12 @@ export const rechargeCredit = async (req, res) => {
   }
 };
 
-// ✅ GET TRANSACTION HISTORY
+// GET TRANSACTION HISTORY - Storico transazioni con paginazione
 export const getTransactionHistory = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
     const { limit = 20, offset = 0, tipo_transazione } = req.query;
 
-    // Costruisci filtri
     const where = { id_utente };
     if (tipo_transazione) {
       where.tipo_transazione = tipo_transazione;
@@ -89,15 +85,13 @@ export const getTransactionHistory = async (req, res) => {
       offset: parseInt(offset),
     });
 
-    //  Se è una transazione di pagamento_corsa,
-    // recupera i dati dalla ride per mostrare sconto punti
+    // Per transazioni di pagamento corsa, recupera i dettagli della ride
     const transactionsFormatted = await Promise.all(
       rows.map(async (transaction) => {
         if (
           transaction.tipo_transazione === "pagamento_corsa" &&
           transaction.id_corsa
         ) {
-          // Recupera la ride per i dati sui punti usati
           const ride = await Ride.findByPk(transaction.id_corsa, {
             attributes: ["punti_fedeltà_usati", "costo"],
           });
@@ -122,7 +116,6 @@ export const getTransactionHistory = async (req, res) => {
           }
         }
 
-        // Per altri tipi di transazione, ritorna come prima
         return {
           id_transazione: transaction.id_transazione,
           id_utente: transaction.id_utente,
@@ -148,7 +141,7 @@ export const getTransactionHistory = async (req, res) => {
   }
 };
 
-// ✅ GET TRANSACTION BY ID
+// GET TRANSACTION BY ID - Dettagli singola transazione
 export const getTransactionById = async (req, res) => {
   try {
     const { transaction_id } = req.params;
@@ -160,12 +153,10 @@ export const getTransactionById = async (req, res) => {
       return res.status(404).json({ error: "Transazione non trovata" });
     }
 
-    // Verifica ownership
     if (transaction.id_utente !== id_utente) {
       return res.status(403).json({ error: "Accesso negato" });
     }
 
-    // ← AGGIUNGI: Se è pagamento_corsa, recupera i dettagli dalla ride
     let transactionFormatted = {
       id_transazione: transaction.id_transazione,
       id_utente: transaction.id_utente,
@@ -175,6 +166,7 @@ export const getTransactionById = async (req, res) => {
       descrizione: transaction.descrizione,
     };
 
+    // Se pagamento corsa, recupera dettagli dalla ride
     if (
       transaction.tipo_transazione === "pagamento_corsa" &&
       transaction.id_corsa
@@ -197,7 +189,6 @@ export const getTransactionById = async (req, res) => {
         };
       }
     } else {
-      // Per altri tipi, mostra importo
       transactionFormatted.importo = parseFloat(transaction.importo).toFixed(2);
     }
 
@@ -211,7 +202,7 @@ export const getTransactionById = async (req, res) => {
   }
 };
 
-// ✅ GET CURRENT BALANCE
+// GET CURRENT BALANCE - Saldo attuale account
 export const getCurrentBalance = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -234,12 +225,11 @@ export const getCurrentBalance = async (req, res) => {
   }
 };
 
-// ✅ GET BALANCE SUMMARY (statistiche)
+// GET BALANCE SUMMARY - Riepilogo ricariche e spese
 export const getBalanceSummary = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
 
-    // Totale ricariche
     const ricariche = await Transaction.findAll({
       where: {
         id_utente,
@@ -248,7 +238,6 @@ export const getBalanceSummary = async (req, res) => {
       raw: true,
     });
 
-    // Totale spese
     const spese = await Transaction.findAll({
       where: {
         id_utente,
@@ -283,7 +272,7 @@ export const getBalanceSummary = async (req, res) => {
   }
 };
 
-// ✅ REQUEST ACCOUNT REACTIVATION - User richiede riapertura
+// REQUEST ACCOUNT REACTIVATION - Richiesta di riapertura account
 export const requestReactivation = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -309,7 +298,6 @@ export const requestReactivation = async (req, res) => {
       });
     }
 
-    // Cambia stato a "in_attesa_approvazione"
     user.stato_account = "in_attesa_approvazione";
     await user.save();
 
@@ -325,7 +313,7 @@ export const requestReactivation = async (req, res) => {
   }
 };
 
-// ✅ APPROVE ACCOUNT REACTIVATION (ADMIN ONLY)
+// APPROVE ACCOUNT REACTIVATION - Approva riapertura account (admin)
 export const approveReactivation = async (req, res) => {
   try {
     const { id_utente } = req.params;
@@ -341,8 +329,9 @@ export const approveReactivation = async (req, res) => {
       });
     }
 
-    // Riattiva account
     user.stato_account = "attivo";
+    user.data_riapertura = new Date();
+    user.data_sospensione = null;
     await user.save();
 
     res.status(200).json({

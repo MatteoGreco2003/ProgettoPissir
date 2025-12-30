@@ -1633,7 +1633,8 @@ body {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
+  visibility: hidden !important;
 }
 
 @keyframes pulse {

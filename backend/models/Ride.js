@@ -27,24 +27,29 @@ const Ride = sequelize.define(
       allowNull: false,
     },
     id_parcheggio_fine: DataTypes.INTEGER,
+    // Data e ora di inizio corsa
     data_ora_inizio: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    // Data e ora di fine corsa
     data_ora_fine: DataTypes.DATE,
+    // Durata in minuti
     durata_minuti: {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
       },
     },
+    // Importo pagato per la corsa
     costo: {
       type: DataTypes.DECIMAL(10, 2),
       validate: {
         min: 0,
       },
     },
+    // Stato della corsa
     stato_corsa: {
       type: DataTypes.STRING(50),
       defaultValue: "in_corso",
@@ -54,15 +59,15 @@ const Ride = sequelize.define(
         ],
       },
     },
+    // Chilometri percorsi
     km_percorsi: {
       type: DataTypes.FLOAT,
       defaultValue: 0,
-      comment: "Km percorsi durante la corsa",
     },
+    // Punti fedeltà utilizzati per sconto
     punti_fedeltà_usati: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
-      comment: "Punti fedeltà usati in questa corsa",
     },
   },
   {

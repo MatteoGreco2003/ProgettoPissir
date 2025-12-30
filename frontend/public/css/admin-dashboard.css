@@ -229,17 +229,19 @@ main {
   line-height: 1.4;
 }
 
-/* Button styles */
-.btn-sm {
-  padding: 8px 16px;
-  font-size: 12px;
-  border-radius: 6px;
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 150ms ease;
   width: 100%;
+  gap: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: all 150ms ease;
 }
 
 .btn-outline {
@@ -735,103 +737,6 @@ main {
   display: none !important;
 }
 
-/* ===== MODAL ===== */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  opacity: 1;
-  transition: opacity 250ms ease;
-}
-
-.modal.hidden {
-  display: none;
-  opacity: 0;
-}
-
-.modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-  position: relative;
-  background-color: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
-  max-width: 400px;
-  width: 90%;
-  overflow: hidden;
-}
-
-.modal-header {
-  padding: 15px 20px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--dark-text);
-  margin: 0;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--light-text);
-  cursor: pointer;
-  transition: color 150ms ease;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-close:hover {
-  color: var(--dark-text);
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-body p {
-  font-size: 14px;
-  color: var(--dark-text);
-  line-height: 1.5;
-}
-
-.modal-warning {
-  color: var(--error-red);
-  font-weight: 600;
-}
-
-.modal-footer {
-  padding: 20px;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-/* ===== BUTTON STYLES PER MODAL ===== */
 .btn {
   padding: 10px 20px;
   border-radius: 8px;
@@ -840,24 +745,6 @@ main {
   font-size: 14px;
   cursor: pointer;
   transition: all 150ms ease;
-}
-
-.btn-secondary {
-  background-color: var(--white);
-  color: var(--dark-text);
-  border: 1px solid var(--border-color);
-}
-
-.btn-danger {
-  background-color: var(--error-red);
-  color: var(--white);
-  flex: 1;
-}
-
-.btn-primary {
-  background-color: var(--primary-teal);
-  color: var(--white);
-  flex: 1;
 }
 
 /* Responsive */
@@ -898,24 +785,7 @@ main {
     font-size: 14px;
   }
 
-  .user-status-item {
-    padding: 10px;
-  }
-
-  .user-status-label {
-    font-size: 10px;
-  }
-
-  .user-status-value {
-    font-size: 16px;
-  }
-
-  .kpi-card--parkings {
-    min-height: auto;
-  }
-
   .parkings-overview {
-    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
 
@@ -935,15 +805,6 @@ main {
     font-size: 11px;
   }
 
-  .kpi-card--rides {
-    min-height: auto;
-  }
-
-  .rides-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-
   .rides-stat-item {
     padding: 8px;
   }
@@ -956,12 +817,7 @@ main {
     font-size: 16px;
   }
 
-  .kpi-card--earnings {
-    min-height: auto;
-  }
-
   .earnings-stats-grid {
-    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
 
@@ -989,12 +845,7 @@ main {
     font-size: 12px;
   }
 
-  .kpi-card--reports {
-    min-height: auto;
-  }
-
   .reports-problems-grid {
-    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
 
@@ -1013,14 +864,7 @@ main {
 
 @media (max-width: 480px) {
   .kpi-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
     gap: 8px;
-  }
-
-  .kpi-title-group {
-    align-items: center;
   }
 
   .status-item {
@@ -1033,18 +877,6 @@ main {
 
   .status-label {
     font-size: 11px;
-  }
-
-  .user-status-item {
-    padding: 8px;
-  }
-
-  .user-status-label {
-    font-size: 9px;
-  }
-
-  .user-status-value {
-    font-size: 14px;
   }
 
   .top-user-info {
@@ -1073,12 +905,7 @@ main {
     font-size: 14px;
   }
 
-  .kpi-card--parkings {
-    min-height: auto;
-  }
-
   .parkings-overview {
-    grid-template-columns: repeat(3, 1fr);
     gap: 6px;
   }
 
@@ -1098,12 +925,7 @@ main {
     font-size: 10px;
   }
 
-  .kpi-card--rides {
-    min-height: auto;
-  }
-
   .rides-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
     gap: 6px;
   }
 
@@ -1119,12 +941,7 @@ main {
     font-size: 14px;
   }
 
-  .kpi-card--earnings {
-    min-height: auto;
-  }
-
   .earnings-stats-grid {
-    grid-template-columns: repeat(3, 1fr);
     gap: 6px;
   }
 
@@ -1158,12 +975,7 @@ main {
     min-width: 50px;
   }
 
-  .kpi-card--reports {
-    min-height: auto;
-  }
-
   .reports-problems-grid {
-    grid-template-columns: repeat(2, 1fr);
     gap: 6px;
   }
 

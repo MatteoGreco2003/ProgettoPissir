@@ -13,11 +13,8 @@
   </nav>
 
   <!-- ===== SIDEBAR FOOTER ===== -->
-  <div class="sidebar-footer">
-    <button class="delete-profile-btn" id="deleteProfileBtn">
-      <i class="fas fa-trash"></i>
-      <span>Elimina Profilo</span>
-    </button>
+  <div class="sidebar-footer" id="sidebarFooter">
+    <!-- Il pulsante delete profile verrà aggiunto solo se l'utente non è admin -->
   </div>
 </aside>
 
@@ -28,7 +25,7 @@
      - Carica il ruolo utente via API
      - Genera dinamicamente i nav item in base al ruolo
      - Evidenziazione nav item attivo in base al percorso
-     - Apertura/chiusura modal eliminazione profilo
+     - Apertura/chiusura modal eliminazione profilo (solo per utenti non-admin)
      - Eliminazione profilo con API call
      ========================================================================== -->
 <script>
@@ -148,6 +145,41 @@
   }
 
   /**
+   * Genera il footer della sidebar in base al ruolo
+   * Se l'utente non è admin, mostra il pulsante delete profile
+   * @param {string} userRole - Ruolo dell'utente ('utente' o 'admin')
+   */
+  function generateSidebarFooter(userRole) {
+    const sidebarFooter = document.getElementById("sidebarFooter");
+    if (!sidebarFooter) return;
+
+    // Pulisci footer precedente
+    sidebarFooter.innerHTML = "";
+
+    // Se è admin, aggiungi la classe 'admin' al footer per nascondere il border
+    if (userRole === "admin") {
+      sidebarFooter.classList.add("admin");
+    } else {
+      sidebarFooter.classList.remove("admin");
+    }
+
+    // Mostra pulsante delete profile solo se NON è admin
+    if (userRole !== "admin") {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "delete-profile-btn";
+      deleteBtn.id = "deleteProfileBtn";
+      deleteBtn.innerHTML = `
+      <i class="fas fa-trash"></i>
+      <span>Elimina Profilo</span>
+    `;
+      sidebarFooter.appendChild(deleteBtn);
+
+      // Aggiungi event listener al pulsante
+      deleteBtn.addEventListener("click", openDeleteModal);
+    }
+  }
+
+  /**
    * Evidenzia il nav item corrispondente alla pagina corrente
    */
   function setActiveNavItem() {
@@ -187,6 +219,8 @@
         const userData = await response.json();
         // Genera nav in base al ruolo
         generateNavItems(userData.ruolo);
+        // Genera footer (con pulsante delete solo se NON admin)
+        generateSidebarFooter(userData.ruolo);
       } else {
         console.error("❌ Errore caricamento profilo:", response.status);
       }
@@ -264,12 +298,6 @@
   document.addEventListener("DOMContentLoaded", () => {
     // ===== CARICA NAV IN BASE AL RUOLO =====
     loadAndGenerateNavigation();
-
-    // ===== EVENT LISTENER: Delete Profile Button =====
-    const deleteBtn = document.getElementById("deleteProfileBtn");
-    if (deleteBtn) {
-      deleteBtn.addEventListener("click", openDeleteModal);
-    }
 
     // ===== EVENT LISTENER: Modal Buttons =====
     const modalCancel = document.getElementById("modalCancel");

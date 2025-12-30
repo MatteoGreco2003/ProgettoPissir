@@ -4,7 +4,7 @@ import mqtt from "mqtt";
 import Ride from "../models/Ride.js";
 import Vehicle from "../models/Vehicle.js";
 
-// HELPER PER SALVARE DATI CON BATTERIA A 0
+// Helper per ottenere tariffa base in base al tipo mezzo
 const getTariffaBaseByMezzo = (tipo_mezzo) => {
   switch (tipo_mezzo) {
     case "bicicletta_muscolare":
@@ -18,6 +18,7 @@ const getTariffaBaseByMezzo = (tipo_mezzo) => {
   }
 };
 
+// Helper per ottenere velocità media in base al tipo mezzo
 const getVelocitaMediaByMezzo = (tipo_mezzo) => {
   switch (tipo_mezzo) {
     case "bicicletta_muscolare":
@@ -31,6 +32,7 @@ const getVelocitaMediaByMezzo = (tipo_mezzo) => {
   }
 };
 
+// Decrementa batteria di 1% ogni minuto per mezzi in uso
 export const initActiveBatteryDecrementer = () => {
   const client = mqtt.connect(
     process.env.MQTT_BROKER_URL || "mqtt://localhost:1883"
@@ -42,7 +44,6 @@ export const initActiveBatteryDecrementer = () => {
     // Ogni 60 secondi, decrementa la batteria di tutti i mezzi in uso
     setInterval(async () => {
       try {
-        // Trova tutte le corse attive (incluse quelle sospese per batteria)
         const activeRides = await Ride.findAll({
           where: {
             stato_corsa: ["in_corso", "sospesa_batteria_esaurita"],
@@ -50,16 +51,15 @@ export const initActiveBatteryDecrementer = () => {
           include: [{ model: Vehicle, as: "vehicle" }],
         });
 
-        // Per ogni corsa attiva, decrementa la batteria del mezzo
         for (const ride of activeRides) {
           const vehicle = ride.vehicle;
 
-          // ⚠️ SKIP se è bicicletta muscolare (batteria = null)
+          // Salta biciclette muscolari (non hanno batteria)
           if (vehicle.stato_batteria === null) {
             continue;
           }
 
-          // ⚠️ SKIP se corsa già sospesa (batteria già a 0)
+          // Salta corse già sospese
           if (ride.stato_corsa === "sospesa_batteria_esaurita") {
             continue;
           }
@@ -67,11 +67,10 @@ export const initActiveBatteryDecrementer = () => {
           // Decrementa 1% ogni minuto
           const newBattery = Math.max(0, vehicle.stato_batteria - 1);
 
-          // Aggiorna nel DB
           vehicle.stato_batteria = newBattery;
           await vehicle.save();
 
-          // Pubblica via MQTT
+          // Pubblica aggiornamento via MQTT
           const message = JSON.stringify({
             id_mezzo: vehicle.id_mezzo,
             level: newBattery,
@@ -83,7 +82,7 @@ export const initActiveBatteryDecrementer = () => {
             `⚡ Mezzo ${vehicle.id_mezzo} (corsa ${ride.id_corsa}): ${newBattery}%`
           );
 
-          // ⚠️ AVVISI BATTERIA
+          // Avviso batteria bassa (20-10%)
           if (newBattery < 20 && newBattery >= 10) {
             const warningMessage = JSON.stringify({
               id_mezzo: vehicle.id_mezzo,
@@ -100,6 +99,7 @@ export const initActiveBatteryDecrementer = () => {
             );
           }
 
+          // Avviso batteria critica (< 10%)
           if (newBattery < 10) {
             const criticalMessage = JSON.stringify({
               id_mezzo: vehicle.id_mezzo,
@@ -116,9 +116,8 @@ export const initActiveBatteryDecrementer = () => {
             );
           }
 
-          // ⚠️ BATTERIA ESAURITA = STOP CORSA
+          // Batteria esaurita = ferma la corsa
           if (newBattery === 0) {
-            // Calcola i valori PRIMA di fermare
             const durataMinutiCalcolata = Math.ceil(
               (new Date() - ride.data_ora_inizio) / (1000 * 60)
             );
@@ -135,14 +134,13 @@ export const initActiveBatteryDecrementer = () => {
               (durataMinutiCalcolata / 60) *
               getVelocitaMediaByMezzo(ride.vehicle.tipo_mezzo);
 
-            // Salva i valori nel ride
             ride.durata_minuti = durataMinutiCalcolata;
             ride.costo = costoCalcolato;
             ride.km_percorsi = kmCalcolati;
             ride.stato_corsa = "sospesa_batteria_esaurita";
             await ride.save();
 
-            // Notifica l'utente
+            // Notifica utente
             const batteryDeadMessage = JSON.stringify({
               id_mezzo: vehicle.id_mezzo,
               id_corsa: ride.id_corsa,

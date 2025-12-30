@@ -31,10 +31,12 @@ const User = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
+    // Saldo credito in euro
     saldo: {
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0.0,
     },
+    // Stato account: attivo, sospeso, in attesa di approvazione, eliminato
     stato_account: {
       type: DataTypes.ENUM(
         "attivo",
@@ -44,6 +46,7 @@ const User = sequelize.define(
       ),
       defaultValue: "attivo",
     },
+    // Ruolo utente: user, admin, manager
     role: {
       type: DataTypes.STRING(50),
       defaultValue: "user",
@@ -51,28 +54,32 @@ const User = sequelize.define(
         isIn: [["user", "admin", "manager"]],
       },
     },
+    // Data di registrazione automatica
     data_registrazione: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
+    // Token per reset password
     password_reset_token: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+    // Scadenza token reset password
     password_reset_expires: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    // NUOVI CAMPI per la sospensione/riapertura account
+    // Data sospensione account
     data_sospensione: {
       type: DataTypes.DATE,
       allowNull: true,
     },
+    // Data riapertura account
     data_riapertura: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    // NUOVO CAMPO per punti fedeltà
+    // Punti fedeltà disponibili
     punti: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
@@ -80,7 +87,7 @@ const User = sequelize.define(
         min: 0,
       },
     },
-    // campo per tracciare affidabilità di un utente
+    // Numero di sospensioni per tracciare affidabilità
     numero_sospensioni: {
       type: DataTypes.INTEGER,
       defaultValue: 0,

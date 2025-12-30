@@ -19,15 +19,19 @@ const Report = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    // Categoria del problema (es: "batteria bassa", "pneumatico bucato", etc.)
     tipo_problema: {
       type: DataTypes.STRING(100),
       allowNull: false,
     },
+    // Descrizione dettagliata del problema
     descrizione: DataTypes.TEXT,
+    // Data e ora automatica
     data_ora: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
+    // Stato della segnalazione
     stato_segnalazione: {
       type: DataTypes.STRING(50),
       defaultValue: "aperta",

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestione Mezzi</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/css/gestione-mezzi.css" />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <%- include('components/navbar') %>
+
+    <!-- SIDEBAR -->
+    <%- include('components/sidebar') %>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <!-- STAT CARDS -->
+      <div class="header-stats">
+        <div class="stat-card">
+          <div class="stat-icon available">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Disponibili</span>
+            <span class="stat-value" id="statDisponibili">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon in-use">
+            <i class="fas fa-hourglass-half"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">In Uso</span>
+            <span class="stat-value" id="statInUso">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon maintenance">
+            <i class="fas fa-wrench"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">In Manutenzione</span>
+            <span class="stat-value" id="statManutenzione">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon non-pickable">
+            <i class="fas fa-ban"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Non Prelevabili</span>
+            <span class="stat-value" id="statNonPrelevabili">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEARCH & FILTER -->
+      <div class="search-filter">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Cerca per codice identificativo..."
+          />
+        </div>
+        <div class="filter-group">
+          <select id="typeFilter" class="filter-select">
+            <option value="">Tutti</option>
+            <option value="monopattino">Monopattino</option>
+            <option value="bicicletta_muscolare">Bicicletta Muscolare</option>
+            <option value="bicicletta_elettrica">Bicicletta Elettrica</option>
+          </select>
+          <select id="statusFilter" class="filter-select">
+            <option value="">Tutti</option>
+            <option value="disponibile">Disponibile</option>
+            <option value="in_uso">In Uso</option>
+            <option value="in_manutenzione">In Manutenzione</option>
+            <option value="non_prelevabile">Non Prelevabile</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-responsive">
+        <table class="vehicles-table">
+          <thead>
+            <tr>
+              <th>Codice</th>
+              <th>Tipo Mezzo</th>
+              <th>Parcheggio</th>
+              <th>Stato</th>
+              <th>Batteria</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="vehiclesTableBody">
+            <tr class="loading-row">
+              <td colspan="9">
+                <div class="loader"></div>
+                <p>Caricamento mezzi...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINAZIONE -->
+      <div class="pagination-container" id="paginationContainer"></div>
+
+      <div class="action-buttons-section">
+        <button
+          class="btn-add"
+          onclick="openAddVehicleModal()"
+          title="Aggiungi nuovo mezzo"
+        >
+          Aggiungi Mezzo
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: DETTAGLI MEZZO ===== -->
+    <div class="modal hidden" id="vehicleDetailModal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Dettagli Mezzo</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body" id="vehicleDetailBody"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="closeVehicleDetailBtn">
+            Chiudi
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Edit Vehicle -->
+    <div id="editVehicleModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Modifica Mezzo</h2>
+          <button class="modal-close" id="closeEditVehicleBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="vehicle-info">
+            <p><strong>Codice:</strong> <span id="editVehicleCode"></span></p>
+            <p><strong>Tipo:</strong> <span id="editVehicleType"></span></p>
+            <p><strong>Stato:</strong> <span id="editVehicleStatus"></span></p>
+          </div>
+
+          <form id="editVehicleForm">
+            <div class="form-group">
+              <label class="form-label">Parcheggio:</label>
+              <select
+                id="editParcheggio"
+                class="form-control"
+                size="3"
+              ></select>
+            </div>
+
+            <div class="form-group" id="batteryGroupEdit" style="display: none">
+              <label class="form-label">Batteria:</label>
+              <div class="battery-input-group">
+                <input
+                  type="range"
+                  id="editBatterySlider"
+                  class="battery-slider"
+                  min="0"
+                  max="100"
+                />
+                <input
+                  type="number"
+                  id="editBatteryPercentage"
+                  class="battery-percentage"
+                  min="0"
+                  max="100"
+                  value="0"
+                />
+              </div>
+              <div id="editBatteryInfo" class="battery-info"></div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="confirmEditVehicleBtn">
+            Salva
+          </button>
+          <button class="btn btn-secondary" id="cancelEditVehicleBtn">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: AGGIUNGI MEZZO ===== -->
+    <div class="modal hidden" id="addVehicleModal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Aggiungi Mezzo</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="addVehicleForm">
+            <div class="form-group">
+              <label class="form-label">Tipo Mezzo</label>
+              <select id="tipoMezzoInput" class="form-control" size="3">
+                <option value="monopattino">Monopattino</option>
+                <option value="bicicletta_muscolare">
+                  Bicicletta Muscolare
+                </option>
+                <option value="bicicletta_elettrica">
+                  Bicicletta Elettrica
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Parcheggio</label>
+              <select id="parcheggio" class="form-control" size="3"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Codice Identificativo</label>
+              <input
+                type="text"
+                id="codiceInput"
+                class="form-control"
+                placeholder="es. MEZZO001"
+              />
+            </div>
+
+            <div id="addErrors" class="error-messages"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="confirmAddVehicleBtn">
+            Crea Mezzo
+          </button>
+          <button class="btn btn-secondary" id="cancelAddVehicleBtn">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: ELIMINA MEZZO ===== -->
+    <div class="modal hidden" id="deleteVehicleModal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content modal-confirm">
+        <div class="modal-header">
+          <h2>Elimina Mezzo</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="confirm-message">
+            Sei sicuro di voler
+            <strong>eliminare definitivamente</strong> questo mezzo?
+          </p>
+          <div class="vehicle-info">
+            <p><strong>Tipo:</strong> <span id="deleteVehicleType"></span></p>
+            <p><strong>Codice:</strong> <span id="deleteVehicleCode"></span></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" id="confirmDeleteVehicleBtn">
+            Elimina
+          </button>
+          <button class="btn btn-secondary" id="cancelDeleteVehicleBtn">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SNACKBAR -->
+    <div class="snackbar" id="snackbar"></div>
+
+    <script src="/js/gestione-mezzi.js"></script>
+  </body>
+</html>

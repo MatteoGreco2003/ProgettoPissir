@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import Ride from "../models/Ride.js";
 
-// GET /users/me
+// GET PROFILE - Profilo utente corrente
 export const getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id_utente);
@@ -30,7 +30,7 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// PUT /users/me
+// UPDATE PROFILE - Modifica nome e cognome
 export const updateProfile = async (req, res) => {
   try {
     const { nome, cognome } = req.body;
@@ -40,7 +40,6 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ error: "Utente non trovato" });
     }
 
-    // Aggiorna solo se forniti
     if (nome) user.nome = nome;
     if (cognome) user.cognome = cognome;
 
@@ -61,7 +60,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// DELETE /users/me
+// DELETE ACCOUNT - Elimina account utente
 export const deleteAccount = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -80,11 +79,9 @@ export const deleteAccount = async (req, res) => {
       });
     }
 
-    // Elimina l'utente
     const user = await User.findByPk(id_utente);
     await user.destroy();
 
-    //Pulisci il cookie del token
     res.clearCookie("token");
 
     res.status(200).json({
@@ -96,7 +93,7 @@ export const deleteAccount = async (req, res) => {
   }
 };
 
-// PUT /users/change-password
+// CHANGE PASSWORD - Cambio password
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -121,7 +118,6 @@ export const changePassword = async (req, res) => {
       return res.status(401).json({ error: "Password attuale non corretta" });
     }
 
-    // Hash nuova password
     const hashedPassword = await bcrypt.hash(newPassword, 12);
     user.password_hash = hashedPassword;
     await user.save();
@@ -133,10 +129,9 @@ export const changePassword = async (req, res) => {
   }
 };
 
-// ✅ GET ALL USERS (ADMIN ONLY) - Visualizza tutti gli utenti
+// GET ALL USERS - Lista tutti gli utenti (admin)
 export const getAllUsers = async (req, res) => {
   try {
-    // Recupera tutti gli utenti, escludendo le password
     const users = await User.findAll({
       attributes: [
         "id_utente",
@@ -149,7 +144,7 @@ export const getAllUsers = async (req, res) => {
         "data_sospensione",
         "data_riapertura",
       ],
-      order: [["data_registrazione", "DESC"]], // Ordina per data iscrizione decrescente
+      order: [["data_registrazione", "DESC"]],
     });
 
     res.status(200).json({
@@ -163,10 +158,9 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// ✅ GET USERS PENDING REACTIVATION (ADMIN ONLY) - Filtra solo sospesi
+// GET PENDING REACTIVATIONS - Utenti in attesa di approvazione (admin)
 export const getPendingReactivations = async (req, res) => {
   try {
-    // Recupera utenti in attesa di approvazione o sospesi
     const pendingUsers = await User.findAll({
       where: {
         stato_account: ["in_attesa_approvazione"],
@@ -180,13 +174,13 @@ export const getPendingReactivations = async (req, res) => {
         "stato_account",
         "data_sospensione",
       ],
-      order: [["data_sospensione", "DESC"]], // Ordina da più recente
+      order: [["data_sospensione", "DESC"]],
     });
 
-    // Arricchisci con info sul debito minimo necessario
+    // Arricchisci con calcolo debito minimo
     const usersWithMinAmount = pendingUsers.map((user) => {
       const debito = Math.abs(user.saldo);
-      const importoMinimoPrimaCorsa = 1.0; // costo prima 30 minuti
+      const importoMinimoPrimaCorsa = 1.0;
       const importoMinimoRicarica = debito + importoMinimoPrimaCorsa;
 
       return {
@@ -214,7 +208,7 @@ export const getPendingReactivations = async (req, res) => {
   }
 };
 
-// ✅ GET USER BY ID (ADMIN ONLY) - Dettagli utente per admin
+// GET USER BY ID - Dettagli singolo utente (admin)
 export const getUserById = async (req, res) => {
   try {
     const { id_utente } = req.params;
@@ -226,10 +220,12 @@ export const getUserById = async (req, res) => {
         "cognome",
         "email",
         "saldo",
+        "punti",
         "stato_account",
         "data_registrazione",
         "data_sospensione",
         "data_riapertura",
+        "numero_sospensioni",
       ],
     });
 
@@ -237,7 +233,7 @@ export const getUserById = async (req, res) => {
       return res.status(404).json({ error: "Utente non trovato" });
     }
 
-    // Se sospeso, mostra anche il debito
+    // Se ha debito, mostra l'importo minimo da ricaricare
     let debito = null;
     let importoMinimoRicarica = null;
     if (user.saldo < 0) {
@@ -255,6 +251,73 @@ export const getUserById = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Errore getUserById:", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
+// DELETE USER AS ADMIN - Elimina account di un utente come amministratore
+export const deleteUserAsAdmin = async (req, res) => {
+  try {
+    const { id_utente } = req.params;
+    const adminId = req.user.id_utente;
+
+    // Validazione
+    if (!id_utente) {
+      return res.status(400).json({ error: "ID utente non fornito" });
+    }
+
+    // Evita che l'admin elimini se stesso
+    if (parseInt(id_utente) === parseInt(adminId)) {
+      return res.status(403).json({
+        error: "Non puoi eliminare il tuo account",
+      });
+    }
+
+    // Evita che qualcuno elimini l'admin principale
+    if (parseInt(id_utente) === 1) {
+      return res.status(403).json({
+        error: "Non puoi eliminare l'admin principale",
+      });
+    }
+
+    // Cerca l'utente
+    const user = await User.findByPk(id_utente);
+
+    if (!user) {
+      return res.status(404).json({
+        error: "Utente non trovato",
+      });
+    }
+
+    // Controlla se ha corse attive
+    const activeRide = await Ride.findOne({
+      where: {
+        id_utente,
+        stato_corsa: "in_corso",
+      },
+    });
+
+    if (activeRide) {
+      return res.status(400).json({
+        error:
+          "Non puoi eliminare l'account di un utente che ha una corsa attiva",
+      });
+    }
+
+    // Elimina l'utente
+    await user.destroy();
+
+    res.status(200).json({
+      message: "Utente eliminato con successo",
+      deleted_user: {
+        id_utente: user.id_utente,
+        nome: user.nome,
+        cognome: user.cognome,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Errore DELETE utente:", error.message);
     res.status(500).json({ error: "Errore interno del server" });
   }
 };

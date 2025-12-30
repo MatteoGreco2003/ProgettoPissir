@@ -9,7 +9,7 @@ import sgMail from "@sendgrid/mail";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// ✅ REGISTER - Logica di registrazione
+// REGISTER - Logica di registrazione
 export const register = async (req, res) => {
   try {
     const { nome, cognome, email, password } = req.body;
@@ -35,7 +35,7 @@ export const register = async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 12);
 
     // Determina ruolo in base all'email
-    let role = "user"; // Default: utente normale
+    let role = "user";
     if (email === process.env.ADMIN_EMAIL) {
       role = "admin";
     } else if (email === process.env.MANAGER_EMAIL) {
@@ -65,42 +65,38 @@ export const register = async (req, res) => {
   }
 };
 
-// ✅ LOGIN - Logica di login
+// LOGIN - Logica di login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validazione
     if (!email || !password) {
       return res.status(400).json({ error: "Email e password obbligatori" });
     }
 
-    // Trova utente
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(401).json({ error: "Credenziali non valide" });
     }
 
-    // Verifica password
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
     if (!passwordMatch) {
       return res.status(401).json({ error: "Credenziali non valide" });
     }
 
-    // MIGLIORATO: Genera JWT con role
+    // Genera JWT con role
     const token = jwt.sign(
       {
         id_utente: user.id_utente,
         email: user.email,
         nome: user.nome,
         cognome: user.cognome,
-        role: user.role, // ✅ NUOVO: Includi ruolo nel JWT
+        role: user.role,
       },
       process.env.JWT_SECRET || "SJKAHsudfiafU($BHdsaY*HJsBjhyrYU",
       { expiresIn: "24h" }
     );
 
-    // ✅ Salva token in cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -108,7 +104,6 @@ export const login = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    // Determina il tipo di utente basandosi su email
     const isAdmin = email === process.env.ADMIN_EMAIL;
 
     res.status(200).json({
@@ -132,7 +127,7 @@ export const login = async (req, res) => {
   }
 };
 
-// ✅ FORGOT PASSWORD (REQUEST RESET)
+// FORGOT PASSWORD - Richiesta reset password
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -143,7 +138,6 @@ export const forgotPassword = async (req, res) => {
 
     const user = await User.findOne({ where: { email: email.toLowerCase() } });
 
-    // Always return success (don't reveal if email exists)
     if (!user) {
       return res.status(200).json({
         message:
@@ -151,24 +145,19 @@ export const forgotPassword = async (req, res) => {
       });
     }
 
-    // Generate random reset token (unhashed version sent to user)
     const resetToken = crypto.randomBytes(32).toString("hex");
 
-    // Hash token before storing (security best practice)
     const resetTokenHash = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
 
-    // Save hashed token and expiry (1 hour) in DB
     user.password_reset_token = resetTokenHash;
-    user.password_reset_expires = new Date(Date.now() + 3600000); // 1 hour
+    user.password_reset_expires = new Date(Date.now() + 3600000);
     await user.save();
 
-    // Build reset URL with unhashed token (sent to user)
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&email=${email}`;
 
-    // Send reset email via SendGrid
     await sendResetPasswordEmail(email, resetUrl);
 
     res.status(200).json({
@@ -181,7 +170,7 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// ✅ RESET PASSWORD (SET NEW PASSWORD)
+// RESET PASSWORD - Imposta nuova password
 export const resetPassword = async (req, res) => {
   try {
     const { token, email, newPassword, confirmPassword } = req.body;
@@ -192,27 +181,23 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Passwords must match
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         error: "Le password non corrispondono",
       });
     }
 
-    // Minimum length
     if (newPassword.length < 8) {
       return res.status(400).json({
         error: "Password minimo 8 caratteri",
       });
     }
 
-    // Hash token to compare with DB
     const resetTokenHash = crypto
       .createHash("sha256")
       .update(token)
       .digest("hex");
 
-    // Find user with valid token (not expired)
     const user = await User.findOne({
       where: {
         email: email.toLowerCase(),
@@ -226,14 +211,12 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Check if token expired
     if (new Date() > user.password_reset_expires) {
       return res.status(400).json({
         error: "Token scaduto. Richiedi un nuovo reset",
       });
     }
 
-    // Update password (hash it)
     user.password_hash = await bcrypt.hash(newPassword, 12);
     user.password_reset_token = null;
     user.password_reset_expires = null;
@@ -250,7 +233,7 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// ===== HELPER: Send reset password email via SendGrid =====
+// Helper: Invia email reset password via SendGrid
 async function sendResetPasswordEmail(email, resetUrl) {
   try {
     const msg = {
@@ -321,11 +304,11 @@ async function sendResetPasswordEmail(email, resetUrl) {
 
     await sgMail.send(msg);
   } catch (error) {
-    console.error("❌ ERRORE CRITICO invio email SendGrid:", error);
+    console.error("❌ ERRORE invio email SendGrid:", error);
   }
 }
 
-// ✅ LOGOUT
+// LOGOUT - Elimina token e termina sessione
 export const logout = (req, res) => {
   res.clearCookie("token");
   res.status(200).json({ message: "Logout completato" });

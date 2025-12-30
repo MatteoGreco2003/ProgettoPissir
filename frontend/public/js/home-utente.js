@@ -1388,8 +1388,10 @@ async function fetchAndDisplayReport(mezzoId) {
           r.stato_segnalazione === "in_lavorazione"
       );
 
+      const reportBox = document.getElementById("reportWarningBox");
+
       if (activeReports.length > 0) {
-        const report = activeReports[0]; // Prendi il primo report
+        const report = activeReports[0]; // Prende il primo report
 
         const tipiProblema = {
           danno_fisico: "Danno Fisico",
@@ -1405,7 +1407,6 @@ async function fetchAndDisplayReport(mezzoId) {
         const statoLabel =
           report.stato_segnalazione === "aperta" ? "Aperta" : "In Lavorazione";
 
-        const reportBox = document.getElementById("reportWarningBox");
         const reportDetails = document.getElementById("reportDetails");
 
         reportDetails.innerHTML = `
@@ -1417,13 +1418,11 @@ async function fetchAndDisplayReport(mezzoId) {
           }
         `;
 
-        reportBox.classList.remove("hidden"); // 🆕 MOSTRO IL BOX
+        reportBox.classList.remove("hidden");
       } else {
-        // Nessun report attivo - nascondi il box
-        document.getElementById("reportWarningBox").classList.add("hidden");
+        reportBox.classList.add("hidden");
       }
     } else {
-      // Se errore, nascondi il box
       document.getElementById("reportWarningBox").classList.add("hidden");
     }
   } catch (error) {

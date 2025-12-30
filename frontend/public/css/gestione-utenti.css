@@ -1,0 +1,735 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+/* ============================================================================
+   CSS CUSTOM PROPERTIES E RESET
+   ========================================================================== */
+
+:root {
+  /* Colori primari e secondari */
+  --primary-teal: rgba(33, 128, 141, 1);
+  --primary-teal-dark: rgba(29, 116, 128, 1);
+  --success-green: rgba(33, 128, 141, 1);
+  --warning-orange: #e68161;
+  --error-red: rgba(192, 21, 47, 1);
+
+  /* Colori neutrali */
+  --light-bg: rgba(252, 252, 249, 1);
+  --dark-text: rgba(19, 52, 59, 1);
+  --light-text: rgba(98, 108, 113, 1);
+  --white: rgba(255, 255, 255, 1);
+  --border-color: rgba(94, 82, 64, 0.2);
+
+  /* Transizioni */
+  --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: var(--light-bg);
+  color: var(--dark-text);
+}
+
+.main-content {
+  margin-left: 250px;
+  padding: 24px;
+}
+
+/* ============================================================================
+   PAGE HEADER
+   ========================================================================== */
+
+.page-header {
+  margin-bottom: 40px;
+}
+
+/* ============================================================================
+   STAT CARDS
+   ========================================================================== */
+
+.header-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all var(--transition);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-teal);
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(33, 128, 141, 0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--primary-teal);
+  flex-shrink: 0;
+}
+
+.stat-icon.pending {
+  background: rgba(230, 129, 97, 0.1);
+  color: var(--warning-orange);
+}
+
+.stat-icon.active {
+  background: rgba(33, 128, 141, 0.1);
+  color: var(--success-green);
+}
+
+.stat-icon.suspended {
+  background: rgba(192, 21, 47, 0.1);
+  color: var(--error-red);
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--light-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--dark-text);
+}
+
+/* ============================================================================
+   SEARCH & FILTER
+   ========================================================================== */
+
+.search-filter {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.search-box {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-box i {
+  position: absolute;
+  left: 12px;
+  color: var(--light-text);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all var(--transition);
+  background: var(--white);
+  font-family: "Poppins", sans-serif;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
+}
+
+.filter-group {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-select {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--white);
+  color: var(--dark-text);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: "Poppins", sans-serif;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
+}
+
+/* ============================================================================
+   TABLE
+   ========================================================================== */
+
+.table-responsive {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+  min-width: 900px;
+}
+
+.users-table thead {
+  background: linear-gradient(90deg, #fafaf8 0%, #ffffff 100%);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.users-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--light-text);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.users-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 150ms ease;
+}
+
+.users-table tbody tr:hover {
+  background-color: #fafaf8;
+}
+
+.users-table td {
+  padding: 14px 16px;
+  color: var(--dark-text);
+  font-size: 14px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.status-attivo {
+  background-color: rgba(33, 128, 141, 0.15);
+  color: var(--success-green);
+}
+
+.status-sospeso {
+  background-color: rgba(192, 21, 47, 0.15);
+  color: var(--error-red);
+}
+
+.status-in_attesa_approvazione {
+  background-color: rgba(230, 129, 97, 0.15);
+  color: var(--warning-orange);
+}
+
+.saldo-positive {
+  color: var(--success-green);
+  font-weight: 600;
+}
+
+.saldo-negative {
+  color: var(--error-red);
+  font-weight: 600;
+}
+
+/* ============================================================================
+   ACTION BUTTONS
+   ========================================================================== */
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 150ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+  background: var(--white);
+  font-family: "Poppins", sans-serif;
+}
+
+.btn-action.btn-view {
+  background-color: var(--primary-teal);
+  color: var(--white);
+  border-color: var(--primary-teal);
+}
+
+.btn-action.btn-delete {
+  background-color: var(--error-red);
+  color: var(--white);
+  border-color: var(--error-red);
+}
+
+.btn-action.btn-approve {
+  background-color: #2196f3;
+  color: var(--white);
+  border-color: #2196f3;
+}
+
+.btn-action.btn-approve:disabled {
+  background-color: #ccc;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ============================================================================
+   AZIONI COLUMN - ALIGN RIGHT
+   ========================================================================== */
+
+.users-table th:last-child,
+.users-table td:last-child {
+  text-align: right;
+}
+
+.users-table th:last-child {
+  padding-right: 20px;
+}
+
+.users-table td:last-child {
+  padding-right: 20px;
+}
+
+/* Allinea anche i pulsanti a destra */
+.users-table td:last-child .action-buttons {
+  justify-content: flex-end;
+}
+
+/* ============================================================================
+   LOADING STATE
+   ========================================================================== */
+
+.loading-row {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--light-text);
+}
+
+.loader {
+  border: 3px solid rgba(33, 128, 141, 0.1);
+  border-top-color: var(--primary-teal);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-row {
+  color: var(--error-red);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 20px 20px;
+  color: var(--light-text);
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+/* ============================================================================
+   PAGINATION
+   ========================================================================== */
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pagination-info {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--light-text);
+  min-width: 80px;
+  text-align: center;
+}
+
+.pagination-btn {
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--dark-text);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-btn:hover {
+  border-color: var(--primary-teal);
+  color: var(--primary-teal);
+  background: rgba(33, 128, 141, 0.04);
+}
+
+.pagination-btn:active {
+  transform: translateY(0);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== MODAL ===== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 1;
+  transition: opacity 250ms ease;
+}
+
+.modal.hidden {
+  display: none;
+  opacity: 0;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: relative;
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 90%;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--dark-text);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--light-text);
+  cursor: pointer;
+  transition: color 150ms ease;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  color: var(--dark-text);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body p {
+  font-size: 14px;
+  color: var(--dark-text);
+  line-height: 1.5;
+}
+
+.modal-warning {
+  color: var(--error-red);
+  font-weight: 600;
+}
+
+.modal-footer {
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* ===== BUTTON STYLES PER MODAL ===== */
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.btn-secondary {
+  background-color: var(--white);
+  color: var(--dark-text);
+  border: 1px solid var(--border-color);
+}
+
+.btn-danger {
+  background-color: var(--error-red);
+  color: var(--white);
+  flex: 1;
+}
+
+.btn-primary {
+  background-color: var(--primary-teal);
+  color: var(--white);
+  flex: 1;
+}
+
+/* ============================================================================
+   SNACKBAR NOTIFICATIONS
+   ========================================================================== */
+
+.snackbar {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background-color: var(--success-green);
+  color: var(--white);
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(100px);
+  transition: all var(--transition);
+  z-index: 1000;
+  max-width: 400px;
+}
+
+.snackbar.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.snackbar--error {
+  background-color: var(--error-red);
+}
+
+.snackbar--warning {
+  background-color: var(--warning-orange);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ============================================================================
+   DETAIL SECTIONS - STILIZZATI
+   ========================================================================== */
+
+#userDetailModal .modal-content {
+  max-width: 500px;
+}
+
+.user-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.detail-section {
+  border-bottom: none;
+  padding-bottom: 0;
+  border-left: 3px solid var(--primary-teal);
+  padding-left: 16px;
+}
+
+.detail-section:last-child {
+  border-bottom: none;
+}
+
+.detail-section h3 {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary-teal);
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(94, 82, 64, 0.1);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.detail-label {
+  color: var(--light-text);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-value {
+  color: var(--dark-text);
+  font-weight: 600;
+  text-align: right;
+  font-size: 14px;
+}
+
+/* Status badge in detail */
+.detail-row .status-badge {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 1120px) {
+  .header-stats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .page-header {
+    margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 16px;
+  }
+
+  .search-filter {
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .search-box {
+    min-width: 100%;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 12px;
+  }
+
+  .stat-card {
+    padding: 12px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .snackbar {
+    left: 16px;
+    right: 16px;
+    max-width: none;
+    font-size: 12px;
+  }
+}

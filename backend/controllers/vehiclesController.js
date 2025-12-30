@@ -1,12 +1,11 @@
 import Vehicle from "../models/Vehicle.js";
 import Parking from "../models/Parking.js";
 
-// ✅ GET ALL VEHICLES
+// GET ALL VEHICLES - Lista mezzi con filtri opzionali
 export const getAllVehicles = async (req, res) => {
   try {
     const { tipo_mezzo, id_parcheggio, stato } = req.query;
 
-    // Costruisci filtri dinamici
     const where = {};
     if (tipo_mezzo) where.tipo_mezzo = tipo_mezzo;
     if (id_parcheggio) where.id_parcheggio = id_parcheggio;
@@ -34,7 +33,7 @@ export const getAllVehicles = async (req, res) => {
   }
 };
 
-// ✅ GET VEHICLE BY ID
+// GET VEHICLE BY ID - Dettagli mezzo singolo
 export const getVehicleById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -63,19 +62,17 @@ export const getVehicleById = async (req, res) => {
   }
 };
 
-// ✅ CREATE VEHICLE (solo admin/gestore)
+// CREATE VEHICLE - Crea nuovo mezzo (admin/gestore)
 export const createVehicle = async (req, res) => {
   try {
     const { tipo_mezzo, id_parcheggio, codice_identificativo } = req.body;
 
-    // Validazione
     if (!tipo_mezzo || !id_parcheggio) {
       return res.status(400).json({
         error: "tipo_mezzo e id_parcheggio sono obbligatori",
       });
     }
 
-    // Validazione tipo_mezzo
     const tipi_validi = [
       "monopattino",
       "bicicletta_muscolare",
@@ -87,13 +84,11 @@ export const createVehicle = async (req, res) => {
       });
     }
 
-    // Verifica che il parcheggio esista
     const parking = await Parking.findByPk(id_parcheggio);
     if (!parking) {
       return res.status(404).json({ error: "Parcheggio non trovato" });
     }
 
-    // Verifica codice univoco
     if (codice_identificativo) {
       const existingVehicle = await Vehicle.findOne({
         where: { codice_identificativo },
@@ -105,7 +100,7 @@ export const createVehicle = async (req, res) => {
       }
     }
 
-    // ✅ DETERMINA TARIFFA AUTOMATICA in base al tipo
+    // Tariffa automatica in base al tipo mezzo
     let tariffa_minuto;
     switch (tipo_mezzo) {
       case "bicicletta_muscolare":
@@ -139,7 +134,7 @@ export const createVehicle = async (req, res) => {
   }
 };
 
-// ✅ UPDATE VEHICLE (solo admin/gestore)
+// UPDATE VEHICLE - Modifica mezzo (admin/gestore)
 export const updateVehicle = async (req, res) => {
   try {
     const { id } = req.params;
@@ -150,7 +145,6 @@ export const updateVehicle = async (req, res) => {
       return res.status(404).json({ error: "Mezzo non trovato" });
     }
 
-    // Validazione parcheggio se viene cambiato
     if (id_parcheggio) {
       const parking = await Parking.findByPk(id_parcheggio);
       if (!parking) {
@@ -158,7 +152,6 @@ export const updateVehicle = async (req, res) => {
       }
     }
 
-    // Validazione tipo_mezzo se viene cambiato
     if (tipo_mezzo) {
       const tipi_validi = [
         "monopattino",
@@ -172,11 +165,10 @@ export const updateVehicle = async (req, res) => {
       }
     }
 
-    // Update campi base
     if (tipo_mezzo) {
       vehicle.tipo_mezzo = tipo_mezzo;
 
-      // ✅ AGGIORNA TARIFFA AUTOMATICAMENTE se tipo_mezzo cambia
+      // Aggiorna tariffa automaticamente se tipo mezzo cambia
       switch (tipo_mezzo) {
         case "bicicletta_muscolare":
           vehicle.tariffa_minuto = 0.15;
@@ -193,7 +185,6 @@ export const updateVehicle = async (req, res) => {
     if (id_parcheggio) vehicle.id_parcheggio = id_parcheggio;
     if (stato) vehicle.stato = stato;
 
-    // ✅ Batteria solo per mezzi elettrici
     if (stato_batteria !== undefined) {
       if (vehicle.tipo_mezzo === "bicicletta_muscolare") {
         return res.status(400).json({
@@ -210,7 +201,7 @@ export const updateVehicle = async (req, res) => {
       vehicle.stato_batteria = stato_batteria;
     }
 
-    // ✅ Se cambi il tipo a muscolare, imposta batteria a NULL
+    // Se cambi tipo a muscolare, batteria diventa null
     if (tipo_mezzo === "bicicletta_muscolare") {
       vehicle.stato_batteria = null;
     }
@@ -228,7 +219,7 @@ export const updateVehicle = async (req, res) => {
   }
 };
 
-// ✅ DELETE VEHICLE (hard delete - solo admin/gestore)
+// DELETE VEHICLE - Elimina mezzo (admin/gestore)
 export const deleteVehicle = async (req, res) => {
   try {
     const { id } = req.params;
@@ -250,44 +241,7 @@ export const deleteVehicle = async (req, res) => {
   }
 };
 
-// ✅ UPDATE BATTERY FROM MQTT (riceve da IoT)
-export const updateBatteryFromMQTT = async (req, res) => {
-  try {
-    const { id_mezzo, battery_level } = req.body;
-
-    if (!id_mezzo || battery_level === undefined) {
-      return res
-        .status(400)
-        .json({ error: "id_mezzo e battery_level sono obbligatori" });
-    }
-
-    const vehicle = await Vehicle.findByPk(id_mezzo);
-    if (!vehicle) {
-      return res.status(404).json({ error: "Mezzo non trovato" });
-    }
-
-    vehicle.stato_batteria = battery_level;
-    await vehicle.save();
-
-    // ✅ TODO: Se batteria < 20%, crea segnalazione automatica
-    if (battery_level < 20) {
-      console.warn(
-        `⚠️ Batteria bassa per mezzo ${id_mezzo}: ${battery_level}%`
-      );
-      // Qui inserirai logica per creare report automatico
-    }
-
-    res.status(200).json({
-      message: "Batteria aggiornata",
-      vehicle,
-    });
-  } catch (error) {
-    console.error("❌ Errore UPDATE battery:", error.message);
-    res.status(500).json({ error: "Errore interno del server" });
-  }
-};
-
-// ✅ GET VEHICLES BY PARKING
+// GET VEHICLES BY PARKING - Mezzi in un parcheggio specifico
 export const getVehiclesByParking = async (req, res) => {
   try {
     const { id_parcheggio } = req.params;
@@ -314,13 +268,12 @@ export const getVehiclesByParking = async (req, res) => {
   }
 };
 
-// ✅ RECHARGE VEHICLE BATTERY (solo admin/gestore)
+// RECHARGE VEHICLE BATTERY - Ricarica batteria mezzo (admin/gestore)
 export const rechargeVehicleBattery = async (req, res) => {
   try {
     const { id } = req.params;
     const { nuova_percentuale_batteria } = req.body;
 
-    // Validazione
     if (nuova_percentuale_batteria === undefined) {
       return res.status(400).json({
         error: "nuova_percentuale_batteria è obbligatorio",
@@ -335,30 +288,25 @@ export const rechargeVehicleBattery = async (req, res) => {
       });
     }
 
-    // Trova il veicolo
     const vehicle = await Vehicle.findByPk(id);
     if (!vehicle) {
       return res.status(404).json({ error: "Mezzo non trovato" });
     }
 
-    // Controlla che non sia bicicletta muscolare
     if (vehicle.tipo_mezzo === "bicicletta_muscolare") {
       return res.status(400).json({
         error: "La bicicletta muscolare non ha batteria",
       });
     }
 
-    // Salva batteria precedente per il log
     const batteriaPrecedente = vehicle.stato_batteria;
 
-    // Aggiorna batteria
     vehicle.stato_batteria = batteria;
 
-    // ← LOGICA: Se batteria > 20%, torna a "disponibile"
+    // Se batteria > 20%, torna a disponibile; altrimenti non prelevabile
     if (batteria > 20) {
       vehicle.stato = "disponibile";
     } else if (batteria <= 20) {
-      // Se <= 20%, metti a "non_prelevabile"
       vehicle.stato = "non_prelevabile";
     }
 
@@ -374,7 +322,7 @@ export const rechargeVehicleBattery = async (req, res) => {
       avviso:
         vehicle.stato_batteria <= 20
           ? "⚠️ Batteria ancora bassa - Mezzo non prelevabile"
-          : "✅ Mezzo disponibile per il noleggio",
+          : "✅ Mezzo disponibile per la prenotazione",
     });
   } catch (error) {
     console.error("❌ Errore RECHARGE vehicle battery:", error.message);
@@ -388,7 +336,6 @@ export default {
   createVehicle,
   updateVehicle,
   deleteVehicle,
-  updateBatteryFromMQTT,
   getVehiclesByParking,
   rechargeVehicleBattery,
 };

@@ -4,6 +4,7 @@ import sequelize from "./config/database.js";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.js";
 import usersRoutes from "./routes/users.js";
 import pagesRoutes from "./routes/pages.js";
@@ -13,11 +14,10 @@ import ridesRoutes from "./routes/rides.js";
 import transactionRoutes from "./routes/transaction.js";
 import reportRoutes from "./routes/reports.js";
 import feedbackRoutes from "./routes/feedback.js";
+import statisticsRoutes from "./routes/statistics.js";
 import initBatteryListener from "./mqtt/batteryListener.js";
 import initActiveBatteryDecrementer from "./mqtt/activeBatteryDecrementer.js";
-import statisticsRoutes from "./routes/statistics.js";
-import "./models/associations.js"; //!dopo tutte (ne usi tanti)
-import cookieParser from "cookie-parser";
+import "./models/associations.js";
 
 // Carica variabili d'ambiente
 dotenv.config();
@@ -33,11 +33,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ========== CONFIGURAZIONE EJS ==========
+// Configurazione EJS per server-side rendering
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "../frontend/views"));
 
-// ========== SERVIRE FILE STATICI ==========
+// Servire file statici (CSS, JS, immagini)
 app.use(express.static(path.join(__dirname, "../frontend/public")));
 
 // Test connessione database
@@ -51,16 +51,15 @@ async function initDB() {
   }
 }
 
-// ========== ROUTES ==========
-
 // Health check API
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running" });
 });
 
-//route
-// pagesRoutes (renderizza le pagine server-side)
+// Routes - Page rendering (server-side)
 app.use("/", pagesRoutes);
+
+// Routes - API REST
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/vehicles", vehicleRoutes);
@@ -71,7 +70,7 @@ app.use("/reports", reportRoutes);
 app.use("/feedback", feedbackRoutes);
 app.use("/statistics", statisticsRoutes);
 
-// Start server
+// Avvia server
 const PORT = process.env.PORT || 3000;
 
 async function start() {
@@ -80,6 +79,14 @@ async function start() {
   app.listen(PORT, () => {
     console.log(`✅ Server avviato su http://localhost:${PORT}`);
     console.log(`🔗 Prova: curl http://localhost:${PORT}/api/health`);
+
+    // Avvia listener MQTT per batteria
+    initBatteryListener();
+    console.log("🔋 Battery Listener avviato!");
+
+    // Avvia decremento automatico batteria per corse attive
+    initActiveBatteryDecrementer();
+    console.log("⚡ Active Battery Decrementer avviato!");
   });
 }
 
@@ -87,11 +94,3 @@ start().catch((err) => {
   console.error("Errore durante startup:", err);
   process.exit(1);
 });
-
-// Dopo che il server è avviato:
-initBatteryListener();
-console.log("🔋 Battery Listener avviato!");
-
-// Dopo che il server è avviato (automatico su tutte le corse attive):
-initActiveBatteryDecrementer();
-console.log("🔋 Active Battery Decrementer avviato!");

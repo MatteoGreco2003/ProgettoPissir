@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestione Utenti</title>
+    <link rel="stylesheet" href="/css/gestione-utenti.css" />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- ===== NAVBAR (IMPORTATO) ===== -->
+    <%- include('./components/navbar') %>
+
+    <!-- ===== SIDEBAR (IMPORTATO) ===== -->
+    <%- include('./components/sidebar') %>
+    <div class="admin-container">
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+        <!-- Header sezione -->
+        <div class="page-header">
+          <div class="header-stats">
+            <div class="stat-card">
+              <span class="stat-icon active"
+                ><i class="fas fa-check-circle"></i
+              ></span>
+              <div class="stat-content">
+                <span class="stat-label">Attivi</span>
+                <span class="stat-value" id="activeCount">-</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-icon pending"
+                ><i class="fas fa-hourglass-half"></i
+              ></span>
+              <div class="stat-content">
+                <span class="stat-label">In attesa di approvazione</span>
+                <span class="stat-value" id="pendingCount">-</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon suspended"
+                ><i class="fas fa-ban"></i
+              ></span>
+              <div class="stat-content">
+                <span class="stat-label">Sospesi</span>
+                <span class="stat-value" id="suspendedCount">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TUTTI GLI UTENTI -->
+        <div class="section-header">
+          <div class="search-filter">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Cerca per nome, email..."
+                class="search-input"
+              />
+            </div>
+            <div class="filter-group">
+              <select id="statusFilter" class="filter-select">
+                <option value="">Tutti gli stati</option>
+                <option value="attivo">Attivo</option>
+                <option value="sospeso">Sospeso</option>
+                <option value="in_attesa_approvazione">
+                  In attesa di approvazione
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABELLA UTENTI -->
+        <div class="table-responsive">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Saldo</th>
+                <th>Stato</th>
+                <th>Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr class="loading-row">
+                <td colspan="6" class="text-center">
+                  <div class="loader"></div>
+                  Caricamento utenti...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINAZIONE -->
+        <div class="pagination-container" id="paginationContainer"></div>
+      </main>
+    </div>
+
+    <!-- ===== SNACKBAR NOTIFICHE ===== -->
+    <div id="snackbar" class="snackbar"></div>
+
+    <!-- MODAL: CONFERMA ELIMINAZIONE UTENTE -->
+    <div class="modal hidden" id="deleteUserModal">
+      <div class="modal-overlay"></div>
+
+      <div class="modal-content modal-confirm">
+        <div class="modal-header">
+          <h2>Elimina Account</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="confirm-message">
+            Sei sicuro di voler
+            <strong>eliminare permanentemente</strong> l'account di
+            <span id="deleteUserName"></span>?
+          </p>
+          <p class="modal-warning">
+            <strong>⚠️ Questa azione non può essere annullata.</strong>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" id="confirmDeleteBtn">Elimina</button>
+          <button class="btn btn-secondary" id="cancelDeleteBtn">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: DETTAGLI UTENTE -->
+    <div class="modal hidden" id="userDetailModal">
+      <div class="modal-overlay"></div>
+
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Dettagli Utente</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body" id="userDetailBody">
+          <div class="loader"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="closeModalBtn">Chiudi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: CONFERMA APPROVAZIONE -->
+    <div class="modal hidden" id="approveModal">
+      <div class="modal-overlay"></div>
+
+      <div class="modal-content modal-confirm">
+        <div class="modal-header">
+          <h2>Conferma Approvazione</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="confirm-message">
+            Sei sicuro di voler approvare l'account di
+            <br /><strong><span id="approveName"></span></strong>?
+          </p>
+          <div class="approve-info" style="margin-top: 5px">
+            <p>
+              <strong>Data sospensione:</strong>
+              <span id="approveSuspensionDate"></span>
+            </p>
+            <p>
+              <strong>Saldo attuale:</strong> <span id="approveBalance"></span>
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="confirmApproveBtn">
+            Approva
+          </button>
+          <button class="btn btn-secondary" id="cancelApproveBtn">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/gestione-utenti.js"></script>
+  </body>
+</html>

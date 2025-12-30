@@ -81,8 +81,6 @@ function renderUsersCard() {
     (u) => u.stato_account === "in_attesa_approvazione"
   ).length;
 
-  
-
   // Calcola top spender di SEMPRE (tutte le corse completate)
   let topSpender = null;
   let topSpenderAmount = 0;
@@ -124,11 +122,15 @@ function renderUsersCard() {
         ? `${topSpender.nome} ${topSpender.cognome}`
         : topSpender.email || "N/A";
 
-    document.getElementById("topUserDetail").innerHTML =
-      `<strong>${topSpenderName}</strong><br><small>Totale speso: €${topSpenderAmount.toFixed(2)}</small>`;
+    document.getElementById(
+      "topUserDetail"
+    ).innerHTML = `<strong>${topSpenderName}</strong><br><small>Totale speso: €${topSpenderAmount.toFixed(
+      2
+    )}</small>`;
   } else {
-    document.getElementById("topUserDetail").innerHTML =
-      `<strong>Nessun dato</strong><br><small>--</small>`;
+    document.getElementById(
+      "topUserDetail"
+    ).innerHTML = `<strong>Nessun dato</strong><br><small>--</small>`;
   }
 }
 
@@ -506,7 +508,6 @@ function renderReportsCard() {
     problemCounts.altro;
 }
 
-
 // ====================================================================
 // INIT
 // ====================================================================
@@ -516,5 +517,20 @@ document.addEventListener("DOMContentLoaded", () => {
   loadParkingsData();
   loadRidesTodayData();
   loadReportsData();
-  loadAllCompletedRidesData(); 
+  loadAllCompletedRidesData();
+
+  const menuToggle = document.querySelector(".menu-toggle");
+  const sidebar = document.querySelector(".sidebar");
+
+  if (menuToggle && sidebar) {
+    menuToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+        sidebar.classList.remove("active");
+      }
+    });
+  }
 });

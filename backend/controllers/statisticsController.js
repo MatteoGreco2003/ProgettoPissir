@@ -7,7 +7,7 @@ import User from "../models/User.js";
 import sequelize from "../config/database.js";
 import { Op } from "sequelize";
 
-// ✅ STATISTICHE PARCHEGGI - Disponibilità mezzi
+// GET PARKING STATISTICS - Disponibilità mezzi per parcheggio
 export const getParkingStatistics = async (req, res) => {
   try {
     const parkings = await Parking.findAll({
@@ -54,7 +54,7 @@ export const getParkingStatistics = async (req, res) => {
   }
 };
 
-// ✅ STATISTICHE VEICOLI - Utilizzo e performance
+// GET VEHICLE STATISTICS - Performance e utilizzo dei mezzi
 export const getVehicleStatistics = async (req, res) => {
   try {
     const vehicles = await Vehicle.findAll({
@@ -67,7 +67,7 @@ export const getVehicleStatistics = async (req, res) => {
       ],
     });
 
-    // Per ogni mezzo, conta le corse
+    // Per ogni mezzo, calcola statistiche di utilizzo
     const vehicleStats = await Promise.all(
       vehicles.map(async (vehicle) => {
         const corse = await Ride.count({
@@ -112,15 +112,13 @@ export const getVehicleStatistics = async (req, res) => {
   }
 };
 
-// ✅ STATISTICHE GENERALI - Dashboard overview
+// GET OVERVIEW STATISTICS - Dashboard con metriche generali
 export const getOverviewStatistics = async (req, res) => {
   try {
-    // Corse totali completate
     const totalRides = await Ride.count({
       where: { stato_corsa: "completata" },
     });
 
-    // Ricavi totali
     const revenueData = await Ride.findAll({
       where: { stato_corsa: "completata" },
       attributes: [
@@ -131,34 +129,29 @@ export const getOverviewStatistics = async (req, res) => {
 
     const ricavoTotale = parseFloat(revenueData[0]?.ricavo_totale || 0);
 
-    // Utenti attivi (che hanno fatto almeno una corsa)
+    // Utenti che hanno fatto almeno una corsa
     const activeUsers = await Ride.count({
       distinct: true,
       col: "id_utente",
       where: { stato_corsa: "completata" },
     });
 
-    // Utenti sospesi
     const suspendedUsers = await User.count({
       where: { stato_account: "sospeso" },
     });
 
-    // Utenti in attesa di approvazione
     const pendingApproval = await User.count({
       where: { stato_account: "in_attesa_approvazione" },
     });
 
-    // Mezzi non prelevabili (bassa batteria o difetti)
     const vehiclesNonPrelevabili = await Vehicle.count({
       where: { stato: "non_prelevabile" },
     });
 
-    // Mezzi in manutenzione
     const vehiclesInMaintenance = await Vehicle.count({
       where: { stato: "in_manutenzione" },
     });
 
-    // Durata media corsa
     const avgDurationData = await Ride.findAll({
       where: { stato_corsa: "completata" },
       attributes: [
@@ -186,7 +179,7 @@ export const getOverviewStatistics = async (req, res) => {
   }
 };
 
-// ✅ LISTA UTENTI SOSPESI CON AFFIDABILITÀ
+// GET SUSPENDED USERS WITH RELIABILITY - Utenti sospesi con valutazione
 export const getSuspendedUsersWithReliability = async (req, res) => {
   try {
     const suspendedUsers = await User.findAll({
@@ -247,7 +240,7 @@ export const getSuspendedUsersWithReliability = async (req, res) => {
   }
 };
 
-// ✅ STATISTICHE PARCHEGGI - Utilizzo e popolarità
+// GET PARKING USAGE STATISTICS - Utilizzo e popolarità parcheggi
 export const getParkingUsageStatistics = async (req, res) => {
   try {
     const parkingUsage = await Ride.findAll({
@@ -311,7 +304,7 @@ export const getParkingUsageStatistics = async (req, res) => {
       };
     });
 
-    // Ordina per corse totali (più utilizzati primo)
+    // Ordina per utilizzo decrescente
     parkingStatsUsage.sort((a, b) => b.corse_totali - a.corse_totali);
 
     res.status(200).json({

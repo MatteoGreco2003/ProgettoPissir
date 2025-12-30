@@ -19,6 +19,7 @@ const Feedback = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    // Valutazione da 1 a 5
     rating: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -27,7 +28,9 @@ const Feedback = sequelize.define(
         max: 5,
       },
     },
+    // Commento opzionale dell'utente
     commento: DataTypes.TEXT,
+    // Data e ora automatica
     data_ora: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

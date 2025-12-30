@@ -15,6 +15,7 @@ const Transaction = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    // Tipo di transazione: ricarica credito, pagamento corsa, o debito
     tipo_transazione: {
       type: DataTypes.STRING(50),
       allowNull: false,
@@ -22,6 +23,7 @@ const Transaction = sequelize.define(
         isIn: [["ricarica", "pagamento_corsa", "debito_prossima_corsa"]],
       },
     },
+    // Importo della transazione
     importo: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
@@ -29,11 +31,14 @@ const Transaction = sequelize.define(
         min: 0,
       },
     },
+    // Data e ora automatica
     data_ora: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
+    // ID corsa se transazione è pagamento di una corsa
     id_corsa: DataTypes.INTEGER,
+    // Descrizione della transazione
     descrizione: DataTypes.TEXT,
   },
   {
