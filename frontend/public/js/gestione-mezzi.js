@@ -1,17 +1,21 @@
 // ===== PAGINATION VARIABLES =====
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 7;
 let currentPage = 1;
 let paginationContainer = document.getElementById("paginationContainer");
 
 // ===== STATO GLOBALE =====
 let vehicles = [];
 let allVehicles = [];
+let allParkings = [];
 let currentVehicleId = null;
 let currentEditVehicleId = null;
+let currentFeedbackVehicleId = null;
+let currentFeedbacks = [];
 
 // ===== DOM ELEMENTS =====
 const vehiclesTableBody = document.getElementById("vehiclesTableBody");
 const searchInput = document.getElementById("searchInput");
+const parkingFilter = document.getElementById("parkingFilter");
 const typeFilter = document.getElementById("typeFilter");
 const statusFilter = document.getElementById("statusFilter");
 const snackbar = document.getElementById("snackbar");
@@ -57,6 +61,18 @@ const confirmDeleteVehicleBtn = document.getElementById(
   "confirmDeleteVehicleBtn"
 );
 
+// Modal: Feedback Vehicle
+const feedbackVehicleModal = document.getElementById("feedbackVehicleModal");
+const feedbackVehicleTitle = document.getElementById("feedbackVehicleTitle");
+const feedbackVehicleRating = document.getElementById("feedbackVehicleRating");
+const feedbackVehicleBody = document.getElementById("feedbackVehicleBody");
+const closeFeedbackVehicleBtn = document.getElementById(
+  "closeFeedbackVehicleBtn"
+);
+const closeFeedbackVehicleBtnFooter = document.getElementById(
+  "closeFeedbackVehicleBtnFooter"
+);
+
 // Modal close buttons
 const modalCloseButtons = document.querySelectorAll(".modal-close");
 
@@ -65,12 +81,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupEventListeners();
   loadAllVehicles();
   loadParkings();
+  loadVehicleStatistics();
+
+  const menuToggle = document.querySelector(".menu-toggle");
+  const sidebar = document.querySelector(".sidebar");
+
+  if (menuToggle && sidebar) {
+    menuToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+        sidebar.classList.remove("active");
+      }
+    });
+  }
 });
 
 // ===== EVENT LISTENERS =====
 function setupEventListeners() {
   // Search & Filter
   searchInput.addEventListener("input", filterVehicles);
+  parkingFilter.addEventListener("change", filterVehicles);
   typeFilter.addEventListener("change", filterVehicles);
   statusFilter.addEventListener("change", filterVehicles);
 
@@ -80,6 +113,8 @@ function setupEventListeners() {
   });
   closeVehicleDetailBtn.addEventListener("click", closeAllModals);
   closeEditVehicleBtn.addEventListener("click", closeAllModals);
+  closeFeedbackVehicleBtn.addEventListener("click", closeAllModals);
+  closeFeedbackVehicleBtnFooter.addEventListener("click", closeAllModals);
 
   // Add Vehicle Modal
   cancelAddVehicleBtn.addEventListener("click", closeAllModals);
@@ -109,6 +144,7 @@ function setupEventListeners() {
     addVehicleModal,
     editVehicleModal,
     deleteVehicleModal,
+    feedbackVehicleModal,
   ];
   modals.forEach((modal) => {
     modal.addEventListener("click", (e) => {
@@ -135,6 +171,7 @@ async function loadAllVehicles() {
     renderVehicles();
     renderPagination();
     updateStats();
+    loadParkingOptions();
   } catch (error) {
     console.error("❌ Errore:", error);
   }
@@ -167,6 +204,106 @@ async function loadParkings() {
   }
 }
 
+// ===== LOAD VEHICLE STATISTICS =====
+async function loadVehicleStatistics() {
+  try {
+    const response = await fetch("/statistics/vehicles", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+
+    if (!response.ok) throw new Error("Errore caricamento statistiche");
+
+    const data = await response.json();
+
+    // Ordina per ricavo totale (decrescente)
+    const sortedVehicles = data.veicoli.sort(
+      (a, b) => parseFloat(b.ricavo_totale) - parseFloat(a.ricavo_totale)
+    );
+
+    // Prendi i top 5
+    const topVehicles = sortedVehicles.slice(0, 5);
+    renderVehiclePerformance(topVehicles);
+  } catch (error) {
+    console.error("❌ Errore:", error);
+    document.getElementById("vehiclePerformanceContainer").innerHTML = `
+      <div class="empty-state" style="padding: 20px;">
+        <p>Errore caricamento statistiche</p>
+      </div>
+    `;
+  }
+}
+
+// ===== RENDER VEHICLE PERFORMANCE =====
+function renderVehiclePerformance(vehicles) {
+  if (vehicles.length === 0) {
+    document.getElementById("vehiclePerformanceContainer").innerHTML = `
+      <div class="empty-state" style="padding: 20px;">
+        <p>Nessun dato disponibile</p>
+      </div>
+    `;
+    return;
+  }
+
+  const rankingEmojis = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
+
+  const html = vehicles
+    .map(
+      (vehicle, index) => `
+      <div class="perf-card" style="animation-delay: ${index * 50}ms;">
+        <div class="perf-card-header">
+          <div class="perf-card-badge">${rankingEmojis[index]}</div>
+          <div class="perf-card-info">
+            <div class="perf-card-code">${vehicle.codice_identificativo}</div>
+            
+          </div>
+        </div>
+        
+        <div class="perf-metric">
+          <div class="perf-metric-value">💰 €${parseFloat(
+            vehicle.ricavo_totale
+          ).toFixed(2)}</div>
+          <div class="perf-metric-label">Ricavo Totale</div>
+        </div>
+        
+        <div class="perf-metric">
+          <div class="perf-metric-value">🚴 ${vehicle.corse_totali}</div>
+          <div class="perf-metric-label">Corse Completate</div>
+        </div>
+        
+        <div class="perf-metric">
+          <div class="perf-metric-value">⏱️ ${
+            vehicle.durata_media_minuti
+          }m</div>
+          <div class="perf-metric-label">Durata Media</div>
+        </div>
+      </div>
+    `
+    )
+    .join("");
+
+  document.getElementById("vehiclePerformanceContainer").innerHTML = html;
+}
+
+// ===== LOAD PARKING OPTIONS FOR FILTER =====
+function loadParkingOptions() {
+  // Estrai i parcheggi unici dai mezzi
+  const parkingsSet = new Set();
+  allVehicles.forEach((vehicle) => {
+    if (vehicle.parking?.nome) {
+      parkingsSet.add(vehicle.parking.nome);
+    }
+  });
+
+  const parkingsArray = Array.from(parkingsSet).sort();
+
+  parkingsArray.forEach((parkingName) => {
+    const option = document.createElement("option");
+    option.value = parkingName;
+    option.textContent = `${parkingName}`;
+    parkingFilter.appendChild(option);
+  });
+}
+
 // ===== RENDER VEHICLES TABLE =====
 function renderVehicles() {
   // Ordina i mezzi per tipo: muscolare → monopattino → elettrica
@@ -187,7 +324,7 @@ function renderVehicles() {
   if (sortedVehicles.length === 0) {
     vehiclesTableBody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align: center;">
+        <td colspan="7" style="text-align: center;">
           <div class="empty-state">
             <div class="empty-state-icon">
               <i class="fas fa-inbox"></i>
@@ -234,6 +371,15 @@ function renderVehicles() {
         }
       </td>
       <td>
+        <div class="rating-cell" onclick="openFeedbackModal(${
+          vehicle.id_mezzo
+        }, '${vehicle.codice_identificativo}')" style="cursor: pointer;">
+          <span id="rating-${
+            vehicle.id_mezzo
+          }" class="rating-stars">⭐ Caricamento...</span>
+        </div>
+      </td>
+      <td>
         <div class="action-buttons">
           <button class="btn-action btn-view" onclick="viewVehicleDetail(${
             vehicle.id_mezzo
@@ -263,6 +409,165 @@ function renderVehicles() {
   `
     )
     .join("");
+
+  // Carica i rating per ogni mezzo
+  paginatedVehicles.forEach((vehicle) => {
+    loadVehicleRating(vehicle.id_mezzo);
+  });
+}
+
+// ===== LOAD VEHICLE RATING =====
+async function loadVehicleRating(vehicleId) {
+  try {
+    const response = await fetch(`/feedback/vehicle/${vehicleId}/rating`);
+
+    if (!response.ok) throw new Error("Errore caricamento rating");
+
+    const data = await response.json();
+    const ratingElement = document.getElementById(`rating-${vehicleId}`);
+
+    if (ratingElement) {
+      if (data.total_feedbacks === 0) {
+        ratingElement.innerHTML = `<span style="color: var(--light-text);">Nessun feedback</span>`;
+      } else {
+        const avgRating = data.average_rating;
+        ratingElement.innerHTML = `<span style="margin-left: 8px; font-size: 12px; color: var(--light-text);">${avgRating}/5 (${data.total_feedbacks})</span>`;
+      }
+    }
+  } catch (error) {
+    console.error("❌ Errore caricamento rating:", error);
+  }
+}
+
+// ===== GENERATE STARS =====
+function generateStars(rating) {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+  let stars = "";
+
+  for (let i = 0; i < fullStars; i++) {
+    stars += "⭐";
+  }
+
+  if (hasHalfStar && fullStars < 5) {
+    stars += "⭐";
+  }
+
+  // Aggiungi stelle vuote per completare 5
+  const emptyStars = 5 - Math.ceil(rating);
+  for (let i = 0; i < emptyStars; i++) {
+    stars += "☆";
+  }
+
+  return stars;
+}
+
+// ===== OPEN FEEDBACK MODAL =====
+async function openFeedbackModal(vehicleId, vehicleCode) {
+  currentFeedbackVehicleId = vehicleId;
+
+  try {
+    feedbackVehicleTitle.textContent = `Feedback - ${vehicleCode}`;
+
+    // Carica rating
+    const ratingResponse = await fetch(`/feedback/vehicle/${vehicleId}/rating`);
+    const ratingData = await ratingResponse.json();
+
+    // 🔥 Se non ci sono feedback, mostra snackbar e ritorna
+    if (ratingData.total_feedbacks === 0) {
+      showSnackbar("Nessun feedback per questo mezzo", "info");
+      return;
+    }
+
+    // Carica feedback
+    const feedbackResponse = await fetch(`/feedback/vehicle/${vehicleId}`);
+    const feedbackData = await feedbackResponse.json();
+    currentFeedbacks = feedbackData.feedbacks || [];
+
+    renderFeedbacksList();
+    feedbackVehicleModal.classList.remove("hidden");
+  } catch (error) {
+    console.error("❌ Errore caricamento feedback:", error);
+    showSnackbar("Errore nel caricamento dei feedback", "error");
+  }
+}
+
+// ===== RENDER FEEDBACKS LIST =====
+function renderFeedbacksList() {
+  if (currentFeedbacks.length === 0) {
+    feedbackVehicleBody.innerHTML =
+      '<p style="text-align: center; color: var(--light-text);">Nessun feedback</p>';
+    return;
+  }
+
+  feedbackVehicleBody.innerHTML = currentFeedbacks
+    .map(
+      (feedback, index) => `
+    <div class="feedback-item">
+      <div class="feedback-header">
+        <div class="feedback-user">
+          <strong>${feedback.user?.nome || "Anonimo"} ${
+        feedback.user?.cognome || ""
+      }</strong>
+          <span class="feedback-rating">${feedback.rating}/5</span>
+        </div>
+        <div class="feedback-date">
+          ${formatDataBreve(feedback.data_ora)}
+        </div>
+      </div>
+      ${
+        feedback.commento
+          ? `<div class="feedback-comment">${escapeHtml(
+              feedback.commento
+            )}</div>`
+          : ""
+      }
+      <div class="feedback-actions">
+        <button class="btn-feedback-delete" onclick="removeFeedback(${index})" title="Elimina feedback">
+          Elimina
+        </button>
+      </div>
+    </div>
+  `
+    )
+    .join("");
+}
+
+// ===== REMOVE FEEDBACK (Frontend Only) =====
+function removeFeedback(index) {
+  if (confirm("Sei sicuro di voler eliminare questo feedback?")) {
+    currentFeedbacks.splice(index, 1);
+    renderFeedbacksList();
+
+    // Aggiorna il rating se necessario
+    if (currentFeedbacks.length === 0) {
+      loadVehicleRating(currentFeedbackVehicleId);
+    }
+
+    showSnackbar("✅ Feedback eliminato!", "success");
+  }
+}
+
+// ===== ESCAPE HTML =====
+function escapeHtml(text) {
+  const map = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+// ===== FORMAT DATA BREVE =====
+function formatDataBreve(data) {
+  const date = new Date(data);
+  return date.toLocaleDateString("it-IT", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 // ===== RENDER PAGINATION =====
@@ -321,6 +626,7 @@ function goToPage(page) {
 // ===== FILTER VEHICLES =====
 function filterVehicles() {
   const searchTerm = searchInput.value.toLowerCase();
+  const parkingValue = parkingFilter.value;
   const typeValue = typeFilter.value;
   const statusValue = statusFilter.value;
 
@@ -328,10 +634,12 @@ function filterVehicles() {
     const matchesSearch =
       vehicle.codice_identificativo?.toLowerCase().includes(searchTerm) ||
       vehicle.id_mezzo.toString().includes(searchTerm);
+    const matchesParking =
+      !parkingValue || (vehicle.parking?.nome || "") === parkingValue;
     const matchesType = !typeValue || vehicle.tipo_mezzo === typeValue;
     const matchesStatus = !statusValue || vehicle.stato === statusValue;
 
-    return matchesSearch && matchesType && matchesStatus;
+    return matchesSearch && matchesParking && matchesType && matchesStatus;
   });
 
   currentPage = 1;
@@ -716,6 +1024,7 @@ function closeAllModals() {
   addVehicleModal.classList.add("hidden");
   editVehicleModal.classList.add("hidden");
   deleteVehicleModal.classList.add("hidden");
+  feedbackVehicleModal.classList.add("hidden");
 }
 
 // ===== SNACKBAR =====

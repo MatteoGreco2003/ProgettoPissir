@@ -88,6 +88,7 @@ export const getVehicleStatistics = async (req, res) => {
 
         return {
           id_mezzo: vehicle.id_mezzo,
+          codice_identificativo: vehicle.codice_identificativo,
           tipo: vehicle.tipo_mezzo,
           parcheggio: vehicle.parking?.nome || "N/A",
           stato: vehicle.stato,
@@ -289,6 +290,12 @@ export const getParkingUsageStatistics = async (req, res) => {
         (parseInt(partenze?.corse_partenze) || 0) +
         (parseInt(arrivi?.corse_arrivi) || 0);
 
+      const mezziPresenti = parking.vehicles?.length || 0;
+      const utilizzo_percentuale = (
+        (mezziPresenti / Math.max(parking.capacita, 1)) *
+        100
+      ).toFixed(1);
+
       return {
         id_parcheggio: parking.id_parcheggio,
         nome: parking.nome,
@@ -297,10 +304,7 @@ export const getParkingUsageStatistics = async (req, res) => {
         corse_partenze: parseInt(partenze?.corse_partenze) || 0,
         corse_arrivi: parseInt(arrivi?.corse_arrivi) || 0,
         corse_totali: corseTotali,
-        utilizzo_percentuale: (
-          (corseTotali / Math.max(parking.capacita, 1)) *
-          100
-        ).toFixed(1),
+        utilizzo_percentuale: utilizzo_percentuale,
       };
     });
 

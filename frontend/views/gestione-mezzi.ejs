@@ -60,6 +60,16 @@
         </div>
       </div>
 
+      <div class="action-buttons-section">
+        <button
+          class="btn-add"
+          onclick="openAddVehicleModal()"
+          title="Aggiungi nuovo mezzo"
+        >
+          Aggiungi Mezzo
+        </button>
+      </div>
+
       <!-- SEARCH & FILTER -->
       <div class="search-filter">
         <div class="search-box">
@@ -72,6 +82,9 @@
           />
         </div>
         <div class="filter-group">
+          <select id="parkingFilter" class="filter-select">
+            <option value="">Tutti</option>
+          </select>
           <select id="typeFilter" class="filter-select">
             <option value="">Tutti</option>
             <option value="monopattino">Monopattino</option>
@@ -98,12 +111,13 @@
               <th>Parcheggio</th>
               <th>Stato</th>
               <th>Batteria</th>
+              <th>Rating</th>
               <th>Azioni</th>
             </tr>
           </thead>
           <tbody id="vehiclesTableBody">
             <tr class="loading-row">
-              <td colspan="9">
+              <td colspan="7">
                 <div class="loader"></div>
                 <p>Caricamento mezzi...</p>
               </td>
@@ -115,14 +129,16 @@
       <!-- PAGINAZIONE -->
       <div class="pagination-container" id="paginationContainer"></div>
 
-      <div class="action-buttons-section">
-        <button
-          class="btn-add"
-          onclick="openAddVehicleModal()"
-          title="Aggiungi nuovo mezzo"
-        >
-          Aggiungi Mezzo
-        </button>
+      <!-- ===== TOP PERFORMING VEHICLES SECTION ===== -->
+      <div class="vehicles-performance-section">
+        <div class="performance-header">
+          <h2><i class="fas fa-chart-line"></i> Top 5 Mezzi per Performance</h2>
+        </div>
+        <div id="vehiclePerformanceContainer" class="loading-skeleton">
+          <div class="perf-card-skeleton"></div>
+          <div class="perf-card-skeleton"></div>
+          <div class="perf-card-skeleton"></div>
+        </div>
       </div>
     </div>
 
@@ -276,6 +292,28 @@
           </button>
           <button class="btn btn-secondary" id="cancelDeleteVehicleBtn">
             Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: FEEDBACK VEICOLO ===== -->
+    <div class="modal hidden" id="feedbackVehicleModal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="feedbackVehicleTitle">Feedback</h2>
+          <button class="modal-close" id="closeFeedbackVehicleBtn">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="feedbackVehicleRating"></div>
+          <div id="feedbackVehicleBody"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="closeFeedbackVehicleBtnFooter">
+            Chiudi
           </button>
         </div>
       </div>

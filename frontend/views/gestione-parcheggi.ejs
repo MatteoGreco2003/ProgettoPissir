@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestione Parcheggi</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/css/gestione-parcheggi.css" />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <%- include('components/navbar') %>
+
+    <!-- SIDEBAR -->
+    <%- include('components/sidebar') %>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- Header Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-map-pin"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">PARCHEGGI</span>
+            <span class="stat-value" id="statTotalParcheggi">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-cube"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">POSTI TOTALI</span>
+            <span class="stat-value" id="statCapacitaTot">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">POSTI LIBERI</span>
+            <span class="stat-value" id="statDisponibiliTot">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-car"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">OCCUPATI</span>
+            <span class="stat-value" id="statOccupatiTot">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons-section">
+        <button class="btn btn-add" onclick="openAddParkingModal()">
+          <i class="fas fa-plus"></i> Aggiungi Parcheggio
+        </button>
+      </div>
+
+      <!-- Actions Bar -->
+      <div class="actions-bar">
+        <div class="search-filter">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Cerca per nome parcheggio..."
+          />
+        </div>
+      </div>
+
+      <!-- Parkings Table -->
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>NOME</th>
+              <th>CAPACITÀ</th>
+              <th>OCCUPATI</th>
+              <th>DISPONIBILI</th>
+              <th>OCCUPAZIONE</th>
+              <th>COORDINATE</th>
+              <th>AZIONI</th>
+            </tr>
+          </thead>
+          <tbody id="parkingsTableBody">
+            <tr>
+              <td colspan="7" style="text-align: center">
+                <div class="empty-state">
+                  <div class="empty-state-icon">
+                    <i class="fas fa-inbox"></i>
+                  </div>
+                  <p>Caricamento...</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div id="paginationContainer" class="pagination-container"></div>
+
+      <!-- TOP PARKING USAGE SECTION -->
+      <div class="parking-usage-section">
+        <div class="parking-usage-header">
+          <h2><i class="fas fa-fire"></i> Top 5 Parcheggi per Utilizzo</h2>
+        </div>
+        <div id="parkingUsageContainer" class="loading-skeleton">
+          <div class="usage-card-skeleton"></div>
+          <div class="usage-card-skeleton"></div>
+          <div class="usage-card-skeleton"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal: Add Parking -->
+    <div id="addParkingModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Aggiungi Parcheggio</h2>
+          <button class="modal-close" onclick="closeAllModals()">✕</button>
+        </div>
+        <div class="modal-body">
+          <form id="addParkingForm">
+            <div class="form-group">
+              <label class="form-label">Nome Parcheggio</label>
+              <input
+                type="text"
+                id="nomeInput"
+                class="form-control"
+                placeholder="Es: Parcheggio Centro"
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Latitudine</label>
+                <input
+                  type="number"
+                  id="latitudineInput"
+                  class="form-control"
+                  placeholder="45.8627"
+                  step="0.0001"
+                  min="-90"
+                  max="90"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Longitudine</label>
+                <input
+                  type="number"
+                  id="longitudineInput"
+                  class="form-control"
+                  placeholder="8.6263"
+                  step="0.0001"
+                  min="-180"
+                  max="180"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Numero Posti</label>
+              <input
+                type="number"
+                id="capacitaInput"
+                class="form-control"
+                placeholder="50"
+                min="1"
+              />
+            </div>
+          </form>
+
+          <div id="addErrors" class="error-messages"></div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-primary"
+            id="confirmAddParkingBtn"
+            onclick="confirmAddParking()"
+          >
+            Crea Parcheggio
+          </button>
+          <button class="btn btn-secondary" onclick="closeAllModals()">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Edit Parking -->
+    <div id="editParkingModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Modifica Parcheggio</h2>
+          <button class="modal-close" onclick="closeAllModals()">✕</button>
+        </div>
+        <div class="modal-body">
+          <form id="editParkingForm">
+            <div class="form-group">
+              <label class="form-label">Nome Parcheggio</label>
+              <input type="text" id="editNomeInput" class="form-control" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Latitudine</label>
+                <input
+                  type="number"
+                  id="editLatitudineInput"
+                  class="form-control"
+                  step="0.0001"
+                  min="-90"
+                  max="90"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Longitudine</label>
+                <input
+                  type="number"
+                  id="editLongitudineInput"
+                  class="form-control"
+                  step="0.0001"
+                  min="-180"
+                  max="180"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Capacità</label>
+              <p class="form-info" id="capacitaInfo"></p>
+              <input
+                type="number"
+                id="editCapacitaInput"
+                class="form-control"
+                min="1"
+              />
+            </div>
+          </form>
+
+          <div id="editErrors" class="error-messages"></div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-primary"
+            id="confirmEditParkingBtn"
+            onclick="confirmEditParking()"
+          >
+            Salva Modifiche
+          </button>
+          <button class="btn btn-secondary" onclick="closeAllModals()">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Delete Parking -->
+    <div id="deleteParkingModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content" style="max-width: 400px">
+        <div class="modal-header">
+          <h2>Elimina Parcheggio</h2>
+          <button class="modal-close" onclick="closeAllModals()">✕</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Sei sicuro di voler eliminare il parcheggio
+            <strong id="deleteParkingName"></strong>?
+          </p>
+
+          <div id="deleteErrors" class="error-messages"></div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-danger"
+            id="confirmDeleteParkingBtn"
+            onclick="confirmDeleteParking()"
+          >
+            Elimina
+          </button>
+          <button class="btn btn-secondary" onclick="closeAllModals()">
+            Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Parking Details -->
+    <div id="parkingDetailModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="detailParkingName"></h2>
+          <button class="modal-close" onclick="closeAllModals()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div id="parkingDetailBody"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeAllModals()">
+            Chiudi
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Parking Statistics -->
+    <div id="parkingStatisticsModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content modal-statistics">
+        <div class="modal-header">
+          <h2 id="statisticsTitle">📊 Statistiche Parcheggio</h2>
+          <button class="modal-close" onclick="closeAllModals()">✕</button>
+        </div>
+        <div class="modal-body" id="statisticsBody">
+          <div class="loading">Caricamento statistiche...</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeAllModals()">
+            Chiudi
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Snackbar -->
+    <div id="snackbar" class="snackbar"></div>
+
+    <script src="/js/gestione-parcheggi.js"></script>
+  </body>
+</html>

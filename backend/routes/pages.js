@@ -84,6 +84,11 @@ router.get("/gestione-mezzi", authMiddleware, (req, res) => {
   res.render("gestione-mezzi");
 });
 
+// Gestione parcheggi (protetto)
+router.get("/gestione-parcheggi", authMiddleware, (req, res) => {
+  res.render("gestione-parcheggi");
+});
+
 /*
 // Gestione mezzi (protetto + solo gestori)
 router.get("/manager/vehicles", authMiddleware, (req, res) => {

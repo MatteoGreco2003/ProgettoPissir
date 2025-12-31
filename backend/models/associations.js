@@ -25,10 +25,11 @@ Report.belongsTo(User, {
   as: "user",
 });
 
-// Report è collegato a Vehicle
+// Report è collegato a Vehicle - ELIMINA in cascata
 Report.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
+  onDelete: "CASCADE",
 });
 
 // Ride è collegato a User
@@ -37,7 +38,7 @@ Ride.belongsTo(User, {
   as: "user",
 });
 
-// Ride è collegato a Vehicle - se Vehicle è cancellato, id_mezzo diventa NULL
+// Ride è collegato a Vehicle
 Ride.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
@@ -62,11 +63,11 @@ Feedback.belongsTo(User, {
   as: "user",
 });
 
-// Feedback è collegato a Vehicle - se Vehicle è cancellato, id_mezzo diventa NULL
+// Feedback è collegato a Vehicle - ELIMINA in cascata
 Feedback.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
-  onDelete: "SET NULL",
+  onDelete: "CASCADE",
 });
 
 // User ha molti Feedback

@@ -151,7 +151,7 @@ export const updateParking = async (req, res) => {
 
       if (capacita < vehicleCount) {
         return res.status(400).json({
-          error: `Non puoi ridurre a ${capacita}: ci sono ${vehicleCount} mezzi parcheggiati`,
+          error: `Non puoi ridurre a ${capacita}, ci sono ${vehicleCount} mezzi parcheggiati`,
         });
       }
 
@@ -187,7 +187,7 @@ export const deleteParking = async (req, res) => {
 
     if (vehicleCount > 0) {
       return res.status(400).json({
-        error: `Impossibile eliminare: contiene ${vehicleCount} mezzi`,
+        error: `Impossibile eliminare contiene ${vehicleCount} mezzi`,
       });
     }
 
