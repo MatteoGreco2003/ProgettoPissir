@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestione Corse - Admin</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/css/gestione-corse.css" />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <%- include('components/navbar') %>
+
+    <!-- SIDEBAR -->
+    <%- include('components/sidebar') %>
+
+    <div class="main-content">
+      <!-- STAT CARDS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div
+            class="stat-icon"
+            style="background: rgba(76, 175, 80, 0.15); color: #4caf50"
+          >
+            <i class="fas fa-running"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Corse di Oggi</span>
+            <span class="stat-value" id="ridesTodayCount">-</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div
+            class="stat-icon"
+            style="
+              background: rgba(33, 128, 141, 0.15);
+              color: var(--primary-teal);
+            "
+          >
+            <i class="fas fa-euro-sign"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Ricavo di Oggi</span>
+            <span class="stat-value" id="revenueToday">€ -</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div
+            class="stat-icon"
+            style="background: rgba(255, 107, 107, 0.15); color: #ff6b6b"
+          >
+            <i class="fas fa-hourglass-half"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Durata Media</span>
+            <span class="stat-value" id="avgDuration">- min</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div
+            class="stat-icon"
+            style="background: rgba(255, 193, 7, 0.15); color: #ffc107"
+          >
+            <i class="fas fa-road"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">KM Totali</span>
+            <span class="stat-value" id="totalKm">- km</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filters-section">
+        <div class="filter-group">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            id="searchInput"
+            class="filter-input"
+            placeholder="Cerca ID corsa, utente..."
+            onkeyup="applyFilters()"
+          />
+        </div>
+
+        <div class="filter-group">
+          <select
+            id="tabFilter"
+            class="filter-select"
+            onchange="changeTab(this.value)"
+          >
+            <option value="today">Corse di Oggi</option>
+            <option value="completed">Corse Completate</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <select
+            id="vehicleFilter"
+            class="filter-select"
+            onchange="applyFilters()"
+          >
+            <option value="">Tutti</option>
+            <option value="bicicletta_muscolare">Bicicletta Muscolare</option>
+            <option value="bicicletta_elettrica">Bicicletta Elettrica</option>
+            <option value="monopattino">Monopattino Elettrico</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TABLE SECTION -->
+      <div class="table-container">
+        <table class="rides-table">
+          <thead>
+            <tr>
+              <th>MEZZO</th>
+              <th>PARCHEGGIO INIZIO</th>
+              <th>PARCHEGGIO FINE</th>
+              <th>DURATA</th>
+              <th>COSTO</th>
+              <th>KM</th>
+              <th>AZIONI</th>
+            </tr>
+          </thead>
+          <tbody id="ridesTableBody">
+            <tr>
+              <td colspan="10" style="text-align: center; padding: 40px">
+                <div class="empty-state">
+                  <i
+                    class="fas fa-inbox"
+                    style="font-size: 48px; opacity: 0.5; margin-bottom: 12px"
+                  ></i>
+                  <p>Nessuna corsa disponibile</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      <div id="paginationContainer" class="pagination-container"></div>
+    </div>
+
+    <!-- MODAL: Dettagli Corsa -->
+    <div id="rideDetailModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Dettagli Corsa</h2>
+          <button class="modal-close" onclick="closeAllModals()">✕</button>
+        </div>
+        <div class="modal-body" id="rideDetailBody">
+          <!-- Contenuto dinamico -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeAllModals()">
+            Chiudi
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SNACKBAR -->
+    <div id="snackbar" class="snackbar"></div>
+
+    <script src="/js/gestione-corse.js"></script>
+  </body>
+</html>

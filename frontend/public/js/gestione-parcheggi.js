@@ -56,6 +56,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupEventListeners();
   loadAllParkings();
   loadParkingUsageStatistics();
+
+  const menuToggle = document.querySelector(".menu-toggle");
+  const sidebar = document.querySelector(".sidebar");
+
+  if (menuToggle && sidebar) {
+    menuToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+        sidebar.classList.remove("active");
+      }
+    });
+  }
 });
 
 // ===== EVENT LISTENERS =====
@@ -755,10 +770,13 @@ function renderStatisticsContent(
             .join("")}
         </tbody>
       </table>
-      
-      ${
-        totalPages > 1
-          ? `
+    `;
+  }
+
+  // ✅ Costruisci la paginazione HTML
+  let paginationHTML = "";
+  if (totalPages > 1) {
+    paginationHTML = `
       <div class="pagination-container" style="margin-top: 16px; display: flex; justify-content: center; align-items: center; gap: 12px;">
         <button class="pagination-btn ${
           currentParkingStatisticsPage === 1 ? "disabled" : ""
@@ -778,9 +796,6 @@ function renderStatisticsContent(
           Avanti <i class="fas fa-chevron-right"></i>
         </button>
       </div>
-    `
-          : ""
-      }
     `;
   }
 
@@ -804,17 +819,13 @@ function renderStatisticsContent(
             parking.capacita - parking.total_mezzi
           }</span>
         </div>
-        <div class="stat-info">
-          <span class="stat-label">OCCUPAZIONE</span>
-          <span class="stat-big">${percOccupati}%</span>
-        </div>
       </div>
 
       <!-- OCCUPAZIONE BAR -->
       <div class="occupancy-bar-section">
-        <h4 style="margin-bottom: 12px;">Occupazione Parcheggio (${
-          parking.total_mezzi
-        }/${parking.capacita})</h4>
+        <h4 style="margin-bottom: 12px;">Occupazione (${parking.total_mezzi}/${
+    parking.capacita
+  })</h4>
         <div class="occupancy-bar-wrapper">
           <div class="occupancy-bar-large">
             <div class="occupancy-fill" style="width: ${percOccupati}%"></div>
@@ -875,7 +886,12 @@ function renderStatisticsContent(
         <h4 style="margin-bottom: 12px;">Mezzi nel Parcheggio (${
           parking.dettagli_mezzi.length
         })</h4>
-        ${vehiclesTableHTML}
+        <!-- ✅ WRAPPER SCROLLABILE SOLO PER LA TABELLA -->
+        <div class="vehicles-table-wrapper">
+          ${vehiclesTableHTML}
+        </div>
+        <!-- ✅ PAGINAZIONE DENTRO vehicles-table-section -->
+        ${paginationHTML}
       </div>
     </div>
   `;

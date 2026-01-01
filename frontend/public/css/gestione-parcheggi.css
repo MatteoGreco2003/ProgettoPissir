@@ -153,9 +153,16 @@ body {
   min-width: 250px;
 }
 
+.search-filter i {
+  position: absolute;
+  left: 12px;
+  color: var(--light-text);
+  pointer-events: none;
+}
+
 .search-filter input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 12px 10px 36px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 14px;
@@ -366,14 +373,13 @@ body {
 
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
+  padding: 20px 20px;
   color: var(--light-text);
 }
 
 .empty-state-icon {
   font-size: 48px;
   opacity: 0.5;
-  margin-bottom: 12px;
 }
 
 .empty-state p {
@@ -966,7 +972,7 @@ body {
 
 .statistics-header {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   background: linear-gradient(
     135deg,
@@ -1106,13 +1112,21 @@ body {
   background: #fafaf8;
   border-radius: 8px;
   border: 1px solid var(--border-color);
+}
+
+/* ✅ NUOVO: Container solo per la tabella */
+.vehicles-table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 12px 0;
+  border-radius: 6px;
 }
 
 .statistics-vehicles-table {
   width: 100%;
   font-size: 13px;
   border-collapse: collapse;
+  white-space: nowrap;
 }
 
 .statistics-vehicles-table thead {
@@ -1125,11 +1139,13 @@ body {
   font-weight: 600;
   color: var(--light-text);
   border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 .statistics-vehicles-table td {
   padding: 8px;
   border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 .statistics-vehicles-table tbody tr:hover {
@@ -1174,6 +1190,13 @@ body {
 
   .usage-stats span:nth-child(2) {
     display: none;
+  }
+}
+
+@media (max-width: 885px) {
+  .statistics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 }
 
@@ -1241,5 +1264,10 @@ body {
 
   .usage-stats span:nth-child(4) {
     display: none;
+  }
+
+  .statistics-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 }

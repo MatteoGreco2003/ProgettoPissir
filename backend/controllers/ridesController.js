@@ -955,10 +955,39 @@ export const getRidesToday = async (req, res) => {
       },
       include: [
         {
+          model: User,
+          as: "user",
+          attributes: ["nome", "cognome"],
+        },
+        {
           model: Vehicle,
           as: "vehicle",
           attributes: ["id_mezzo", "tipo_mezzo"],
         },
+        {
+          model: Parking,
+          as: "parkingInizio",
+          attributes: ["id_parcheggio", "nome"],
+        },
+        {
+          model: Parking,
+          as: "parkingFine",
+          attributes: ["id_parcheggio", "nome"],
+        },
+      ],
+      attributes: [
+        "id_corsa",
+        "id_utente",
+        "id_mezzo",
+        "id_parcheggio_inizio",
+        "id_parcheggio_fine",
+        "data_ora_inizio",
+        "data_ora_fine",
+        "durata_minuti",
+        "costo",
+        "km_percorsi",
+        "stato_corsa",
+        "punti_fedeltà_usati",
       ],
       order: [["data_ora_inizio", "DESC"]],
     });
@@ -981,12 +1010,40 @@ export const getAllCompletedRides = async (req, res) => {
       where: { stato_corsa: "completata" },
       include: [
         {
+          model: User,
+          as: "user",
+          attributes: ["nome", "cognome"],
+        },
+        {
           model: Vehicle,
           as: "vehicle",
           attributes: ["id_mezzo", "tipo_mezzo"],
         },
+        {
+          model: Parking,
+          as: "parkingInizio",
+          attributes: ["id_parcheggio", "nome"],
+        },
+        {
+          model: Parking,
+          as: "parkingFine",
+          attributes: ["id_parcheggio", "nome"],
+        },
       ],
-      attributes: ["id_corsa", "id_utente", "costo"],
+      attributes: [
+        "id_corsa",
+        "id_utente",
+        "id_mezzo",
+        "id_parcheggio_inizio",
+        "id_parcheggio_fine",
+        "data_ora_inizio",
+        "data_ora_fine",
+        "durata_minuti",
+        "costo",
+        "km_percorsi",
+        "stato_corsa",
+        "punti_fedeltà_usati",
+      ],
       order: [["data_ora_fine", "DESC"]],
     });
 
