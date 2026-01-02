@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestione Segnalazioni</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/css/gestione-segnalazioni.css" />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <%- include('components/navbar') %>
+
+    <!-- SIDEBAR -->
+    <%- include('components/sidebar') %>
+
+    <main class="main-content">
+      <!-- STATS GRID -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📋</div>
+          <div class="stat-content">
+            <span class="stat-label">Totale Segnalazioni</span>
+            <span class="stat-value" id="countTotal">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-content">
+            <span class="stat-label">Aperte</span>
+            <span class="stat-value" id="countOpen">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔧</div>
+          <div class="stat-content">
+            <span class="stat-label">In Lavorazione</span>
+            <span class="stat-value" id="countWorking">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-content">
+            <span class="stat-label">Risolte</span>
+            <span class="stat-value" id="countResolved">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTERS & ACTIONS -->
+      <div class="actions-bar">
+        <div class="search-filter">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            id="searchReport"
+            placeholder="Cerca per ID segnalazione o ID mezzo..."
+          />
+        </div>
+        <select id="filterStatus" class="filter-select">
+          <option value="">Tutti</option>
+          <option value="aperta">Aperta</option>
+          <option value="in_lavorazione">In Lavorazione</option>
+          <option value="risolta">Risolta</option>
+        </select>
+        <select id="filterType" class="filter-select">
+          <option value="">Tutti</option>
+          <option value="danno_fisico">Danno Fisico</option>
+          <option value="batteria_scarica">Batteria Scarica</option>
+          <option value="pneumatico_bucato">Pneumatico Bucato</option>
+          <option value="non_funziona">Non Funziona</option>
+          <option value="sporco">Sporco</option>
+          <option value="altro">Altro</option>
+        </select>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>ID Mezzo</th>
+              <th>Tipo Problema</th>
+              <th>Utente</th>
+              <th>Data/Ora</th>
+              <th>Stato</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="reportsTableBody">
+            <tr class="empty-state">
+              <td colspan="7">
+                <div class="empty-state-icon">
+                  <i class="fas fa-inbox"></i>
+                </div>
+                <p>Nessuna segnalazione trovata</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- PAGINATION -->
+      <div class="pagination-container" id="paginationContainer">
+        <button class="pagination-btn" id="btnIndietro">
+          <i>←</i> Indietro
+        </button>
+        <span class="pagination-info" id="paginationInfo">Pagina 1 di 1</span>
+        <button class="pagination-btn" id="btnAvanti">Avanti <i>→</i></button>
+      </div>
+    </main>
+
+    <!-- ============================================================================
+       MODAL: DETTAGLI SEGNALAZIONE
+       ============================================================================ -->
+    <div class="modal hidden" id="modalReportDetails">
+      <div class="modal-overlay"></div>
+      <div class="modal-content modal-content-large">
+        <div class="modal-header">
+          <h2 id="detailsTitle">Dettagli Segnalazione</h2>
+          <button class="modal-close" id="closeModalDetails">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="report-detail-info">
+            <div class="detail-section">
+              <h3>Informazioni Segnalazione</h3>
+              <div class="detail-row">
+                <span class="detail-label">ID Segnalazione</span>
+                <span class="detail-value" id="detailId">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Tipo Problema</span>
+                <span class="detail-value" id="detailProblema">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Data/Ora</span>
+                <span class="detail-value" id="detailData">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Stato</span>
+                <span class="detail-value" id="detailStato">-</span>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>Informazioni Mezzo</h3>
+              <div class="detail-row">
+                <span class="detail-label">ID Mezzo</span>
+                <span class="detail-value" id="detailMezzoId">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Tipo Mezzo</span>
+                <span class="detail-value" id="detailMezzoTipo">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Stato Mezzo</span>
+                <span class="detail-value" id="detailMezzoStato">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Codice Identificativo</span>
+                <span class="detail-value" id="detailMezzoCodice">-</span>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>Informazioni Utente</h3>
+              <div class="detail-row">
+                <span class="detail-label">Nome</span>
+                <span class="detail-value" id="detailUtente">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Email</span>
+                <span class="detail-value" id="detailEmail">-</span>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>Descrizione</h3>
+              <p class="description-text" id="detailDescrizione">-</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div id="actionButtonsGroup" class="action-group"></div>
+          <button class="btn btn-secondary" id="closeDetailsBtn">Chiudi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================================
+       MODAL: CAMBIO STATO
+       ============================================================================ -->
+    <div class="modal hidden" id="modalChangeStatus">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Cambio Stato Segnalazione</h2>
+          <button class="modal-close" id="closeModalChangeStatus">✕</button>
+        </div>
+        <div class="modal-body">
+          <p
+            style="
+              margin-bottom: 20px;
+              color: var(--dark-text);
+              font-weight: 500;
+            "
+          >
+            Seleziona il nuovo stato:
+          </p>
+          <div class="status-options">
+            <label class="status-option">
+              <input type="radio" name="newStatus" value="aperta" />
+              <span class="status-label status-aperta">⚠️ Aperta</span>
+            </label>
+            <label class="status-option">
+              <input type="radio" name="newStatus" value="in_lavorazione" />
+              <span class="status-label status-in_lavorazione"
+                >🔧 In Lavorazione</span
+              >
+            </label>
+            <label class="status-option">
+              <input type="radio" name="newStatus" value="risolta" />
+              <span class="status-label status-risolta">✅ Risolta</span>
+            </label>
+          </div>
+          <div class="error-messages" id="errorChangeStatus"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelChangeStatus">
+            Annulla
+          </button>
+          <button class="btn btn-primary" id="submitChangeStatus">
+            Conferma
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================================
+       MODAL: CONFERMA ELIMINAZIONE
+       ============================================================================ -->
+    <div class="modal hidden" id="modalConfirmDelete">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Conferma Eliminazione</h2>
+          <button class="modal-close" id="closeModalDelete">✕</button>
+        </div>
+        <div class="modal-body">
+          <p
+            style="
+              color: var(--error-red);
+              font-weight: 600;
+              margin-bottom: 8px;
+            "
+          >
+            ⚠️ Sei sicuro di voler eliminare questa segnalazione?
+          </p>
+          <p style="color: var(--light-text); font-size: 13px">
+            Questa azione non può essere annullata.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelDelete">Annulla</button>
+          <button class="btn btn-danger" id="confirmDelete">Elimina</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SNACKBAR -->
+    <div class="snackbar" id="snackbar"></div>
+
+    <script src="/js/gestione-segnalazioni.js"></script>
+  </body>
+</html>

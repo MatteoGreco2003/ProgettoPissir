@@ -94,6 +94,11 @@ router.get("/gestione-corse", authMiddleware, (req, res) => {
   res.render("gestione-corse");
 });
 
+// Gestione segnalazioni (protetto)
+router.get("/gestione-segnalazioni", authMiddleware, (req, res) => {
+  res.render("gestione-segnalazioni");
+});
+
 /*
 // Gestione mezzi (protetto + solo gestori)
 router.get("/manager/vehicles", authMiddleware, (req, res) => {
