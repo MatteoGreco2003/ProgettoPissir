@@ -71,31 +71,37 @@ router.get("/feedback", authMiddleware, (req, res) => {
 
 // Dashboard admin (protetto)
 router.get("/home-admin", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("admin-dashboard");
 });
 
 // Gestione utenti (protetto)
 router.get("/gestione-utenti", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("gestione-utenti");
 });
 
 // Gestione mezzi (protetto)
 router.get("/gestione-mezzi", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("gestione-mezzi");
 });
 
 // Gestione parcheggi (protetto)
 router.get("/gestione-parcheggi", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("gestione-parcheggi");
 });
 
 // Gestione corse (protetto)
 router.get("/gestione-corse", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("gestione-corse");
 });
 
 // Gestione segnalazioni (protetto)
 router.get("/gestione-segnalazioni", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("gestione-segnalazioni");
 });
 

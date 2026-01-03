@@ -1247,6 +1247,35 @@ body {
   }
 }
 
+/* ============================================================================
+   PARKING FILTER SELECT - INSIDE CARD BODY
+   ========================================================================== */
+
+#parkingFilterSelect {
+  width: 100%;
+  max-width: none;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+
+  background-color: var(--white);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Poppins", sans-serif;
+  color: var(--dark-text);
+  text-align: center;
+}
+
+#parkingFilterSelect option {
+  padding: 10px 12px;
+  background-color: var(--white);
+  color: var(--dark-text);
+  font-weight: 500;
+  border: none;
+  outline: none;
+}
+
 /* ===== RESPONSIVE - TABLET SMALL (1200px) ===== */
 @media (max-width: 1200px) {
   .vehicles-filter-container {

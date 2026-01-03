@@ -19,26 +19,28 @@ Parking.hasMany(Vehicle, {
   as: "vehicles",
 });
 
-// Report è collegato a User
+// Report è collegato a User - SET NULL se utente cancellato
 Report.belongsTo(User, {
   foreignKey: "id_utente",
   as: "user",
+  onDelete: "SET NULL",
 });
 
-// Report è collegato a Vehicle - ELIMINA in cascata
+// Report è collegato a Vehicle - CASCADE se mezzo cancellato
 Report.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
   onDelete: "CASCADE",
 });
 
-// Ride è collegato a User
+// Ride è collegato a User - SET NULL se utente cancellato
 Ride.belongsTo(User, {
   foreignKey: "id_utente",
   as: "user",
+  onDelete: "SET NULL",
 });
 
-// Ride è collegato a Vehicle
+// Ride è collegato a Vehicle - SET NULL se mezzo cancellato
 Ride.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
@@ -57,29 +59,46 @@ Ride.belongsTo(Parking, {
   as: "parkingFine",
 });
 
-// Feedback è collegato a User
+// Feedback è collegato a User - SET NULL se utente cancellato
 Feedback.belongsTo(User, {
   foreignKey: "id_utente",
   as: "user",
+  onDelete: "SET NULL",
 });
 
-// Feedback è collegato a Vehicle - ELIMINA in cascata
+// Feedback è collegato a Vehicle - CASCADE se mezzo cancellato
 Feedback.belongsTo(Vehicle, {
   foreignKey: "id_mezzo",
   as: "vehicle",
   onDelete: "CASCADE",
 });
 
-// User ha molti Feedback
+// User ha molti Feedback - SET NULL se utente cancellato
 User.hasMany(Feedback, {
   foreignKey: "id_utente",
   as: "feedbacks",
+  onDelete: "SET NULL",
 });
 
-// Vehicle ha molti Feedback
+// User ha molti Ride - SET NULL se utente cancellato
+User.hasMany(Ride, {
+  foreignKey: "id_utente",
+  as: "rides",
+  onDelete: "SET NULL",
+});
+
+// User ha molti Report - SET NULL se utente cancellato
+User.hasMany(Report, {
+  foreignKey: "id_utente",
+  as: "reports",
+  onDelete: "SET NULL",
+});
+
+// Vehicle ha molti Feedback - CASCADE se mezzo cancellato
 Vehicle.hasMany(Feedback, {
   foreignKey: "id_mezzo",
   as: "feedbacks",
+  onDelete: "CASCADE",
 });
 
 export { Vehicle, Parking, User, Report, Ride, Feedback };

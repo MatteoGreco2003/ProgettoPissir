@@ -77,7 +77,11 @@ export const getVehicleStatistics = async (req, res) => {
         const rideData = await Ride.findAll({
           where: { id_mezzo: vehicle.id_mezzo, stato_corsa: "completata" },
           attributes: [
-            [sequelize.fn("SUM", sequelize.col("costo")), "ricavo_totale"],
+            // Somma il costo reale: costo - (punti_fedeltà_usati * 0.05)
+            [
+              sequelize.literal("SUM(costo - (punti_fedeltà_usati * 0.05))"),
+              "ricavo_totale",
+            ],
             [
               sequelize.fn("AVG", sequelize.col("durata_minuti")),
               "durata_media",

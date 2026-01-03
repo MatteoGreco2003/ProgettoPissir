@@ -366,21 +366,31 @@ function renderEarningsCard() {
   // Filtra solo corse completate (corse pagate)
   const paidRides = allRides.filter((r) => r.stato_corsa === "completata");
 
-  // Calcola totale incassi
-  const totalEarnings = paidRides.reduce(
-    (sum, r) => sum + parseFloat(r.costo || 0),
-    0
-  );
+  // ✅ MODIFICA: Calcola il costo REALE (con sconto applicato)
+  const totalEarnings = paidRides.reduce((sum, r) => {
+    const costoBase = parseFloat(r.costo || 0);
+    const scontoTotale = (r.punti_fedeltà_usati || 0) * 0.05;
+    const costoReale = Math.max(0, costoBase - scontoTotale);
+    return sum + costoReale;
+  }, 0);
 
-  // Calcola medie
+  // ✅ MODIFICA: Calcola le medie con il costo REALE
   const avgPerRide =
     paidRides.length > 0 ? totalEarnings / paidRides.length : 0;
+
+  // ✅ MODIFICA: Trova il max con il costo REALE
   const maxRideEarning =
     paidRides.length > 0
-      ? Math.max(...paidRides.map((r) => parseFloat(r.costo || 0)))
+      ? Math.max(
+          ...paidRides.map((r) => {
+            const costoBase = parseFloat(r.costo || 0);
+            const scontoTotale = (r.punti_fedeltà_usati || 0) * 0.05;
+            return Math.max(0, costoBase - scontoTotale);
+          })
+        )
       : 0;
 
-  // Calcola incassi per tipo di mezzo
+  // ✅ MODIFICA: Calcola incassi per tipo di mezzo con costo REALE
   const earningsByType = {
     bicicletta_muscolare: 0,
     bicicletta_elettrica: 0,
@@ -392,7 +402,10 @@ function renderEarningsCard() {
       ride.vehicle &&
       earningsByType.hasOwnProperty(ride.vehicle.tipo_mezzo)
     ) {
-      earningsByType[ride.vehicle.tipo_mezzo] += parseFloat(ride.costo || 0);
+      const costoBase = parseFloat(ride.costo || 0);
+      const scontoTotale = (ride.punti_fedeltà_usati || 0) * 0.05;
+      const costoReale = Math.max(0, costoBase - scontoTotale);
+      earningsByType[ride.vehicle.tipo_mezzo] += costoReale;
     }
   });
 
@@ -425,7 +438,7 @@ function renderEarningsCard() {
 // ====================================================================
 async function loadReportsData() {
   try {
-    const response = await fetch("/reports", {
+    const response = await fetch("/reports/admin/all-reports", {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

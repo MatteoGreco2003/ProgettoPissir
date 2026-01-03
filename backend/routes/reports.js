@@ -27,7 +27,7 @@ router.get("/:id_segnalazione", verifyToken, getReportById);
 router.post("/", verifyToken, createReport);
 
 // Tutti i report (solo admin)
-router.get("/", verifyToken, isAdmin, getAllReports);
+router.get("/admin/all-reports", verifyToken, isAdmin, getAllReports);
 
 // Aggiorna stato report (solo admin)
 router.patch(

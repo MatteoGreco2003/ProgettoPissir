@@ -12,20 +12,41 @@ document.addEventListener("DOMContentLoaded", () => {
   loadReports();
   setupEventListeners();
   setupFilters();
+
+  const menuToggle = document.querySelector(".menu-toggle");
+  const sidebar = document.querySelector(".sidebar");
+
+  if (menuToggle && sidebar) {
+    menuToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+        sidebar.classList.remove("active");
+      }
+    });
+  }
 });
+
+let originalReports = [];
 
 // ---- LOAD REPORTS ----
 async function loadReports() {
   try {
-    const response = await fetch("/reports", {
+    const response = await fetch("/reports/admin/all-reports", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
 
     if (!response.ok) throw new Error("Errore nel caricamento segnalazioni");
 
     const data = await response.json();
-    allReports = data.reports || [];
-    currentPage = 1; // Reset to first page
+    originalReports = data.reports || [];
+
+    originalReports = sortByStatus(originalReports);
+
+    allReports = [...originalReports];
+    currentPage = 1;
     renderReports(getPageData());
     updateStats(allReports);
     updatePagination();
@@ -49,10 +70,12 @@ function renderReports(reports) {
   if (allReports.length === 0) {
     tbody.innerHTML = `
       <tr class="empty-state">
-        <td colspan="7">
-          <span class="empty-state-icon">📭</span>
-          <p>Nessuna segnalazione trovata</p>
-        </td>
+        <td colspan="6">
+                <div class="empty-state-icon">
+                  <i class="fas fa-inbox"></i>
+                </div>
+                <p>Nessuna segnalazione trovata</p>
+              </td>
       </tr>
     `;
     return;
@@ -61,10 +84,12 @@ function renderReports(reports) {
   if (reports.length === 0) {
     tbody.innerHTML = `
       <tr class="empty-state">
-        <td colspan="7">
-          <span class="empty-state-icon">📭</span>
-          <p>Nessuna segnalazione trovata per questa pagina</p>
-        </td>
+        <td colspan="6">
+                <div class="empty-state-icon">
+                  <i class="fas fa-inbox"></i>
+                </div>
+                <p>Nessuna segnalazione trovata</p>
+              </td>
       </tr>
     `;
     return;
@@ -74,22 +99,23 @@ function renderReports(reports) {
     .map(
       (report) => `
     <tr>
-      <td><strong>#${report.id_segnalazione}</strong></td>
-      <td>${report.id_mezzo}</td>
-      <td>${formatProblemaType(report.tipo_problema)}</td>
+      <td>${report.vehicle?.codice_identificativo || "N/A"}</td>
       <td>${
-        report.user ? `${report.user.nome} ${report.user.cognome}` : "N/A"
+        report.user
+          ? `${report.user.nome} ${report.user.cognome}`
+          : "Utente Eliminato"
       }</td>
+      <td>${formatProblemaType(report.tipo_problema)}</td>
       <td>${formatData(report.data_ora)}</td>
       <td>${renderStatusBadge(report.stato_segnalazione)}</td>
       <td>
         <div class="action-buttons">
           <button class="btn-action btn-view" onclick="viewDetails(${
             report.id_segnalazione
-          })" title="Visualizza">👁️</button>
+          })" title="Visualizza"><i class="fas fa-eye"></i></button>
           <button class="btn-action btn-delete" onclick="deleteReport(${
             report.id_segnalazione
-          })" title="Elimina">🗑️</button>
+          })" title="Elimina"><i class="fas fa-trash"></i></button>
         </div>
       </td>
     </tr>
@@ -114,16 +140,13 @@ function updatePagination() {
   const btnAvanti = document.getElementById("btnAvanti");
   const paginationInfo = document.getElementById("paginationInfo");
 
-  // Update pagination info
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, allReports.length);
   paginationInfo.textContent = `Pagina ${currentPage} di ${totalPages}`;
 
-  // Update button states
   btnIndietro.disabled = currentPage === 1;
   btnAvanti.disabled = currentPage === totalPages;
 
-  // Remove old listeners and add new ones
   const newBtnIndietro = btnIndietro.cloneNode(true);
   const newBtnAvanti = btnAvanti.cloneNode(true);
 
@@ -177,12 +200,12 @@ function formatData(dataStr) {
 
 function formatProblemaType(tipo) {
   const map = {
-    danno_fisico: "🔨 Danno Fisico",
-    batteria_scarica: "🔋 Batteria Scarica",
-    pneumatico_bucato: "🛞 Pneumatico Bucato",
-    non_funziona: "⚙️ Non Funziona",
-    sporco: "🧹 Sporco",
-    altro: "❓ Altro",
+    danno_fisico: "Danno Fisico",
+    batteria_scarica: "Batteria Scarica",
+    pneumatico_bucato: "Pneumatico Bucato",
+    non_funziona: "Non Funziona",
+    sporco: "Sporco",
+    altro: "Altro",
   };
   return map[tipo] || tipo;
 }
@@ -203,46 +226,64 @@ function renderStatusBadge(stato) {
 
 // ---- SETUP EVENT LISTENERS ----
 function setupEventListeners() {
-  // Hide New Report button for admin
   const btnNewReport = document.getElementById("btnNewReport");
   if (btnNewReport) {
     btnNewReport.style.display = "none";
   }
 
-  // Details Modal
-  document
-    .getElementById("closeModalDetails")
-    .addEventListener("click", () => closeModal("modalReportDetails"));
-  document
-    .getElementById("closeDetailsBtn")
-    .addEventListener("click", () => closeModal("modalReportDetails"));
+  // Delete Modal
+  document.getElementById("closeModalDelete").addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeModal("modalConfirmDelete");
+  });
+  document.getElementById("cancelDelete").addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeModal("modalConfirmDelete");
+  });
+  document.getElementById("confirmDelete").addEventListener("click", (e) => {
+    e.stopPropagation();
+    confirmDelete();
+  });
 
   // Change Status Modal
   document
     .getElementById("closeModalChangeStatus")
-    .addEventListener("click", () => closeModal("modalChangeStatus"));
+    .addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeModal("modalChangeStatus");
+    });
   document
     .getElementById("cancelChangeStatus")
-    .addEventListener("click", () => closeModal("modalChangeStatus"));
+    .addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeModal("modalChangeStatus");
+    });
   document
     .getElementById("submitChangeStatus")
-    .addEventListener("click", submitChangeStatus);
+    .addEventListener("click", (e) => {
+      e.stopPropagation();
+      submitChangeStatus();
+    });
 
-  // Delete Modal
+  // Details Modal
   document
-    .getElementById("closeModalDelete")
-    .addEventListener("click", () => closeModal("modalConfirmDelete"));
-  document
-    .getElementById("cancelDelete")
-    .addEventListener("click", () => closeModal("modalConfirmDelete"));
-  document
-    .getElementById("confirmDelete")
-    .addEventListener("click", confirmDelete);
+    .getElementById("closeModalDetails")
+    .addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeModal("modalReportDetails");
+    });
+  document.getElementById("closeDetailsBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeModal("modalReportDetails");
+  });
 
-  // Click outside modal to close
+  // Click outside modal to close - NON per modalConfirmDelete
   document.querySelectorAll(".modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {
-      if (e.target === modal) closeModal(modal.id);
+      if (e.target === modal || e.target.classList.contains("modal-overlay")) {
+        e.stopPropagation();
+        closeModal(modal.id);
+      }
     });
   });
 }
@@ -258,7 +299,7 @@ function setupFilters() {
     const type = filterType.value;
     const search = searchReport.value.toLowerCase();
 
-    let filtered = allReports;
+    let filtered = [...originalReports];
 
     if (status)
       filtered = filtered.filter((r) => r.stato_segnalazione === status);
@@ -266,15 +307,18 @@ function setupFilters() {
     if (search) {
       filtered = filtered.filter(
         (r) =>
-          r.id_segnalazione.toString().includes(search) ||
-          r.id_mezzo.toString().includes(search) ||
+          (r.vehicle?.codice_identificativo || "")
+            .toLowerCase()
+            .includes(search) ||
           (r.user &&
             (r.user.nome + " " + r.user.cognome).toLowerCase().includes(search))
       );
     }
 
+    filtered = sortByStatus(filtered);
+
     allReports = filtered;
-    currentPage = 1; // Reset to first page on filter
+    currentPage = 1;
     renderReports(getPageData());
     updateStats(allReports);
     updatePagination();
@@ -283,6 +327,19 @@ function setupFilters() {
   filterStatus.addEventListener("change", applyFilters);
   filterType.addEventListener("change", applyFilters);
   searchReport.addEventListener("input", applyFilters);
+}
+
+function sortByStatus(reports) {
+  const statusOrder = {
+    aperta: 1, // 1ª priorità
+    in_lavorazione: 2, // 2ª priorità
+    risolta: 3, // 3ª priorità
+  };
+
+  return reports.sort(
+    (a, b) =>
+      statusOrder[a.stato_segnalazione] - statusOrder[b.stato_segnalazione]
+  );
 }
 
 // ---- VIEW DETAILS ----
@@ -298,30 +355,21 @@ async function viewDetails(id) {
     const report = data.report;
     currentReportId = report.id_segnalazione;
 
-    // Populate details
-    document.getElementById(
-      "detailsTitle"
-    ).textContent = `Segnalazione #${report.id_segnalazione}`;
-    document.getElementById(
-      "detailId"
-    ).textContent = `#${report.id_segnalazione}`;
-    document.getElementById("detailMezzoId").textContent = report.id_mezzo;
     document.getElementById("detailMezzoTipo").textContent =
-      report.vehicle?.tipo_mezzo || "N/A";
+      formatTipoMezzo(report.vehicle?.tipo_mezzo) || "N/A";
     document.getElementById("detailMezzoStato").textContent =
-      report.vehicle?.stato || "N/A";
+      formatStatoMezzo(report.vehicle?.stato) || "N/A";
     document.getElementById("detailMezzoCodice").textContent =
       report.vehicle?.codice_identificativo || "N/A";
     document.getElementById("detailUtente").textContent = report.user
       ? `${report.user.nome} ${report.user.cognome}`
-      : "N/A";
+      : "Utente Eliminato";
     document.getElementById("detailEmail").textContent =
-      report.user?.email || "N/A";
+      report.user?.email || "Utente Eliminato";
     document.getElementById("detailProblema").textContent = formatProblemaType(
       report.tipo_problema
     );
-    document.getElementById("detailDescrizione").textContent =
-      report.descrizione || "Nessuna descrizione";
+
     document.getElementById("detailData").textContent = formatData(
       report.data_ora
     );
@@ -329,18 +377,30 @@ async function viewDetails(id) {
       report.stato_segnalazione
     );
 
-    // Action buttons
+    const descriptionSection = document.getElementById("descriptionSection");
+    if (report.descrizione && report.descrizione.trim() !== "") {
+      // Se c'è descrizione, mostrala
+      document.getElementById("detailDescrizione").textContent =
+        report.descrizione;
+      descriptionSection.style.display = "block";
+    } else {
+      // Se non c'è descrizione, nascondi la sezione
+      descriptionSection.style.display = "none";
+    }
+
     const actionGroup = document.getElementById("actionButtonsGroup");
     actionGroup.innerHTML = "";
 
-    const btnChangeStatus = document.createElement("button");
-    btnChangeStatus.className = "btn btn-primary";
-    btnChangeStatus.textContent = "🔧 Cambia Stato";
-    btnChangeStatus.onclick = () => {
-      closeModal("modalReportDetails");
-      openChangeStatusModal();
-    };
-    actionGroup.appendChild(btnChangeStatus);
+    if (report.stato_segnalazione !== "risolta") {
+      const btnChangeStatus = document.createElement("button");
+      btnChangeStatus.className = "btn btn-primary";
+      btnChangeStatus.textContent = "Cambia Stato";
+      btnChangeStatus.onclick = () => {
+        closeModal("modalReportDetails");
+        openChangeStatusModal();
+      };
+      actionGroup.appendChild(btnChangeStatus);
+    }
 
     openModal("modalReportDetails");
   } catch (error) {
@@ -351,10 +411,8 @@ async function viewDetails(id) {
 
 // ---- CHANGE STATUS ----
 function openChangeStatusModal() {
-  // Find the full report from allReports (original unfiltered list)
   let report = null;
 
-  // First try to find in the currently displayed filtered list
   for (
     let page = 1;
     page <= Math.ceil(allReports.length / itemsPerPage);
@@ -382,7 +440,6 @@ async function submitChangeStatus() {
   )?.value;
   const errorDiv = document.getElementById("errorChangeStatus");
 
-  // Clear previous errors
   errorDiv.innerHTML = "";
 
   if (!newStatus) {
@@ -442,6 +499,25 @@ function openModal(id) {
 
 function closeModal(id) {
   document.getElementById(id).classList.add("hidden");
+}
+
+function formatTipoMezzo(tipo) {
+  const map = {
+    bicicletta_muscolare: "Bicicletta Muscolare",
+    bicicletta_elettrica: "Bicicletta Elettrica",
+    monopattino: "Monopattino Elettrico",
+  };
+  return map[tipo] || tipo;
+}
+
+function formatStatoMezzo(tipo) {
+  const map = {
+    disponibile: "Disponibile",
+    in_uso: "In Uso",
+    in_manutenzione: "In Manutenzione",
+    non_prelevabile: "Non Prelevabile",
+  };
+  return map[tipo] || tipo;
 }
 
 // ---- SNACKBAR HELPER ----

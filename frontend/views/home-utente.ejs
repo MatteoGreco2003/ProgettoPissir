@@ -112,6 +112,10 @@
                 </select>
               </div>
               <div class="card-body">
+                <select id="parkingFilterSelect" class="parking-filter-select">
+                  <option value="">Tutti</option>
+                  <!-- Opzioni dinamiche generate da JS -->
+                </select>
                 <!-- ===== LOADING SPINNER ===== -->
                 <div id="loadingSpinner" class="loading-spinner hidden">
                   <div class="spinner"></div>
@@ -138,7 +142,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">Elimina Profilo</h2>
-          <button class="modal-close" id="modalClose">
+          <button class="modal-close" id="sidebarModalClose">
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -149,10 +153,12 @@
           </p>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-danger" id="modalConfirmDelete">
+          <button class="btn btn-danger" id="sidebarModalConfirm">
             Elimina Profilo
           </button>
-          <button class="btn btn-secondary" id="modalCancel">Annulla</button>
+          <button class="btn btn-secondary" id="sidebarModalCancel">
+            Annulla
+          </button>
         </div>
       </div>
     </div>

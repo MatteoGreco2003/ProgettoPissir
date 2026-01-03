@@ -169,7 +169,7 @@
       sidebarFooter.appendChild(deleteBtn);
 
       // Aggiungi event listener al pulsante
-      deleteBtn.addEventListener("click", openDeleteModal);
+      deleteBtn.addEventListener("click", openDeleteProfileModal);
     }
   }
 
@@ -239,14 +239,15 @@
     }
   }
 
-  function openDeleteModal() {
+  // ✅ SIDEBAR PROFILE MODAL FUNCTIONS (DIVERSI DA REPORTS)
+  function openDeleteProfileModal() {
     const modal = document.getElementById("deleteProfileModal");
     if (modal) {
       modal.classList.remove("hidden");
     }
   }
 
-  function closeDeleteModal() {
+  function closeDeleteProfileModal() {
     const modal = document.getElementById("deleteProfileModal");
     if (modal) {
       modal.classList.add("hidden");
@@ -258,7 +259,7 @@
    * Mostra snackbar, esegue DELETE /users/me, reindirizza a home
    */
   async function confirmDeleteProfile() {
-    closeDeleteModal();
+    closeDeleteProfileModal();
     showSnackbar("Eliminazione profilo in corso...", "success");
 
     try {
@@ -293,32 +294,33 @@
     // ===== CARICA NAV IN BASE AL RUOLO =====
     loadAndGenerateNavigation();
 
-    // ===== EVENT LISTENER: Modal Buttons =====
-    const modalCancel = document.getElementById("modalCancel");
-    const modalClose = document.getElementById("modalClose");
-    const modalConfirm = document.getElementById("modalConfirmDelete");
+    // ===== EVENT LISTENER: Sidebar Modal Buttons (DIVERSI) =====
+    const sidebarDeleteBtn = document.getElementById("deleteProfileBtn");
+    const sidebarCancel = document.getElementById("sidebarModalCancel");
+    const sidebarClose = document.getElementById("sidebarModalClose");
+    const sidebarConfirm = document.getElementById("sidebarModalConfirm");
 
-    if (modalCancel) {
-      modalCancel.addEventListener("click", closeDeleteModal);
+    if (sidebarCancel) {
+      sidebarCancel.addEventListener("click", closeDeleteProfileModal);
     }
 
-    if (modalClose) {
-      modalClose.addEventListener("click", closeDeleteModal);
+    if (sidebarClose) {
+      sidebarClose.addEventListener("click", closeDeleteProfileModal);
     }
 
-    if (modalConfirm) {
-      modalConfirm.addEventListener("click", confirmDeleteProfile);
+    if (sidebarConfirm) {
+      sidebarConfirm.addEventListener("click", confirmDeleteProfile);
     }
 
-    // Chiude modal quando clicchi fuori dal contenuto
-    const modal = document.getElementById("deleteProfileModal");
-    if (modal) {
-      modal.addEventListener("click", (e) => {
+    // Chiude modal quando clicchi fuori dal contenuto (SOLO PER SIDEBAR)
+    const sidebarModal = document.getElementById("deleteProfileModal");
+    if (sidebarModal) {
+      sidebarModal.addEventListener("click", (e) => {
         if (
-          e.target === modal ||
+          e.target === sidebarModal ||
           e.target.classList.contains("modal-overlay")
         ) {
-          closeDeleteModal();
+          closeDeleteProfileModal();
         }
       });
     }

@@ -51,7 +51,7 @@ const User = sequelize.define(
       type: DataTypes.STRING(50),
       defaultValue: "user",
       validate: {
-        isIn: [["user", "admin", "manager"]],
+        isIn: [["user", "admin"]],
       },
     },
     // Data di registrazione automatica

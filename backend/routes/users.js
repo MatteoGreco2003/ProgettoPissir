@@ -39,4 +39,5 @@ router.get("/admin/:id_utente", verifyToken, isAdmin, getUserById);
 
 // Elimina utente specifico (solo admin)
 router.delete("/admin/:id_utente", verifyToken, isAdmin, deleteUserAsAdmin);
+
 export default router;

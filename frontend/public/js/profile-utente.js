@@ -311,8 +311,10 @@ function renderRideHistory(rides) {
       const dataInizio = new Date(ride.data_ora_inizio).toLocaleDateString(
         "it-IT"
       );
-      const vehicleName = formatVehicleName(ride.vehicle.tipo_mezzo);
-      const vehicleIcon = getVehicleIcon(ride.vehicle.tipo_mezzo);
+
+      const tipoMezzo = ride.vehicle?.tipo_mezzo || "Mezzo Eliminato";
+      const vehicleName = formatVehicleName(tipoMezzo);
+      const vehicleIcon = getVehicleIcon(tipoMezzo);
 
       return `
         <tr class="ride-row">
@@ -325,7 +327,7 @@ function renderRideHistory(rides) {
           <td class="ride-distanza">${parseFloat(ride.km_percorsi).toFixed(
             1
           )} km</td>
-          <td class="ride-costo">€ ${parseFloat(ride.costo_originale).toFixed(
+          <td class="ride-costo">€ ${parseFloat(ride.importo_pagato).toFixed(
             2
           )}</td>
           <td class="ride-sconto">
@@ -350,7 +352,7 @@ function getVehicleIcon(tipoMezzo) {
     bicicletta_muscolare: "fa-bicycle",
     bicicletta_elettrica: "fa-bolt",
   };
-  return icons[tipoMezzo] || "fa-bicycle";
+  return icons[tipoMezzo] || "fa-trash";
 }
 
 // ===== RENDER RIDES PAGINATION =====

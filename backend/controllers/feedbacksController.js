@@ -290,8 +290,11 @@ export const getAllFeedbacks = async (req, res) => {
       order = [["rating", "DESC"]];
     }
 
-    // Esclude i feedback dell'utente corrente
-    where.id_utente = { [Op.ne]: currentUserId };
+    // Esclude i feedback dell'utente corrente e include i feedback senza utente associato
+    where[Op.or] = [
+      { id_utente: { [Op.ne]: currentUserId } },
+      { id_utente: null },
+    ];
 
     const { count, rows } = await Feedback.findAndCountAll({
       where,
@@ -300,6 +303,7 @@ export const getAllFeedbacks = async (req, res) => {
           model: User,
           as: "user",
           attributes: ["id_utente", "nome", "cognome"],
+          required: false,
         },
         {
           model: Vehicle,

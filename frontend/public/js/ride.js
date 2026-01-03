@@ -196,6 +196,8 @@ function showBatteryZeroModal() {
         width: 100%;
         box-shadow: 0 20px 60px rgba(220, 38, 38, 0.3);
         animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-height: 80vh;
+        overflow-y: auto;
       ">
         <div style="font-size: 50px; margin-bottom: 15px; animation: shake 0.5s ease-in-out;">🔋</div>
         <div style="font-size: 22px; font-weight: bold; color: #dc2626; margin-bottom: 8px;">

@@ -1,5 +1,8 @@
 import Vehicle from "../models/Vehicle.js";
 import Parking from "../models/Parking.js";
+import Report from "../models/Report.js";
+import sequelize from "../config/database.js";
+import { Op } from "sequelize";
 
 // GET ALL VEHICLES - Lista mezzi con filtri opzionali
 export const getAllVehicles = async (req, res) => {
@@ -52,9 +55,17 @@ export const getVehicleById = async (req, res) => {
       return res.status(404).json({ error: "Mezzo non trovato" });
     }
 
+    const reportInLavorazione = await Report.count({
+      where: {
+        id_mezzo: id,
+        stato_segnalazione: "in_lavorazione",
+      },
+    });
+
     res.status(200).json({
       message: "Mezzo recuperato",
       vehicle,
+      report_in_lavorazione: reportInLavorazione,
     });
   } catch (error) {
     console.error("❌ Errore GET vehicle by ID:", error.message);
@@ -143,6 +154,26 @@ export const updateVehicle = async (req, res) => {
     const vehicle = await Vehicle.findByPk(id);
     if (!vehicle) {
       return res.status(404).json({ error: "Mezzo non trovato" });
+    }
+
+    //Se si cambia lo stato a "disponibile", controlla i report
+    if (stato === "disponibile") {
+      const activeReport = await Report.findOne({
+        where: {
+          id_mezzo: id,
+          stato_segnalazione: "in_lavorazione",
+        },
+      });
+
+      if (activeReport) {
+        return res.status(400).json({
+          error:
+            "Non puoi rendere disponibile il mezzo. Ci sono report in lavorazione.",
+          reportId: activeReport.id_report,
+          stato_segnalazione: activeReport.stato_segnalazione,
+          messaggio: "Risolvi tutti i report prima di renderlo disponibile",
+        });
+      }
     }
 
     if (id_parcheggio) {

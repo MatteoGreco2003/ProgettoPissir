@@ -384,10 +384,10 @@ async function viewParkingDetail(parkingId) {
                 <span><i class="fas fa-biking"></i> Biciclette Muscolari: <strong>${vehiclesByType.bicicletta_muscolare.length}</strong></span>
               </div>
               <div class="vehicle-type">
-                <span><i class="fas fa-fan"></i> Monopattini: <strong>${vehiclesByType.monopattino.length}</strong></span>
+                <span><i class="fas fa-person-skating"></i> Monopattini Elettrici: <strong>${vehiclesByType.monopattino.length}</strong></span>
               </div>
               <div class="vehicle-type">
-                <span><i class="fas fa-biking"></i> Biciclette Elettriche: <strong>${vehiclesByType.bicicletta_elettrica.length}</strong></span>
+                <span><i class="fas fa-bolt"></i> Biciclette Elettriche: <strong>${vehiclesByType.bicicletta_elettrica.length}</strong></span>
               </div>
             </div>
           `

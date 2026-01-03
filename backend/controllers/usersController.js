@@ -261,38 +261,47 @@ export const deleteUserAsAdmin = async (req, res) => {
     const { id_utente } = req.params;
     const adminId = req.user.id_utente;
 
-    // Validazione
     if (!id_utente) {
       return res.status(400).json({ error: "ID utente non fornito" });
     }
 
-    // Evita che l'admin elimini se stesso
-    if (parseInt(id_utente) === parseInt(adminId)) {
+    const userIdToDelete = parseInt(id_utente);
+    const currentAdminId = parseInt(adminId);
+
+    // Non lasciar eliminare l'admin stesso
+    if (userIdToDelete === currentAdminId) {
       return res.status(403).json({
         error: "Non puoi eliminare il tuo account",
       });
     }
 
-    // Evita che qualcuno elimini l'admin principale
-    if (parseInt(id_utente) === 1) {
+    // Verifica che sia davvero un admin a fare la richiesta
+    const requestingUser = await User.findByPk(currentAdminId);
+    if (!requestingUser || requestingUser.role !== "admin") {
       return res.status(403).json({
-        error: "Non puoi eliminare l'admin principale",
+        error: "Solo gli admin possono eliminare utenti",
       });
     }
 
-    // Cerca l'utente
-    const user = await User.findByPk(id_utente);
-
+    // Controlla che l'utente esista
+    const user = await User.findByPk(userIdToDelete);
     if (!user) {
       return res.status(404).json({
         error: "Utente non trovato",
       });
     }
 
-    // Controlla se ha corse attive
+    // Proteggi l'admin principale
+    if (userIdToDelete === 9) {
+      return res.status(403).json({
+        error: "Non puoi eliminare l'admin principale",
+      });
+    }
+
+    // Se l'utente ha una corsa in corso, non si può eliminare
     const activeRide = await Ride.findOne({
       where: {
-        id_utente,
+        id_utente: userIdToDelete,
         stato_corsa: "in_corso",
       },
     });
@@ -304,7 +313,7 @@ export const deleteUserAsAdmin = async (req, res) => {
       });
     }
 
-    // Elimina l'utente
+    // Procedi con l'eliminazione
     await user.destroy();
 
     res.status(200).json({
@@ -317,7 +326,7 @@ export const deleteUserAsAdmin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("❌ Errore DELETE utente:", error.message);
+    console.error("Errore DELETE utente:", error.message);
     res.status(500).json({ error: "Errore interno del server" });
   }
 };

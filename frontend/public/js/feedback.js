@@ -338,6 +338,11 @@ function renderCommunityFeedbacks() {
       const stars = generateStars(feedback.rating);
       const dataOra = new Date(feedback.data_ora).toLocaleDateString("it-IT");
 
+      let userDisplay = "Utente Eliminato";
+      if (user && user.nome && user.cognome) {
+        userDisplay = `${user.nome} ${user.cognome}`;
+      }
+
       return `
       <div class="feedback-card">
         <div class="feedback-card-left">
@@ -349,7 +354,7 @@ function renderCommunityFeedbacks() {
             </div>
           </div>
           <div class="feedback-user-info">
-            da <strong>${user.nome} ${user.cognome}</strong>
+            da <strong>${userDisplay}</strong>
           </div>
         </div>
 

@@ -100,8 +100,8 @@ async function loadAllUsers() {
 
 // ===== UPDATE STATS =====
 function updateStats() {
-  // Filtra gli utenti escludendo l'admin (id_utente = 1)
-  const regularUsers = allUsers.filter((u) => u.id_utente !== 1);
+  // Filtra gli utenti escludendo l'admin (email = 'admin@gmail.com')
+  const regularUsers = allUsers.filter((u) => u.email !== "admin@gmail.com");
 
   const pending = regularUsers.filter(
     (u) => u.stato_account === "in_attesa_approvazione"
@@ -142,7 +142,9 @@ function filterUsers() {
 // ===== RENDER USERS TABLE =====
 function renderUsers() {
   // Esclude l'admin dalla visualizzazione
-  const usersWithoutAdmin = filteredUsers.filter((u) => u.id_utente !== 1);
+  const usersWithoutAdmin = filteredUsers.filter(
+    (u) => u.email !== "admin@gmail.com"
+  );
 
   const start = (currentPage - 1) * ITEMS_PER_PAGE;
   const end = start + ITEMS_PER_PAGE;
@@ -210,7 +212,9 @@ function renderUsers() {
 
 // ===== RENDER PAGINATION =====
 function renderPagination() {
-  const usersWithoutAdmin = filteredUsers.filter((u) => u.id_utente !== 1);
+  const usersWithoutAdmin = filteredUsers.filter(
+    (u) => u.email !== "admin@gmail.com"
+  );
   const totalPages = Math.ceil(usersWithoutAdmin.length / ITEMS_PER_PAGE);
 
   if (totalPages <= 1) {

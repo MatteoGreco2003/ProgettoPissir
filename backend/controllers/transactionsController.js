@@ -36,9 +36,8 @@ export const rechargeCredit = async (req, res) => {
     user.saldo = nuovoSaldo;
 
     // Se era sospeso, passa a "in_attesa_approvazione"
-    if (user.stato_account === "sospeso") {
+    if (nuovoSaldo > 0 && user.stato_account === "sospeso")
       user.stato_account = "in_attesa_approvazione";
-    }
 
     await user.save();
 
@@ -243,15 +242,37 @@ export const getBalanceSummary = async (req, res) => {
         id_utente,
         tipo_transazione: "pagamento_corsa",
       },
-      raw: true,
     });
 
     const totalRicariche = ricariche.reduce(
       (sum, t) => sum + parseFloat(t.importo),
       0
     );
-    const totalSpese = spese.reduce(
-      (sum, t) => sum + Math.abs(parseFloat(t.importo)),
+
+    // ✅ CORRETTO: Per ogni transazione di pagamento, recupera i dati della ride
+    // e calcola l'importo reale pagato (con sconto applicato)
+    const totalSpese = await Promise.all(
+      spese.map(async (transaction) => {
+        if (transaction.id_corsa) {
+          const ride = await Ride.findByPk(transaction.id_corsa, {
+            attributes: ["costo", "punti_fedeltà_usati"],
+            raw: true,
+          });
+
+          if (ride) {
+            // Calcola l'importo reale pagato (costo - sconto)
+            const importoPagato = ride.costo - ride.punti_fedeltà_usati * 0.05;
+            return Math.max(0, importoPagato);
+          }
+        }
+
+        // Se non trovi la ride, ritorna l'importo della transaction
+        return Math.abs(parseFloat(transaction.importo));
+      })
+    );
+
+    const totalSpeseCalcolato = totalSpese.reduce(
+      (sum, importo) => sum + importo,
       0
     );
 
@@ -262,7 +283,7 @@ export const getBalanceSummary = async (req, res) => {
       nome: user.nome,
       saldo_attuale: parseFloat(user.saldo),
       totale_ricaricato: parseFloat(totalRicariche.toFixed(2)),
-      totale_speso: parseFloat(totalSpese.toFixed(2)),
+      totale_speso: parseFloat(totalSpeseCalcolato.toFixed(2)),
       numero_ricariche: ricariche.length,
       numero_corse: spese.length,
     });

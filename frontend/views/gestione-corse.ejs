@@ -85,7 +85,7 @@
             type="text"
             id="searchInput"
             class="filter-input"
-            placeholder="Cerca ID corsa, utente..."
+            placeholder="Cerca per utente e parcheggio..."
             onkeyup="applyFilters()"
           />
         </div>
@@ -120,6 +120,7 @@
         <table class="rides-table">
           <thead>
             <tr>
+              <th>UTENTE</th>
               <th>MEZZO</th>
               <th>PARCHEGGIO INIZIO</th>
               <th>PARCHEGGIO FINE</th>
@@ -131,7 +132,7 @@
           </thead>
           <tbody id="ridesTableBody">
             <tr>
-              <td colspan="10" style="text-align: center; padding: 40px">
+              <td colspan="8" style="text-align: center; padding: 40px">
                 <div class="empty-state">
                   <i
                     class="fas fa-inbox"

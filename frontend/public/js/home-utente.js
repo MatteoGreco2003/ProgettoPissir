@@ -11,6 +11,7 @@ window.addEventListener("popstate", function () {
 // ===== STATE MANAGEMENT =====
 let state = {
   currentFilter: "all",
+  selectedParking: "",
   selectedVehicle: null,
   isLoading: false,
   parkings: [],
@@ -451,6 +452,37 @@ function setupEventListeners() {
   }
 }
 
+// ===== SETUP PARKING FILTER =====
+function setupParkingFilter() {
+  const parkingFilterSelect = document.getElementById("parkingFilterSelect");
+  if (!parkingFilterSelect) return;
+
+  // Popola le opzioni con i parcheggi
+  parkingFilterSelect.addEventListener("change", (e) => {
+    state.selectedParking = e.target.value;
+    renderVehicles(state.vehicles); // Re-renderizza i veicoli filtrati
+  });
+}
+
+// ===== POPOLA SELECT PARCHEGGI =====
+function populateParkingFilter(parkings) {
+  const parkingFilterSelect = document.getElementById("parkingFilterSelect");
+  if (!parkingFilterSelect) return;
+
+  // Pulisci opzioni eccetto la prima
+  while (parkingFilterSelect.options.length > 1) {
+    parkingFilterSelect.remove(1);
+  }
+
+  // Aggiungi ogni parcheggio come opzione
+  parkings.forEach((parking) => {
+    const option = document.createElement("option");
+    option.value = parking.id_parcheggio;
+    option.textContent = `${parking.nome}`;
+    parkingFilterSelect.appendChild(option);
+  });
+}
+
 // Listener per comando UNLOCK del mezzo
 function setupUnlockListener(id_mezzo, onUnlockConfirmed) {
   const handleUnlockMessage = (event) => {
@@ -788,6 +820,8 @@ function loadHomepageData() {
 
       renderParkingsOnMap(state.parkings);
       renderParkings(state.parkings);
+      populateParkingFilter(state.parkings);
+      setupParkingFilter();
       renderVehicles(state.vehicles);
       showLoading(false);
 
@@ -864,6 +898,7 @@ function refreshVehicleData() {
       state.vehicles = vehiclesData.vehicles || [];
       state.parkings = parkingsData.parkings || [];
 
+      populateParkingFilter(state.parkings);
       renderVehicles(state.vehicles);
       renderParkings(state.parkings);
       renderParkingsOnMap(state.parkings);
@@ -1157,7 +1192,7 @@ function createVehicleCard(vehicle) {
               ? "🔵 In uso"
               : vehicle.stato === "non_prelevabile"
               ? "🟠 Non prelevabile"
-              : "🟠 Manutenzione"
+              : "🟠 In Manutenzione"
           }
         </span>
       </div>
@@ -1196,11 +1231,21 @@ function filterVehiclesByType(event) {
 }
 
 function getVehiclesByType(filter) {
-  if (filter === "all") {
-    return state.vehicles;
+  let vehicles = state.vehicles;
+
+  // Filtra per parcheggio se selezionato
+  if (state.selectedParking) {
+    vehicles = vehicles.filter(
+      (v) => v.id_parcheggio === parseInt(state.selectedParking)
+    );
   }
 
-  return state.vehicles.filter((v) => {
+  // Filtra per tipo mezzo
+  if (filter === "all") {
+    return vehicles;
+  }
+
+  return vehicles.filter((v) => {
     if (filter === "bicicletta_muscolare")
       return v.tipo_mezzo === "bicicletta_muscolare";
     if (filter === "monopattini") return v.tipo_mezzo === "monopattino";

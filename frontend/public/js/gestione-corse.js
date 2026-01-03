@@ -129,13 +129,19 @@ function getFilteredRides() {
   }
 
   if (searchInput) {
-    filtered = filtered.filter(
-      (r) =>
-        r.id_corsa.toString().includes(searchInput) ||
-        r.id_utente.toString().includes(searchInput) ||
-        r.parkingInizio?.nome.toLowerCase().includes(searchInput) ||
-        r.parkingFine?.nome.toLowerCase().includes(searchInput)
-    );
+    filtered = filtered.filter((r) => {
+      const nomeUtente = r.user
+        ? `${r.user.nome} ${r.user.cognome}`.toLowerCase()
+        : ``;
+      const parkingInizio = r.parkingInizio?.nome.toLowerCase() || "";
+      const parkingFine = r.parkingFine?.nome.toLowerCase() || "";
+
+      return (
+        nomeUtente.includes(searchInput) ||
+        parkingInizio.includes(searchInput) ||
+        parkingFine.includes(searchInput)
+      );
+    });
   }
 
   return filtered;
@@ -181,7 +187,7 @@ function renderRides() {
   if (filtered.length === 0) {
     ridesTableBody.innerHTML = `
       <tr>
-        <td colspan="7" style="text-align: center;">
+        <td colspan="8" style="text-align: center;">
           <div class="empty-state">
             <div class="empty-state-icon">
               <i class="fas fa-inbox"></i>
@@ -197,8 +203,12 @@ function renderRides() {
   ridesTableBody.innerHTML = paginatedRides
     .map((ride) => {
       const costEffettivo = calculateEffectiveCost(ride);
+      const nomeUtente = ride.user
+        ? `${ride.user.nome} ${ride.user.cognome}`
+        : `Utente Eliminato`;
       return `
     <tr>
+    <td>${nomeUtente}</td>
       <td><span class="badge">${formatVehicleType(
         ride.vehicle?.tipo_mezzo
       )}</span></td>
@@ -235,7 +245,7 @@ async function viewRideDetail(rideId) {
     // Formatta nome e cognome
     const nomeUtente = ride.user
       ? `${ride.user.nome} ${ride.user.cognome}`.trim()
-      : `Utente #${ride.id_utente}`;
+      : `Utente Eliminato`;
 
     // Calcola costo effettivo
     const costoOriginale = parseFloat(ride.costo || 0);

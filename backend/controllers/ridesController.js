@@ -899,18 +899,21 @@ export const getUserRideStatistics = async (req, res) => {
       limit: 1,
     });
 
-    const rideTransactions = await Transaction.findAll({
+    const rideTransactions = await Ride.findAll({
       where: {
         id_utente,
-        tipo_transazione: "pagamento_corsa",
+        stato_corsa: "completata",
       },
+      attributes: ["costo", "punti_fedeltà_usati"],
       raw: true,
     });
 
-    const totalSpent = rideTransactions.reduce(
-      (sum, t) => sum + parseFloat(t.importo),
-      0
-    );
+    // Calcola la spesa REALE: costo - sconto punti
+    const totalSpent = rideTransactions.reduce((sum, ride) => {
+      const sconto = ride.punti_fedeltà_usati * 0.05;
+      const importoPagato = ride.costo - sconto;
+      return sum + importoPagato;
+    }, 0);
 
     const rides = await Ride.findAll({
       where: {

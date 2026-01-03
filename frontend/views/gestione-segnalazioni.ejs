@@ -58,7 +58,7 @@
           <input
             type="text"
             id="searchReport"
-            placeholder="Cerca per ID segnalazione o ID mezzo..."
+            placeholder="Cerca per codice mezzo o utente..."
           />
         </div>
         <select id="filterStatus" class="filter-select">
@@ -83,10 +83,9 @@
         <table class="table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>ID Mezzo</th>
-              <th>Tipo Problema</th>
+              <th>Codice Mezzo</th>
               <th>Utente</th>
+              <th>Tipo Problema</th>
               <th>Data/Ora</th>
               <th>Stato</th>
               <th>Azioni</th>
@@ -94,7 +93,7 @@
           </thead>
           <tbody id="reportsTableBody">
             <tr class="empty-state">
-              <td colspan="7">
+              <td colspan="6">
                 <div class="empty-state-icon">
                   <i class="fas fa-inbox"></i>
                 </div>
@@ -107,16 +106,16 @@
       <!-- PAGINATION -->
       <div class="pagination-container" id="paginationContainer">
         <button class="pagination-btn" id="btnIndietro">
-          <i>←</i> Indietro
+          <i class="fas fa-chevron-left"></i> Indietro
         </button>
         <span class="pagination-info" id="paginationInfo">Pagina 1 di 1</span>
-        <button class="pagination-btn" id="btnAvanti">Avanti <i>→</i></button>
+        <button class="pagination-btn" id="btnAvanti">
+          Avanti <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </main>
 
-    <!-- ============================================================================
-       MODAL: DETTAGLI SEGNALAZIONE
-       ============================================================================ -->
+    <!-- MODAL: DETTAGLI SEGNALAZIONE -->
     <div class="modal hidden" id="modalReportDetails">
       <div class="modal-overlay"></div>
       <div class="modal-content modal-content-large">
@@ -127,11 +126,35 @@
         <div class="modal-body">
           <div class="report-detail-info">
             <div class="detail-section">
-              <h3>Informazioni Segnalazione</h3>
+              <h3>Informazioni Utente</h3>
               <div class="detail-row">
-                <span class="detail-label">ID Segnalazione</span>
-                <span class="detail-value" id="detailId">-</span>
+                <span class="detail-label">Nome</span>
+                <span class="detail-value" id="detailUtente">-</span>
               </div>
+              <div class="detail-row">
+                <span class="detail-label">Email</span>
+                <span class="detail-value" id="detailEmail">-</span>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>Informazioni Mezzo</h3>
+              <div class="detail-row">
+                <span class="detail-label">Codice Identificativo</span>
+                <span class="detail-value" id="detailMezzoCodice">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Tipo Mezzo</span>
+                <span class="detail-value" id="detailMezzoTipo">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Stato Mezzo</span>
+                <span class="detail-value" id="detailMezzoStato">-</span>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>Informazioni Segnalazione</h3>
               <div class="detail-row">
                 <span class="detail-label">Tipo Problema</span>
                 <span class="detail-value" id="detailProblema">-</span>
@@ -146,39 +169,7 @@
               </div>
             </div>
 
-            <div class="detail-section">
-              <h3>Informazioni Mezzo</h3>
-              <div class="detail-row">
-                <span class="detail-label">ID Mezzo</span>
-                <span class="detail-value" id="detailMezzoId">-</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Tipo Mezzo</span>
-                <span class="detail-value" id="detailMezzoTipo">-</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Stato Mezzo</span>
-                <span class="detail-value" id="detailMezzoStato">-</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Codice Identificativo</span>
-                <span class="detail-value" id="detailMezzoCodice">-</span>
-              </div>
-            </div>
-
-            <div class="detail-section">
-              <h3>Informazioni Utente</h3>
-              <div class="detail-row">
-                <span class="detail-label">Nome</span>
-                <span class="detail-value" id="detailUtente">-</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Email</span>
-                <span class="detail-value" id="detailEmail">-</span>
-              </div>
-            </div>
-
-            <div class="detail-section">
+            <div class="detail-section" id="descriptionSection">
               <h3>Descrizione</h3>
               <p class="description-text" id="detailDescrizione">-</p>
             </div>
@@ -191,14 +182,12 @@
       </div>
     </div>
 
-    <!-- ============================================================================
-       MODAL: CAMBIO STATO
-       ============================================================================ -->
+    <!-- MODAL: CAMBIO STATO -->
     <div class="modal hidden" id="modalChangeStatus">
       <div class="modal-overlay"></div>
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Cambio Stato Segnalazione</h2>
+          <h2>Cambio Stato</h2>
           <button class="modal-close" id="closeModalChangeStatus">✕</button>
         </div>
         <div class="modal-body">
@@ -230,19 +219,17 @@
           <div class="error-messages" id="errorChangeStatus"></div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" id="cancelChangeStatus">
-            Annulla
-          </button>
           <button class="btn btn-primary" id="submitChangeStatus">
             Conferma
+          </button>
+          <button class="btn btn-secondary" id="cancelChangeStatus">
+            Annulla
           </button>
         </div>
       </div>
     </div>
 
-    <!-- ============================================================================
-       MODAL: CONFERMA ELIMINAZIONE
-       ============================================================================ -->
+    <!-- MODAL: CONFERMA ELIMINAZIONE SEGNALAZIONE -->
     <div class="modal hidden" id="modalConfirmDelete">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -251,22 +238,14 @@
           <button class="modal-close" id="closeModalDelete">✕</button>
         </div>
         <div class="modal-body">
-          <p
-            style="
-              color: var(--error-red);
-              font-weight: 600;
-              margin-bottom: 8px;
-            "
-          >
-            ⚠️ Sei sicuro di voler eliminare questa segnalazione?
-          </p>
-          <p style="color: var(--light-text); font-size: 13px">
-            Questa azione non può essere annullata.
+          <p style="margin-bottom: 0">
+            ⚠️ Sei sicuro di voler eliminare questa segnalazione?<br />Questa
+            azione non può essere annullata.
           </p>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" id="cancelDelete">Annulla</button>
           <button class="btn btn-danger" id="confirmDelete">Elimina</button>
+          <button class="btn btn-secondary" id="cancelDelete">Annulla</button>
         </div>
       </div>
     </div>

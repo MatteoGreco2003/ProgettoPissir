@@ -79,8 +79,8 @@ const modalCloseButtons = document.querySelectorAll(".modal-close");
 // ===== INIT =====
 document.addEventListener("DOMContentLoaded", async () => {
   setupEventListeners();
+  await loadParkings();
   loadAllVehicles();
-  loadParkings();
   loadVehicleStatistics();
 
   const menuToggle = document.querySelector(".menu-toggle");
@@ -133,6 +133,10 @@ function setupEventListeners() {
     editBatteryPercentage.value = value;
     updateEditBatteryInfo(value);
   });
+  const maintenanceToggle = document.getElementById("editMaintenanceToggle");
+  if (maintenanceToggle) {
+    maintenanceToggle.addEventListener("change", updateMaintenanceStatus);
+  }
 
   // Delete Vehicle Modal
   cancelDeleteVehicleBtn.addEventListener("click", closeAllModals);
@@ -187,6 +191,9 @@ async function loadParkings() {
     if (!response.ok) throw new Error("Errore caricamento parcheggi");
 
     const data = await response.json();
+
+    parcheggio.innerHTML = "";
+    editParcheggio.innerHTML = "";
 
     data.parkings.forEach((parking) => {
       const option1 = document.createElement("option");
@@ -286,6 +293,11 @@ function renderVehiclePerformance(vehicles) {
 
 // ===== LOAD PARKING OPTIONS FOR FILTER =====
 function loadParkingOptions() {
+  // Reset options tranne la prima (Tutti i parcheggi)
+  const firstOption = parkingFilter.options[0];
+  parkingFilter.innerHTML = "";
+  parkingFilter.appendChild(firstOption.cloneNode(true));
+
   // Estrai i parcheggi unici dai mezzi
   const parkingsSet = new Set();
   allVehicles.forEach((vehicle) => {
@@ -506,7 +518,7 @@ function renderFeedbacksList() {
     <div class="feedback-item">
       <div class="feedback-header">
         <div class="feedback-user">
-          <strong>${feedback.user?.nome || "Anonimo"} ${
+          <strong>${feedback.user?.nome || "Utente Eliminato"} ${
         feedback.user?.cognome || ""
       }</strong>
           <span class="feedback-rating">${feedback.rating}/5</span>
@@ -828,7 +840,7 @@ async function confirmAddVehicle() {
 }
 
 // ===== OPEN EDIT VEHICLE MODAL =====
-function openEditVehicleModal(
+async function openEditVehicleModal(
   vehicleId,
   tipoMezzo,
   idParcheggio,
@@ -844,6 +856,54 @@ function openEditVehicleModal(
 
   editParcheggio.value = idParcheggio;
 
+  // Imposta stato manutenzione
+  const maintenanceToggle = document.getElementById("editMaintenanceToggle");
+  const maintenanceStatus = document.getElementById("editMaintenanceStatus");
+  const maintenanceWrapper = document.querySelector(
+    ".maintenance-toggle-wrapper"
+  );
+  const maintenanceLabel = document.getElementById("editMaintenanceLabel");
+
+  if (stato === "disponibile" || stato === "in_manutenzione") {
+    maintenanceWrapper.style.display = "block";
+    maintenanceToggle.checked = false;
+  } else {
+    maintenanceWrapper.style.display = "none";
+    maintenanceLabel.style.display = "none";
+  }
+
+  try {
+    const response = await fetch(`/vehicles/${vehicleId}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+
+    if (!response.ok) throw new Error("Errore caricamento report");
+
+    const data = await response.json();
+    const reportInLavorazione = data.report_in_lavorazione || 0;
+
+    if (stato === "in_manutenzione" && reportInLavorazione > 0) {
+      maintenanceToggle.disabled = true;
+      maintenanceWrapper.classList.add("disabled");
+      maintenanceStatus.innerHTML = `
+        <span style="color: var(--error-red); font-weight: bold; font-size: 13px;">
+          C'è ${reportInLavorazione} report in lavorazione
+        </span>
+      `;
+    } else if (stato === "disponibile") {
+      maintenanceToggle.disabled = false;
+      maintenanceWrapper.classList.remove("disabled");
+      updateMaintenanceStatus();
+    }
+  } catch (error) {
+    console.error("❌ Errore caricamento report:", error);
+    if (stato === "disponibile") {
+      maintenanceToggle.disabled = false;
+      maintenanceWrapper.classList.remove("disabled");
+      updateMaintenanceStatus();
+    }
+  }
+
   // Nascondi batteria se muscolare o se batteria è al 100%
   if (tipoMezzo === "bicicletta_muscolare" || statoBatteria === 100) {
     batteryGroupEdit.style.display = "none";
@@ -851,12 +911,39 @@ function openEditVehicleModal(
     batteryGroupEdit.style.display = "block";
     editBatterySlider.value = statoBatteria || 50;
     editBatteryPercentage.value = statoBatteria || 50;
-    editBatterySlider.min = statoBatteria; // Non puoi scendere sotto il valore attuale
+    editBatterySlider.min = statoBatteria;
     editBatteryPercentage.min = statoBatteria;
     updateEditBatteryInfo(statoBatteria || 50);
   }
 
   editVehicleModal.classList.remove("hidden");
+}
+
+// ===== UPDATE MAINTENANCE STATUS =====
+function updateMaintenanceStatus() {
+  const maintenanceToggle = document.getElementById("editMaintenanceToggle");
+  const maintenanceStatus = document.getElementById("editMaintenanceStatus");
+
+  // Se è disabilitato, non fare nulla
+  if (maintenanceToggle.disabled) {
+    return;
+  }
+
+  if (maintenanceToggle.checked) {
+    maintenanceStatus.innerHTML = `
+      <span style="color: #ff6b6b; font-weight: 600; font-size: 13px;">
+        🔧 In manutenzione
+      </span>
+    `;
+    maintenanceStatus.classList.add("active");
+  } else {
+    maintenanceStatus.innerHTML = `
+      <span style="color: var(--light-text); font-weight: 500; font-size: 13px;">
+        ✅ Non in manutenzione
+      </span>
+    `;
+    maintenanceStatus.classList.remove("active");
+  }
 }
 
 // ===== UPDATE EDIT BATTERY INFO =====
@@ -877,11 +964,13 @@ function updateEditBatteryInfo(value) {
 // ===== CONFIRM EDIT VEHICLE =====
 async function confirmEditVehicle() {
   const idParcheggio = editParcheggio.value;
+  const maintenanceToggle = document.getElementById("editMaintenanceToggle");
+  const isInMaintenance = maintenanceToggle.checked;
 
   // Prendi il tipo e lo stato dal vehicle stesso (non modificabili)
   const vehicle = allVehicles.find((v) => v.id_mezzo === currentEditVehicleId);
   const tipoMezzo = vehicle.tipo_mezzo;
-  const stato = vehicle.stato;
+  const stato = isInMaintenance ? "in_manutenzione" : "disponibile";
   const batteriaPrecedente = vehicle.stato_batteria;
 
   let statoBatteria = undefined;
@@ -1053,7 +1142,7 @@ function formatStato(stato) {
   const map = {
     disponibile: "Disponibile",
     in_uso: "In Uso",
-    in_manutenzione: "Manutenzione",
+    in_manutenzione: "In Manutenzione",
     non_prelevabile: "Non Prelevabile",
   };
   return map[stato] || stato;

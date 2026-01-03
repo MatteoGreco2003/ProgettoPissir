@@ -3,6 +3,7 @@
 import Report from "../models/Report.js";
 import User from "../models/User.js";
 import Vehicle from "../models/Vehicle.js";
+import { Op } from "sequelize";
 
 // CREATE REPORT - Crea nuova segnalazione per un mezzo
 export const createReport = async (req, res) => {
@@ -240,7 +241,24 @@ export const updateReportStatus = async (req, res) => {
       if (stato_segnalazione === "in_lavorazione") {
         vehicle.stato = "in_manutenzione";
       } else if (stato_segnalazione === "risolta") {
-        vehicle.stato = "disponibile";
+        // Controlla se ci sono altri report non risolti
+        const otherActiveReports = await Report.count({
+          where: {
+            id_mezzo: report.id_mezzo,
+            id_segnalazione: {
+              [Op.ne]: id_segnalazione, // Esclude il report corrente
+            },
+            stato_segnalazione: {
+              [Op.ne]: "risolta", // Esclude i report risolti
+            },
+          },
+        });
+
+        // Se NON ci sono altri report attivi, mette a disponibile
+        if (otherActiveReports === 0) {
+          vehicle.stato = "disponibile";
+        }
+        // Altrimenti rimane in manutenzione
       }
       await vehicle.save();
     }

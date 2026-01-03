@@ -16,7 +16,7 @@ const Ride = sequelize.define(
     },
     id_utente: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     id_mezzo: {
       type: DataTypes.INTEGER,
