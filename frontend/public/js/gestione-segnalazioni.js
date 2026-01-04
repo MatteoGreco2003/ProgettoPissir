@@ -391,14 +391,27 @@ async function viewDetails(id) {
     const actionGroup = document.getElementById("actionButtonsGroup");
     actionGroup.innerHTML = "";
 
+    const isVehicleInUse = report.vehicle?.stato === "in_uso";
+
     if (report.stato_segnalazione !== "risolta") {
       const btnChangeStatus = document.createElement("button");
       btnChangeStatus.className = "btn btn-primary";
       btnChangeStatus.textContent = "Cambia Stato";
-      btnChangeStatus.onclick = () => {
-        closeModal("modalReportDetails");
-        openChangeStatusModal();
-      };
+
+      // Se il veicolo è in uso, disabilita il pulsante
+      if (isVehicleInUse) {
+        btnChangeStatus.disabled = true;
+        btnChangeStatus.style.opacity = "0.5";
+        btnChangeStatus.style.cursor = "not-allowed";
+        btnChangeStatus.textContent =
+          "Non puoi cambiare stato: il veicolo è in uso";
+      } else {
+        btnChangeStatus.onclick = () => {
+          closeModal("modalReportDetails");
+          openChangeStatusModal();
+        };
+      }
+
       actionGroup.appendChild(btnChangeStatus);
     }
 
@@ -427,6 +440,19 @@ function openChangeStatusModal() {
   }
 
   if (!report) return;
+
+  // ⚠️ NUOVO: Nascondi "Aperta" se il report è già "in_lavorazione"
+  const optionAperta = document.getElementById("optionAperta");
+  const inputAperta = optionAperta.querySelector('input[value="aperta"]');
+
+  if (report.stato_segnalazione === "in_lavorazione") {
+    optionAperta.style.display = "none";
+    if (inputAperta.checked) {
+      inputAperta.checked = false;
+    }
+  } else {
+    optionAperta.style.display = "flex";
+  }
 
   document.querySelector(
     `input[value="${report.stato_segnalazione}"]`

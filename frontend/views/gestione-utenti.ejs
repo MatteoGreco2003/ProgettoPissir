@@ -129,6 +129,24 @@
           <p class="modal-warning">
             <strong>⚠️ Questa azione non può essere annullata.</strong>
           </p>
+
+          <div
+            class="delete-error-message hidden"
+            id="deleteErrorMessage"
+            style="
+              background-color: rgba(192, 21, 47, 0.15);
+              color: #c0152f;
+              border: 1px solid rgba(192, 21, 47, 0.3);
+              border-radius: 8px;
+              padding: 12px 16px;
+              margin-top: 16px;
+              display: flex;
+              align-items: flex-start;
+              gap: 12px;
+            "
+          >
+            <p id="deleteErrorText" style="text-align: center"></p>
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-danger" id="confirmDeleteBtn">Elimina</button>

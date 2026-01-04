@@ -69,7 +69,7 @@ export const deleteAccount = async (req, res) => {
     const activeRide = await Ride.findOne({
       where: {
         id_utente,
-        stato_corsa: "in_corso",
+        stato_corsa: ["in_corso", "sospesa_batteria_esaurita"],
       },
     });
 
@@ -302,7 +302,7 @@ export const deleteUserAsAdmin = async (req, res) => {
     const activeRide = await Ride.findOne({
       where: {
         id_utente: userIdToDelete,
-        stato_corsa: "in_corso",
+        stato_corsa: ["in_corso", "sospesa_batteria_esaurita"],
       },
     });
 

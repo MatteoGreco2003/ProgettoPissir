@@ -91,12 +91,17 @@ function renderUsersCard() {
 
     adminState.allCompletedRides.forEach((ride) => {
       const userId = ride.id_utente;
-      const rideAmount = parseFloat(ride.costo || 0);
+      const originalCost = parseFloat(ride.costo || 0);
+
+      // ⚠️ NUOVO: Calcola il costo effettivo considerando i punti fedeltà usati
+      const loyaltyPointsUsed = ride.punti_fedeltà_usati || 0;
+      const loyaltyDiscount = loyaltyPointsUsed * 0.05; // 0.05€ per punto
+      const effectiveCost = Math.max(0, originalCost - loyaltyDiscount); // Non può essere negativo
 
       if (!userSpending[userId]) {
         userSpending[userId] = 0;
       }
-      userSpending[userId] += rideAmount;
+      userSpending[userId] += effectiveCost; // ✅ Usa il costo effettivo
     });
 
     // Trova l'utente con la spesa maggiore
@@ -130,7 +135,9 @@ function renderUsersCard() {
   } else {
     document.getElementById(
       "topUserDetail"
-    ).innerHTML = `<strong>Nessun dato</strong><br><small>--</small>`;
+    ).innerHTML = `<strong>Utente Eliminato</strong><br><small>Totale speso: €${topSpenderAmount.toFixed(
+      2
+    )}</small>`;
   }
 }
 

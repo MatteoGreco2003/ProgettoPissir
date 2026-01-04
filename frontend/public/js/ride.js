@@ -155,10 +155,15 @@ function handleBatteryZero() {
   if (rideState.batteryZero) return;
   rideState.batteryZero = true;
 
+  const ultimiDatiValidi = {
+    km: parseFloat(distanceValue.textContent) || 0,
+    durata: rideState.elapsedSeconds,
+    costo: costValue.textContent, // Salva la stringa con €
+  };
+
   if (rideState.timerInterval) clearInterval(rideState.timerInterval);
 
   speedValue.textContent = "0";
-
   batteryValue.textContent = "0%";
   rideState.vehicleData.stato_batteria = 0;
   document.getElementById("summaryBatteria").textContent = "0%";
@@ -168,6 +173,7 @@ function handleBatteryZero() {
 
   endRideBtn.textContent = "Paga Ora";
   endRideBtn.style.background = "#dc2626";
+
   showBatteryZeroModal();
 }
 
@@ -248,8 +254,44 @@ function showBatteryZeroModal() {
   `;
   document.body.appendChild(modal);
 
-  // ✅ Chiudi modal quando clicchi OK
-  document.getElementById("closeModal").addEventListener("click", () => {
+  // ✅ NUOVO: Quando clicchi OK, chiama getActiveRide e blocca tutto
+  document.getElementById("closeModal").addEventListener("click", async () => {
+    try {
+      // 📡 Chiama il backend per i dati veri
+      const response = await fetch("/rides/active");
+      const data = await response.json();
+
+      // ✅ Prendi i dati VERI dal backend
+      const durata_minuti = data.durata_corrente_minuti;
+      const km_percorsi = parseFloat(data.km_percorsi);
+      const costo_stimato = data.costo_stimato;
+
+      // ✅ Aggiorna l'UI con i DATI VERI (non a 0)
+      timerDisplay.textContent = formatMinutiInTimer(durata_minuti);
+      distanceValue.textContent = km_percorsi.toFixed(2);
+      costValue.textContent = `€${parseFloat(costo_stimato).toFixed(2)}`;
+
+      // ✅ Velocità e batteria rimangono a 0
+      speedValue.textContent = "0";
+      batteryValue.textContent = "0%";
+      document.getElementById("summaryBatteria").textContent = "0%";
+
+      // ✅ BLOCCA il timer (niente aggiornamenti)
+      rideState.batteryZero = true;
+      if (rideState.timerInterval) {
+        clearInterval(rideState.timerInterval);
+      }
+
+      // 🔒 Impedisci qualsiasi ulteriore aggiornamento
+      endRideBtn.textContent = "Paga Ora";
+      endRideBtn.style.background = "#dc2626";
+
+      console.log("✅ Corsa bloccata con dati veri dal backend");
+    } catch (error) {
+      console.error("❌ Errore caricamento dati:", error);
+    }
+
+    // Chiudi modal
     modal.remove();
     parkingSelect.focus();
   });
@@ -1097,4 +1139,16 @@ function processSnackbarQueue() {
     snackbarActive = false;
     processSnackbarQueue(); // Mostra la prossima
   }, duration);
+}
+
+// ✅ Helper function: Converti minuti in formato HH:MM:SS
+function formatMinutiInTimer(minuti) {
+  const totalSeconds = Math.round(minuti * 60);
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(
+    2,
+    "0"
+  );
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
 }

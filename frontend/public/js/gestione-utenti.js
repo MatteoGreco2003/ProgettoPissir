@@ -435,6 +435,15 @@ async function confirmApprove() {
 function openDeleteModal(userId, userName) {
   userToDelete = userId;
   document.getElementById("deleteUserName").textContent = userName;
+
+  // Reset dello stato della modal
+  const errorMessage = document.getElementById("deleteErrorMessage");
+  errorMessage.classList.add("hidden");
+  confirmDeleteBtn.disabled = false;
+  confirmDeleteBtn.innerHTML = "Elimina";
+  confirmDeleteBtn.style.opacity = "1";
+  confirmDeleteBtn.style.cursor = "pointer";
+
   deleteUserModal.classList.remove("hidden");
 }
 
@@ -452,7 +461,32 @@ async function confirmDelete() {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
 
-    if (!response.ok) throw new Error("Errore eliminazione utente");
+    const data = await response.json();
+
+    if (!response.ok) {
+      // ⚠️ ERRORE: Mostra il messaggio di errore nella modal
+      const errorMessage = document.getElementById("deleteErrorMessage");
+      const errorText = document.getElementById("deleteErrorText");
+
+      errorText.textContent = data.error || "Errore durante l'eliminazione";
+      errorMessage.classList.remove("hidden");
+
+      // Disabilita il pulsante se c'è una corsa attiva
+      if (data.error.includes("corsa attiva")) {
+        confirmDeleteBtn.disabled = true;
+        confirmDeleteBtn.innerHTML =
+          '<i class="fas fa-ban" style="margin-right: 6px;"></i>Non disponibile';
+        confirmDeleteBtn.style.opacity = "0.5";
+        confirmDeleteBtn.style.cursor = "not-allowed";
+      } else {
+        // Per altri errori, abilita il bottone per riprovare
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.innerHTML = "Elimina";
+        confirmDeleteBtn.style.opacity = "1";
+      }
+
+      return;
+    }
 
     showSnackbar("✅ Profilo eliminato con successo", "success");
     closeAllModals();

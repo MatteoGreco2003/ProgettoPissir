@@ -11,6 +11,7 @@ let currentVehicleId = null;
 let currentEditVehicleId = null;
 let currentFeedbackVehicleId = null;
 let currentFeedbacks = [];
+let currentDetailVehicleId = null; // ✅ Per tracciare quale dettaglio è aperto
 
 // ===== DOM ELEMENTS =====
 const vehiclesTableBody = document.getElementById("vehiclesTableBody");
@@ -83,6 +84,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadAllVehicles();
   loadVehicleStatistics();
 
+  // ✅ Inizializza MQTT (Singleton)
+  MQTTManager.init();
+
+  // ✅ Setup MQTT Listener
+  setupMQTTListener();
+
   const menuToggle = document.querySelector(".menu-toggle");
   const sidebar = document.querySelector(".sidebar");
 
@@ -98,6 +105,108 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 });
+
+// ===== SETUP MQTT LISTENER ✅ =====
+function setupMQTTListener() {
+  document.addEventListener("mqtt-message", (event) => {
+    const { topic, payload } = event.detail;
+
+    try {
+      const msg = JSON.parse(payload);
+
+      // Controlla se c'è batteria e id_mezzo
+      if (msg.level !== undefined && msg.id_mezzo !== undefined) {
+        const idMezzo = msg.id_mezzo;
+        const newBattery = msg.level;
+
+        console.log(`⚡ MQTT Admin: Mezzo ${idMezzo} batteria ${newBattery}%`);
+
+        // Aggiorna nel state
+        const vehicle = allVehicles.find((v) => v.id_mezzo === idMezzo);
+        if (vehicle) {
+          vehicle.stato_batteria = newBattery;
+
+          // ✅ Aggiorna nella tabella
+          updateVehicleInTable(vehicle);
+
+          // ✅ Aggiorna nella modal di dettagli se aperta
+          if (currentDetailVehicleId === idMezzo) {
+            updateVehicleInDetailModal(vehicle);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("❌ Errore parsing MQTT:", error);
+    }
+  });
+}
+
+// ===== UPDATE VEHICLE IN TABLE ✅ =====
+function updateVehicleInTable(vehicle) {
+  // Trova la riga della tabella per questo mezzo
+  const rows = vehiclesTableBody.querySelectorAll("tr");
+
+  rows.forEach((row) => {
+    const codeCell = row.querySelector("td:first-child");
+    if (codeCell && codeCell.textContent === vehicle.codice_identificativo) {
+      // Trova la cella batteria (5ª colonna)
+      const batteryCell = row.querySelector("td:nth-child(5)");
+
+      if (batteryCell) {
+        if (vehicle.tipo_mezzo === "bicicletta_muscolare") {
+          batteryCell.innerHTML =
+            '<span style="color: var(--light-text);">NON PRESENTE</span>';
+        } else {
+          const batteryClass = getBatteryClass(vehicle.stato_batteria);
+          batteryCell.innerHTML = `
+            <div class="battery-indicator">
+              <div class="battery-bar">
+                <div class="battery-fill ${batteryClass}" 
+                     style="width: ${vehicle.stato_batteria}%"></div>
+              </div>
+              <span class="battery-text">${vehicle.stato_batteria}%</span>
+            </div>
+          `;
+        }
+      }
+    }
+  });
+}
+
+// ===== UPDATE VEHICLE IN DETAIL MODAL ✅ =====
+function updateVehicleInDetailModal(vehicle) {
+  // Trova la sezione batteria nella modal
+  const detailBody = document.getElementById("vehicleDetailBody");
+  const allRows = detailBody.querySelectorAll(".detail-row");
+  let batteryRow = null;
+
+  allRows.forEach((row) => {
+    if (row.textContent.includes("Batteria")) {
+      batteryRow = row;
+    }
+  });
+
+  if (batteryRow) {
+    if (vehicle.tipo_mezzo === "bicicletta_muscolare") {
+      batteryRow.innerHTML = `
+        <span class="detail-label">Batteria:</span>
+        <span class="detail-value">Non presente</span>
+      `;
+    } else {
+      const batteryClass = getBatteryClass(vehicle.stato_batteria);
+      batteryRow.innerHTML = `
+        <span class="detail-label">Batteria:</span>
+        <div class="battery-indicator">
+          <div class="battery-bar">
+            <div class="battery-fill ${batteryClass}" 
+                 style="width: ${vehicle.stato_batteria}%"></div>
+          </div>
+          <span class="battery-text">${vehicle.stato_batteria}%</span>
+        </div>
+      `;
+    }
+  }
+}
 
 // ===== EVENT LISTENERS =====
 function setupEventListeners() {
@@ -261,7 +370,6 @@ function renderVehiclePerformance(vehicles) {
           <div class="perf-card-badge">${rankingEmojis[index]}</div>
           <div class="perf-card-info">
             <div class="perf-card-code">${vehicle.codice_identificativo}</div>
-            
           </div>
         </div>
         
@@ -318,22 +426,14 @@ function loadParkingOptions() {
 
 // ===== RENDER VEHICLES TABLE =====
 function renderVehicles() {
-  // Ordina i mezzi per tipo: muscolare → monopattino → elettrica
-  const sortedVehicles = [...vehicles].sort((a, b) => {
-    const typeOrder = {
-      bicicletta_muscolare: 1,
-      monopattino: 2,
-      bicicletta_elettrica: 3,
-    };
-    return (typeOrder[a.tipo_mezzo] || 0) - (typeOrder[b.tipo_mezzo] || 0);
-  });
+  vehicles = sortVehicles(vehicles);
 
   // ===== PAGINAZIONE =====
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedVehicles = sortedVehicles.slice(startIndex, endIndex);
+  const paginatedVehicles = vehicles.slice(startIndex, endIndex);
 
-  if (sortedVehicles.length === 0) {
+  if (vehicles.length === 0) {
     vehiclesTableBody.innerHTML = `
       <tr>
         <td colspan="7" style="text-align: center;">
@@ -395,26 +495,35 @@ function renderVehicles() {
         <div class="action-buttons">
           <button class="btn-action btn-view" onclick="viewVehicleDetail(${
             vehicle.id_mezzo
-          })" 
-                  title="Visualizza dettagli">
+          })" title="Visualizza dettagli">
             <i class="fas fa-eye"></i>
           </button>
           
-          <button class="btn-action btn-edit" onclick="openEditVehicleModal(${
-            vehicle.id_mezzo
-          }, '${vehicle.tipo_mezzo}', ${vehicle.id_parcheggio}, '${
-        vehicle.stato
-      }', ${vehicle.stato_batteria || "null"})" 
-                  title="Modifica mezzo">
-            <i class="fas fa-pencil"></i>
-          </button>
-          
-          <button class="btn-action btn-delete" onclick="openDeleteModal(${
-            vehicle.id_mezzo
-          }, '${vehicle.tipo_mezzo}', '${vehicle.codice_identificativo}')" 
-                  title="Elimina mezzo">
-            <i class="fas fa-trash"></i>
-          </button>
+          <button class="btn-action btn-edit" ${
+            vehicle.stato === "in_uso" ? "disabled" : ""
+          } onclick="openEditVehicleModal(${vehicle.id_mezzo}, '${
+        vehicle.tipo_mezzo
+      }', ${vehicle.id_parcheggio}, '${vehicle.stato}', ${
+        vehicle.stato_batteria || "null"
+      })" title="${
+        vehicle.stato === "in_uso"
+          ? "Mezzo in uso - Non modificabile"
+          : "Modifica mezzo"
+      }">
+  <i class="fas fa-pencil"></i>
+</button>
+
+<button class="btn-action btn-delete" ${
+        vehicle.stato === "in_uso" ? "disabled" : ""
+      } onclick="openDeleteModal(${vehicle.id_mezzo}, '${
+        vehicle.tipo_mezzo
+      }', '${vehicle.codice_identificativo}')" title="${
+        vehicle.stato === "in_uso"
+          ? "Mezzo in uso - Non eliminabile"
+          : "Elimina mezzo"
+      }">
+  <i class="fas fa-trash"></i>
+</button>
         </div>
       </td>
     </tr>
@@ -661,6 +770,8 @@ function filterVehicles() {
 
 // ===== VIEW VEHICLE DETAIL =====
 async function viewVehicleDetail(vehicleId) {
+  currentDetailVehicleId = vehicleId; // ✅ Traccia quale dettaglio è aperto
+
   try {
     const response = await fetch(`/vehicles/${vehicleId}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -692,7 +803,6 @@ async function viewVehicleDetail(vehicleId) {
           </div>
         </div>
 
-
         <div class="detail-section">
           <h3>Stato e Batteria</h3>
           <div class="detail-row">
@@ -719,7 +829,6 @@ async function viewVehicleDetail(vehicleId) {
             }
           </div>
         </div>
-
 
         <div class="detail-section">
           <h3>Informazioni</h3>
@@ -855,6 +964,7 @@ async function openEditVehicleModal(
   editVehicleStatus.textContent = formatStato(stato);
 
   editParcheggio.value = idParcheggio;
+  const batteryAttualeFromDB = vehicle.stato_batteria;
 
   // Imposta stato manutenzione
   const maintenanceToggle = document.getElementById("editMaintenanceToggle");
@@ -909,11 +1019,11 @@ async function openEditVehicleModal(
     batteryGroupEdit.style.display = "none";
   } else {
     batteryGroupEdit.style.display = "block";
-    editBatterySlider.value = statoBatteria || 50;
-    editBatteryPercentage.value = statoBatteria || 50;
-    editBatterySlider.min = statoBatteria;
-    editBatteryPercentage.min = statoBatteria;
-    updateEditBatteryInfo(statoBatteria || 50);
+    editBatterySlider.value = batteryAttualeFromDB || 50;
+    editBatteryPercentage.value = batteryAttualeFromDB || 50;
+    editBatterySlider.min = batteryAttualeFromDB;
+    editBatteryPercentage.min = batteryAttualeFromDB;
+    updateEditBatteryInfo(batteryAttualeFromDB || 50);
   }
 
   editVehicleModal.classList.remove("hidden");
@@ -1109,6 +1219,7 @@ function updateStats() {
 
 // ===== CLOSE ALL MODALS =====
 function closeAllModals() {
+  currentDetailVehicleId = null; // ✅ Resetta il tracking
   vehicleDetailModal.classList.add("hidden");
   addVehicleModal.classList.add("hidden");
   editVehicleModal.classList.add("hidden");
@@ -1162,5 +1273,36 @@ function formatData(data) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+  });
+}
+
+// ===== FUNZIONE DI ORDINAMENTO CUSTOM =====
+function sortVehicles(vehiclesToSort) {
+  return vehiclesToSort.sort((a, b) => {
+    // Definisci l'ordine dei tipi di mezzo
+    const typeOrder = {
+      bicicletta_muscolare: 1,
+      monopattino: 2,
+      bicicletta_elettrica: 3,
+    };
+
+    const typeA = typeOrder[a.tipo_mezzo] || 999;
+    const typeB = typeOrder[b.tipo_mezzo] || 999;
+
+    // Se i tipi sono diversi, ordina per tipo
+    if (typeA !== typeB) {
+      return typeA - typeB;
+    }
+
+    // Se lo stesso tipo, ordina per batteria (dal più basso al più alto)
+    if (a.tipo_mezzo === "bicicletta_muscolare") {
+      return 0; // Non ha batteria
+    }
+
+    // Per monopattino e bicicletta elettrica
+    const batteryA = a.stato_batteria || 0;
+    const batteryB = b.stato_batteria || 0;
+
+    return batteryA - batteryB; // Dalla più bassa alla più alta
   });
 }

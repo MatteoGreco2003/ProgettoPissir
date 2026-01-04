@@ -236,6 +236,10 @@ body {
   flex-wrap: wrap;
 }
 
+.filter-select {
+  display: none;
+}
+
 .vehicles-filter-container.mb-6 {
   margin: 0;
 }

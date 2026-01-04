@@ -419,6 +419,15 @@ body {
   background-color: #1976d2;
 }
 
+.btn-edit:disabled,
+.btn-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #999 !important;
+  color: #ccc !important;
+  border: none !important;
+}
+
 /* ============================================================================
    LOADING STATE
    ========================================================================== */
