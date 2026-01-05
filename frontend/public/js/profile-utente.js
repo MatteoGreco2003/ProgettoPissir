@@ -621,7 +621,6 @@ async function savePasswordChanges() {
   }
 
   closeModifyPasswordModal();
-  showSnackbar("Aggiornamento password in corso...", "success");
 
   try {
     const response = await fetch("/users/change-password", {

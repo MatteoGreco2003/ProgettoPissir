@@ -212,8 +212,8 @@ function renderRides() {
       <td><span class="badge">${formatVehicleType(
         ride.vehicle?.tipo_mezzo
       )}</span></td>
-      <td>${ride.parkingInizio?.nome || "N/A"}</td>
-      <td>${ride.parkingFine?.nome || "N/A"}</td>
+      <td>${ride.parkingInizio?.nome || "Parcheggio Eliminato"}</td>
+      <td>${ride.parkingFine?.nome || "Parcheggio Eliminato"}</td>
       <td>${ride.durata_minuti || "-"} min</td>
       <td><strong>€${costEffettivo.toFixed(2)}</strong></td>
       <td>${parseFloat(ride.km_percorsi || 0).toFixed(2)} km</td>
@@ -284,11 +284,15 @@ async function viewRideDetail(rideId) {
         </div>
         <div class="detail-row">
           <span class="detail-label">Parcheggio Inizio:</span>
-          <span class="detail-value">${ride.parkingInizio?.nome || "N/A"}</span>
+          <span class="detail-value">${
+            ride.parkingInizio?.nome || "Parcheggio Eliminato"
+          }</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Parcheggio Fine:</span>
-          <span class="detail-value">${ride.parkingFine?.nome || "N/A"}</span>
+          <span class="detail-value">${
+            ride.parkingFine?.nome || "Parcheggio Eliminato"
+          }</span>
         </div>
       </div>
 

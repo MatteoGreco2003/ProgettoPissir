@@ -24,7 +24,7 @@ const Ride = sequelize.define(
     },
     id_parcheggio_inizio: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     id_parcheggio_fine: DataTypes.INTEGER,
     // Data e ora di inizio corsa
