@@ -183,22 +183,6 @@ document
     const amount = parseFloat(document.getElementById("rechargeAmount").value);
     const method = document.getElementById("paymentMethod").value;
     const btn = document.getElementById("rechargeBtn");
-    const message = document.getElementById("rechargeMessage");
-
-    // Validazione importo e metodo pagamento
-    if (!amount || amount <= 0) {
-      message.classList.remove("hidden");
-      message.classList.add("error");
-      message.textContent = "Seleziona un importo valido";
-      return;
-    }
-
-    if (!method) {
-      message.classList.remove("hidden");
-      message.classList.add("error");
-      message.textContent = "Seleziona un metodo di pagamento";
-      return;
-    }
 
     // Disabilita button durante elaborazione
     btn.disabled = true;
@@ -211,13 +195,6 @@ document
           metodo_pagamento: method,
         }),
       });
-
-      // Mostra messaggio di successo
-      message.classList.remove("hidden", "error");
-      message.classList.add("success");
-      message.textContent = `✅ Ricarica di ${formatCurrency(
-        amount
-      )} completata!`;
 
       showSnackbar(`Credito ricaricato: +${formatCurrency(amount)}`, "success");
 
@@ -235,17 +212,8 @@ document
           showSnackbar(response.avviso, "warning");
         }, 1000);
       }
-
-      // Nascondi messaggio dopo 3 secondi
-      setTimeout(() => {
-        message.classList.add("hidden");
-      }, 3000);
     } catch (error) {
       console.error("❌ Errore ricarica:", error);
-      message.classList.remove("hidden");
-      message.classList.add("error");
-      message.textContent = `❌ ${error.message}`;
-      showSnackbar(`Errore: ${error.message}`, "error");
     } finally {
       btn.disabled = false;
     }
@@ -488,7 +456,6 @@ async function requestReactivation() {
     await loadBalance();
   } catch (error) {
     console.error("❌ Errore request reactivation:", error);
-    showSnackbar(`${error.message}`, "error");
   } finally {
     btn.disabled = false;
   }

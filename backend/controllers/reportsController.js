@@ -290,11 +290,48 @@ export const deleteReport = async (req, res) => {
       return res.status(404).json({ error: "Segnalazione non trovata" });
     }
 
+    // Salvo id_mezzo e stato prima di eliminare il report
+    const id_mezzo = report.id_mezzo;
+    const stato_eliminato = report.stato_segnalazione;
+
     await report.destroy();
 
+    // Se il report eliminato era "in_lavorazione", controlla se ce ne sono altri
+    if (stato_eliminato === "in_lavorazione") {
+      const otherActiveReports = await Report.count({
+        where: {
+          id_mezzo: id_mezzo,
+          stato_segnalazione: {
+            [Op.ne]: "risolta", // Esclude i report risolti
+          },
+        },
+      });
+
+      // Se NON ci sono altri report attivi, metto il mezzo a disponibile
+      if (otherActiveReports === 0) {
+        const vehicle = await Vehicle.findByPk(id_mezzo);
+        if (vehicle) {
+          vehicle.stato = "disponibile";
+          await vehicle.save();
+
+          return res.status(200).json({
+            message: "Segnalazione eliminata con successo",
+            id_segnalazione: id_segnalazione,
+            vehicle_updated: {
+              id_mezzo: vehicle.id_mezzo,
+              nuovo_stato: vehicle.stato,
+              reason: "Nessun altro report attivo su questo mezzo",
+            },
+          });
+        }
+      }
+    }
+
+    // Risposta standard se il mezzo non è stato modificato
     res.status(200).json({
       message: "Segnalazione eliminata con successo",
       id_segnalazione: id_segnalazione,
+      vehicle_updated: null,
     });
   } catch (error) {
     console.error("❌ Errore DELETE report:", error.message);

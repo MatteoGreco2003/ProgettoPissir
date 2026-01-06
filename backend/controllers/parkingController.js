@@ -14,10 +14,21 @@ export const getAllParkings = async (req, res) => {
       ],
     });
 
+    const parkingsWithCapacity = parkings.map((parking) => {
+      const occupati = parking.vehicles?.length || 0;
+      const posti_liberi = parking.capacita - occupati;
+
+      return {
+        ...parking.toJSON(),
+        occupati,
+        posti_liberi,
+      };
+    });
+
     res.status(200).json({
       message: "Lista parcheggi recuperata",
       count: parkings.length,
-      parkings,
+      parkings: parkingsWithCapacity,
     });
   } catch (error) {
     console.error("❌ Errore GET parkings:", error.message);

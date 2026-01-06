@@ -10,6 +10,7 @@ import {
   deleteFeedback,
   getAllFeedbacks,
   getVehicleRating,
+  deleteFeedbackAdmin,
 } from "../controllers/feedbacksController.js";
 import { verifyToken, isAdmin } from "../middleware/auth.js";
 
@@ -38,5 +39,8 @@ router.patch("/:id_feedback", verifyToken, updateFeedback);
 
 // Elimina feedback (solo autore)
 router.delete("/:id_feedback", verifyToken, deleteFeedback);
+
+// Elimina feedback (solo admin)
+router.delete("/admin/:id_feedback", verifyToken, isAdmin, deleteFeedbackAdmin);
 
 export default router;

@@ -430,6 +430,29 @@ export const getVehicleRating = async (req, res) => {
   }
 };
 
+// DELETE FEEDBACK ADMIN - Elimina feedback come admin
+export const deleteFeedbackAdmin = async (req, res) => {
+  try {
+    const { id_feedback } = req.params;
+
+    const feedback = await Feedback.findByPk(id_feedback);
+    if (!feedback) {
+      return res.status(404).json({ error: "Feedback non trovato" });
+    }
+
+    await feedback.destroy();
+
+    res.status(200).json({
+      message: "✅ Feedback eliminato con successo dall'admin",
+      id_feedback: id_feedback,
+      deletedAt: new Date(),
+    });
+  } catch (error) {
+    console.error("❌ Errore DELETE feedback (admin):", error.message);
+    res.status(500).json({ error: "Errore interno del server" });
+  }
+};
+
 export default {
   createFeedback,
   getFeedbackByVehicle,
@@ -439,4 +462,5 @@ export default {
   deleteFeedback,
   getAllFeedbacks,
   getVehicleRating,
+  deleteFeedbackAdmin,
 };

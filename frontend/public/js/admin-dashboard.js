@@ -106,10 +106,12 @@ function renderUsersCard() {
 
     // Trova l'utente con la spesa maggiore
     for (const userId in userSpending) {
-      if (userSpending[userId] > topSpenderAmount) {
+      // Trova l'utente nei dati
+      const user = allUsers.find((u) => u.id_utente === parseInt(userId));
+
+      if (user && userSpending[userId] > topSpenderAmount) {
         topSpenderAmount = userSpending[userId];
-        // Trova l'utente nei dati
-        topSpender = allUsers.find((u) => u.id_utente === parseInt(userId));
+        topSpender = user;
       }
     }
   }

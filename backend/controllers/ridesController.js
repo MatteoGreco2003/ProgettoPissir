@@ -899,6 +899,11 @@ export const getUserRideStatistics = async (req, res) => {
       limit: 1,
     });
 
+    let ultimoMezzo = "N/A";
+    if (lastRide && lastRide.vehicle) {
+      ultimoMezzo = lastRide.vehicle.tipo_mezzo;
+    }
+
     const rideTransactions = await Ride.findAll({
       where: {
         id_utente,
@@ -931,7 +936,7 @@ export const getUserRideStatistics = async (req, res) => {
 
     res.status(200).json({
       corse_totali: totalRides,
-      ultimo_mezzo: lastRide ? lastRide.vehicle.tipo_mezzo : "N/A",
+      ultimo_mezzo: ultimoMezzo,
       spesa_totale: parseFloat(totalSpent.toFixed(2)),
       km_totali: parseFloat(totalKm.toFixed(2)),
     });

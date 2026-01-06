@@ -13,6 +13,8 @@
 ## Indice
 
 - 1 Introduzione
+  - 1.1 Obbiettivi del progetto
+  - 1.2 Casi d'Uso Principali
 - 2 Stack Tecnologico
   - 2.1 Backend Framework
   - 2.2 Comunicazione IoT
@@ -37,15 +39,14 @@
   - 4.1 Architettura Client-Server
     - 4.1.1 Backend Layer (Node.js/Express)
     - 4.1.2 Database Layer (PostgreSQL)
-    - 4.1.3 MQTT Layer (Mosquitto)
-    - 4.1.4 Frontend Layer (html, css, javascript)
+    - 4.1.3 Frontend Layer (html, css, javascript)
+    - 4.1.4 MQTT Layer (Mosquitto)
   - 4.2 Pattern Architetturali
     - 4.2.1 MVC Pattern
     - 4.2.2 RESTful API Design
     - 4.2.3 JWT Authentication
   - 4.3 Architettura MQTT e IoT
     - 4.3 Topologia MQTT
-      - 4.3.1 Topic Structure
       - 4.3.2 Messaggi MQTT
 - 5 Implementazione
   - 5.1 Setup e Avvio Sistema
@@ -55,6 +56,7 @@
     - 5.1.4 Configurazione Database
   - 5.2 Accesso alle Interfacce
     - 5.2.1 Applicazione Web
+    - 5.2.2 API Documentation /_eliminato_/
   - 5.3 API Endpoints Principali
     - 5.3.1 Autenticazione
     - 5.3.2 Gestione Corse
@@ -66,7 +68,7 @@
     - 6.1.2 Routes
     - 6.1.3 Models
     - 6.1.4 Middleware
-    - 6.1.5 Config
+    - 6.1.5 config
     - 6.1.6 MQTT
   - 6.2 Frontend (html, css, javascript)
     - 6.2.1 Componenti
@@ -84,6 +86,7 @@
   - 7.5 Sistema Pagamenti e Transazioni
   - 7.6 Sistema Segnalazioni Manutenzione
   - 7.7 Dashboard Amministrativa
+- Conclusione
 
 ---
 
@@ -398,7 +401,7 @@ Il sistema Mobishare si pone i seguenti obiettivi:
 ┌─────────────────────────────────────────────────────────────┐
 │                    Client (Browser)                         │
 │           html css js Single Page Application               │
-│               - Components | Views |                        |
+│               - Components | Views | Javascript             |
 └────────────────────────┬────────────────────────────────────┘
                          │ HTTP/REST
                          │ JSON
@@ -485,6 +488,22 @@ backend/
 - LocalStorage per persistenza dati
 - Services per logica API
 
+### 4.1.4 MQTT Layer (Mosquitto)
+
+**Responsabilità**:
+
+- Gestione dei mezzi
+- Notifiche real time
+- Simulazione real time dispositivi IoT
+- Canali di comunicazione
+
+**Architettura**:
+
+- File per simulazione decremento della batteria
+- Sblocco e blocco dei mezzi
+- Invio messaggi su canali
+-
+
 ### 4.2 Pattern Architetturali
 
 #### 4.2.1 MVC Pattern
@@ -513,6 +532,38 @@ DELETE /vehicles/:id          → Elimina mezzo
 - Token inviato in header Authorization
 - Token verificato su endpoint protetti
 - Scadenza e refresh token
+
+### 4.3 Architettura MQTT e IoT
+
+**Descrizione**: Integrazione MQTT per comunicazione real-time tra dispositivi IoT ( sensori batteria, sensori blocco e sblocco) e backend.
+
+**Tecnologie**:
+
+- MQTT 3.1.1 come protocollo
+- Broker MQTT (Mosquitto)
+- Node.js MQTT client
+- QoS configurato per garantire consegna
+
+#### 4.3.1 Topologia MQTT
+
+**Struttura gerarchica dei topic**:
+
+mobishare/backend/
+├── vehicles/{vehicle_id}/battery → Livello batteria (%)zo
+├── commands/vehicles/{vehicle_id}/unlock → Comando sblocco
+└── alerts/battery_low → Notifiche anomalie
+
+#### 4.3.2 Messaggi MQTT
+
+**Formato JSON standard**:
+
+```json
+{
+  "id": 100,
+  "type": "battery|status|alert",
+  "timestamp": "2026-01-06T16:30:45Z"
+}
+```
 
 ---
 
@@ -783,6 +834,17 @@ Funzioni helper\*\*\*:
 
 \*\*\*\*si trovano nei singoli file
 
+#### 6.1.6 MQTT
+
+File: `backend/mqtt/*.js`
+
+Gestione comunicazione real-time con dispositivi IoT:
+
+- `mqttClient.js` - Connessione e configurazione broker MQTT
+- `mqttSubscribers.js` - Listener per topic vehicle, parking, alerts
+- `mqttPublishers.js` - Publish messaggi comandi (unlock, lock, locate)
+- `deviceHandlers.js` - Elaborazione dati sensori e aggiornamento DB
+
 ### 6.2 Frontend (HTML/CSS/JavaScript)
 
 #### 6.2.1 Componenti
@@ -937,7 +999,7 @@ User 1─N Transactions
 Vehicle 1─N Rides
 Vehicle 1─N Reports
 Vehicle 1─N Feedback
-Vehicle 1─N LoyaltyPoints
+
 
 
 Parking 1─N Vehicles
@@ -946,7 +1008,7 @@ Parking 1─N Rides (come parcheggio fine)
 
 
 Ride 1─N LoyaltyPoints
-Ride 1─N Transactions
+Ride 1─1 Transactions
 ```
 
 ---
@@ -959,8 +1021,8 @@ Ride 1─N Transactions
 
 - Registrazione utenti con email e password
 - Login con generazione JWT token
-- Logout e invalidazione token
-- Ruoli differenziati (user, manager, admin)
+- Logout e rimozione token
+- Ruoli differenziati (user, admin)
 - Protezione endpoint con middleware auth
 - Permessi granulari per azioni sensibili
 
@@ -969,6 +1031,7 @@ Ride 1─N Transactions
 - bcryptjs per hashing password
 - jsonwebtoken per token management
 - Middleware custom per verifiche permessi
+- mosquitto per simulazioni IoT real-time
 
 ### 7.2 Sistema Gestione Utenti
 
@@ -978,7 +1041,8 @@ Ride 1─N Transactions
 - Visualizzazione saldo credito
 - Storico transazioni personale
 - Eliminazione account (con cascata su dati storico)
-- Gestione ruoli (admin only)
+- Gestione account sospesi (admin)
+- conteggio sospensioni
 - Sospensione account
 
 ### 7.3 Sistema Gestione Mezzi
@@ -1004,26 +1068,27 @@ Ride 1─N Transactions
 
 **Funzionalità**:
 
-- Selezione mezzo e parcheggio ritiro
+- Selezione mezzo e parcheggio ritiro (a fine corsa)
 - Verifica credito disponibile
-- Sblocco mezzo dopo pagamento
+- Sblocco mezzo
 - Tracciamento durata e distanza
 - Calcolo costo automatico
 - Restituzione in parcheggio
-- Generazione ricevuta
+- Generazione ricevuta (pagamento o debito con relativa sospensione)
 - Storico corse con filtri
 
 **Flusso corsa**:
 
 1. Selezione mezzo disponibile
-2. Selezione parcheggio di ritiro
-3. Verifica credito
-4. Pagamento tramite credito
-5. Sblocco mezzo
-6. Utilizzo (durata misurata)
-7. Restituzione in parcheggio
-8. Calcolo importo finale
-9. Debito automatico
+2. sblocco mezzo
+3. Calcolo importo costante e real time
+4. Utilizzo (durata e velocita misurate)
+5. selezione del parcheggio finale
+6. eventuali feedback o report
+7. Verifica credito
+8. Utilizzo di eventuali punti fedelta se desiderato
+9. Pagamento tramite credito, o debito
+10. blocco mezzo
 
 ### 7.5 Sistema Pagamenti e Transazioni
 
@@ -1031,7 +1096,7 @@ Ride 1─N Transactions
 
 - Ricarica credito (wallet)
 - Prelievo automatico al completamento corsa
-- Rimborsi manuali
+- ricariche manuali
 - Storico transazioni completo
 - Ricevute digitali
 - Export dati transazioni
@@ -1048,8 +1113,8 @@ Ride 1─N Transactions
 - Segnalazione problemi su mezzo
 - Categorizzazione problemi
 - Stato segnalazione tracciato
-- Blocco automatico mezzo durante manutenzione
-- Cambio stato segnalazione (admin/manager)
+- Blocco automatico mezzo se richiesta in lavorazione (manutenzione)
+- Cambio stato segnalazione (admin)
 - Sblocco mezzo solo quando tutte le segnalazioni risolte
 - Storico segnalazioni
 
@@ -1057,7 +1122,7 @@ Ride 1─N Transactions
 
 - Danno fisico
 - Batteria scarica
-- Ruote danneggiate
+- pneumatico bucato
 - Problemi meccanici
 - Pulizia necessaria
 - Altro
@@ -1066,13 +1131,11 @@ Ride 1─N Transactions
 
 **Funzionalità**:
 
-- Statistiche totali (utenti, mezzi, corse)
+- Statistiche totali (utenti, mezzi, corse, guadagni)
 - Ricavi e transazioni
 - Mezzi attivi/in manutenzione
 - Corse in corso nel sistema
-- Segnalazioni pendenti
-- Grafici andamento
-- Esport dati
+- Segnalazioni pendenti di riattivazione o report
 
 ---
 
@@ -1080,15 +1143,16 @@ Ride 1─N Transactions
 
 Il progetto Mobishare rappresenta una soluzione completa e moderna per la gestione di un servizio di bike-sharing urbano. L'architettura scalabile, la sicurezza robusta e l'interfaccia user-friendly lo rendono idoneo sia per deployment iniziale che per espansioni future.
 
-**Tecnologie scelte** (Node.js, Express, Vue.js, PostgreSQL) garantiscono performance, manutenibilità e comunità attiva di supporto.
+**Tecnologie scelte** (Node.js, Express, html5/css3/js ES6, PostgreSQL) garantiscono performance, manutenibilità e comunità attiva di supporto.
 
-**Implementazione terminata** con tutte le funzionalità core: autenticazione, gestione mezzi, sistema corse, pagamenti e manutenzione.
+**Implementazione terminata** con tutte le funzionalità core: autenticazione, gestione mezzi, sistema corse, pagamenti e feedback
 
 **Possibili estensioni future**:
 
 - Integrazione payment gateway (Stripe)
-- Notifiche push in tempo reale
 - App mobile nativa (React Native)
+- notifiche push presenti nel sito, ma non app da telefono
 - Sistema di abbonamenti
-- Gamification (punti, badge)
-- Integrazione MQTT per IoT smart devices
+- Gamification (punti (gia presenti), badge)
+- Integrazione MQTT per sbarre di parcheggio
+- Integrazione MQTT per allarmi sui dispositivi (tracciamento utente presente ma migliorabile)

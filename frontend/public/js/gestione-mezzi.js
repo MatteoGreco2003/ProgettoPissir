@@ -245,6 +245,7 @@ function setupEventListeners() {
   const maintenanceToggle = document.getElementById("editMaintenanceToggle");
   if (maintenanceToggle) {
     maintenanceToggle.addEventListener("change", updateMaintenanceStatus);
+    maintenanceToggle.addEventListener("change", updateEditModalDisabledState);
   }
 
   // Delete Vehicle Modal
@@ -284,7 +285,7 @@ async function loadAllVehicles() {
     renderVehicles();
     renderPagination();
     updateStats();
-    loadParkingOptions();
+    await loadParkingOptions();
   } catch (error) {
     console.error("❌ Errore:", error);
   }
@@ -304,17 +305,20 @@ async function loadParkings() {
     parcheggio.innerHTML = "";
     editParcheggio.innerHTML = "";
 
-    data.parkings.forEach((parking) => {
-      const option1 = document.createElement("option");
-      option1.value = parking.id_parcheggio;
-      option1.textContent = parking.nome;
-      parcheggio.appendChild(option1);
+    data.parkings
+      .filter((parking) => parking.posti_liberi > 0)
+      .forEach((parking) => {
+        // ✅ PER AGGIUNGERE: Se vuoi mostrare la disponibilità
+        const option1 = document.createElement("option");
+        option1.value = parking.id_parcheggio;
+        option1.textContent = `${parking.nome}`;
+        parcheggio.appendChild(option1);
 
-      const option2 = document.createElement("option");
-      option2.value = parking.id_parcheggio;
-      option2.textContent = parking.nome;
-      editParcheggio.appendChild(option2);
-    });
+        const option2 = document.createElement("option");
+        option2.value = parking.id_parcheggio;
+        option2.textContent = `${parking.nome}`;
+        editParcheggio.appendChild(option2);
+      });
   } catch (error) {
     console.error("❌ Errore:", error);
   }
@@ -400,28 +404,38 @@ function renderVehiclePerformance(vehicles) {
 }
 
 // ===== LOAD PARKING OPTIONS FOR FILTER =====
-function loadParkingOptions() {
-  // Reset options tranne la prima (Tutti i parcheggi)
-  const firstOption = parkingFilter.options[0];
-  parkingFilter.innerHTML = "";
-  parkingFilter.appendChild(firstOption.cloneNode(true));
+async function loadParkingOptions() {
+  try {
+    // Reset options tranne la prima (Tutti i parcheggi)
+    const firstOption = parkingFilter.options[0];
+    parkingFilter.innerHTML = "";
+    parkingFilter.appendChild(firstOption.cloneNode(true));
 
-  // Estrai i parcheggi unici dai mezzi
-  const parkingsSet = new Set();
-  allVehicles.forEach((vehicle) => {
-    if (vehicle.parking?.nome) {
-      parkingsSet.add(vehicle.parking.nome);
+    // 📡 Fetch TUTTI i parcheggi dal backend
+    const response = await fetch("/parking/data", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Errore caricamento parcheggi");
     }
-  });
 
-  const parkingsArray = Array.from(parkingsSet).sort();
+    const data = await response.json();
 
-  parkingsArray.forEach((parkingName) => {
-    const option = document.createElement("option");
-    option.value = parkingName;
-    option.textContent = `${parkingName}`;
-    parkingFilter.appendChild(option);
-  });
+    // 📝 Aggiungi TUTTI i parcheggi che arrivano dal backend
+    // Non filtrare per quelli che hanno veicoli!
+    data.parkings.forEach((parking) => {
+      const option = document.createElement("option");
+      option.value = parking.id_parcheggio;
+      option.textContent = parking.nome;
+      parkingFilter.appendChild(option);
+    });
+  } catch (error) {
+    console.error("❌ Errore caricamento parcheggi:", error);
+    showSnackbar("Errore caricamento parcheggi", "error");
+  }
 }
 
 // ===== RENDER VEHICLES TABLE =====
@@ -624,7 +638,7 @@ function renderFeedbacksList() {
   feedbackVehicleBody.innerHTML = currentFeedbacks
     .map(
       (feedback, index) => `
-    <div class="feedback-item">
+    <div class="feedback-item" data-feedback-index="${index}">
       <div class="feedback-header">
         <div class="feedback-user">
           <strong>${feedback.user?.nome || "Utente Eliminato"} ${
@@ -655,17 +669,64 @@ function renderFeedbacksList() {
 }
 
 // ===== REMOVE FEEDBACK (Frontend Only) =====
-function removeFeedback(index) {
-  if (confirm("Sei sicuro di voler eliminare questo feedback?")) {
+async function removeFeedback(index) {
+  try {
+    const feedbackToDelete = currentFeedbacks[index];
+    const feedbackId = feedbackToDelete.id || feedbackToDelete.id_feedback;
+
+    if (!feedbackId) {
+      showSnackbar("❌ Errore: ID feedback non trovato", "error");
+      return;
+    }
+
+    // Disabilita il bottone
+    const deleteBtn = document.querySelector(
+      `[data-feedback-index="${index}"] button`
+    );
+    if (deleteBtn) {
+      deleteBtn.disabled = true;
+      deleteBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Eliminazione...';
+    }
+
+    // ✅ Usa l'endpoint admin
+    const response = await fetch(
+      `/feedback/admin/${feedbackId}`, // 🔑 ENDPOINT ADMIN
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Errore durante l'eliminazione");
+    }
+
+    // Rimuovi dal DOM
     currentFeedbacks.splice(index, 1);
     renderFeedbacksList();
 
-    // Aggiorna il rating se necessario
-    if (currentFeedbacks.length === 0) {
+    // Aggiorna il rating
+    if (currentFeedbackVehicleId) {
       loadVehicleRating(currentFeedbackVehicleId);
     }
 
     showSnackbar("✅ Feedback eliminato!", "success");
+  } catch (error) {
+    console.error("❌ Errore:", error);
+    showSnackbar(error.message || "Errore durante l'eliminazione", "error");
+
+    // Ripristina il bottone
+    const deleteBtn = document.querySelector(
+      `[data-feedback-index="${index}"] button`
+    );
+    if (deleteBtn) {
+      deleteBtn.disabled = false;
+      deleteBtn.innerHTML = "Elimina";
+    }
   }
 }
 
@@ -756,7 +817,7 @@ function filterVehicles() {
       vehicle.codice_identificativo?.toLowerCase().includes(searchTerm) ||
       vehicle.id_mezzo.toString().includes(searchTerm);
     const matchesParking =
-      !parkingValue || (vehicle.parking?.nome || "") === parkingValue;
+      !parkingValue || vehicle.id_parcheggio?.toString() === parkingValue;
     const matchesType = !typeValue || vehicle.tipo_mezzo === typeValue;
     const matchesStatus = !statusValue || vehicle.stato === statusValue;
 
@@ -863,10 +924,45 @@ function showAddErrorsInModal(errorMessages) {
   addErrors.innerHTML = `<div class="error-message">${errorMessages}</div>`;
 }
 
+// ✅ POPOLA I DROPDOWN DEI PARCHEGGI CON DATI AGGIORNATI
+async function refreshParkingDropdowns() {
+  try {
+    const response = await fetch("parking/data", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+
+    if (!response.ok) throw new Error("Errore caricamento parcheggi");
+
+    const data = await response.json();
+
+    // Reset dei dropdowns
+    parcheggio.innerHTML = "";
+    editParcheggio.innerHTML = "";
+
+    // Popola SOLO con parcheggi che hanno posti liberi > 0
+    data.parkings
+      .filter((parking) => parking.posti_liberi > 0)
+      .forEach((parking) => {
+        const option1 = document.createElement("option");
+        option1.value = parking.id_parcheggio;
+        option1.textContent = `${parking.nome}`;
+        parcheggio.appendChild(option1);
+
+        const option2 = document.createElement("option");
+        option2.value = parking.id_parcheggio;
+        option2.textContent = `${parking.nome}`;
+        editParcheggio.appendChild(option2);
+      });
+  } catch (error) {
+    console.error("❌ Errore aggiornamento parcheggi:", error);
+  }
+}
+
 // ===== OPEN ADD VEHICLE MODAL =====
 function openAddVehicleModal() {
   addVehicleForm.reset();
   clearAddErrors();
+  refreshParkingDropdowns();
   addVehicleModal.classList.remove("hidden");
 }
 
@@ -939,6 +1035,8 @@ async function confirmAddVehicle() {
     const data = await response.json();
     showSnackbar("✅ Mezzo creato con successo!", "success");
     closeAllModals();
+
+    resetFilters();
     loadAllVehicles();
   } catch (error) {
     console.error("❌ Errore:", error);
@@ -963,6 +1061,8 @@ async function openEditVehicleModal(
   editVehicleType.textContent = formatTipoMezzo(tipoMezzo);
   editVehicleStatus.textContent = formatStato(stato);
 
+  refreshParkingDropdowns();
+
   editParcheggio.value = idParcheggio;
   const batteryAttualeFromDB = vehicle.stato_batteria;
 
@@ -974,6 +1074,9 @@ async function openEditVehicleModal(
   );
   const maintenanceLabel = document.getElementById("editMaintenanceLabel");
 
+  maintenanceToggle.disabled = false;
+  maintenanceWrapper.classList.remove("disabled");
+
   if (stato === "disponibile" || stato === "in_manutenzione") {
     maintenanceWrapper.style.display = "block";
     maintenanceToggle.checked = false;
@@ -981,6 +1084,29 @@ async function openEditVehicleModal(
     maintenanceWrapper.style.display = "none";
     maintenanceLabel.style.display = "none";
   }
+
+  if (stato === "in_manutenzione") {
+    maintenanceToggle.checked = true;
+    updateMaintenanceStatus();
+  }
+
+  if (maintenanceToggle.checked) {
+    maintenanceStatus.innerHTML = `
+      <span style="color: #ff6b6b; font-weight: 600; font-size: 13px;">
+        🔧 In manutenzione
+      </span>
+    `;
+    maintenanceStatus.classList.add("active");
+  } else {
+    maintenanceStatus.innerHTML = `
+      <span style="color: var(--light-text); font-weight: 500; font-size: 13px;">
+        ✅ Non in manutenzione
+      </span>
+    `;
+    maintenanceStatus.classList.remove("active");
+  }
+
+  updateEditModalDisabledState();
 
   try {
     const response = await fetch(`/vehicles/${vehicleId}`, {
@@ -1019,11 +1145,20 @@ async function openEditVehicleModal(
     batteryGroupEdit.style.display = "none";
   } else {
     batteryGroupEdit.style.display = "block";
-    editBatterySlider.value = batteryAttualeFromDB || 50;
-    editBatteryPercentage.value = batteryAttualeFromDB || 50;
-    editBatterySlider.min = batteryAttualeFromDB;
-    editBatteryPercentage.min = batteryAttualeFromDB;
-    updateEditBatteryInfo(batteryAttualeFromDB || 50);
+    const minValue = batteryAttualeFromDB;
+
+    // ✅ Resetta valori
+    editBatterySlider.min = minValue;
+    editBatterySlider.max = 100;
+    editBatteryPercentage.min = minValue;
+    editBatteryPercentage.max = 100;
+
+    // ✅ Forza il repaint con requestAnimationFrame
+    requestAnimationFrame(() => {
+      editBatterySlider.value = minValue;
+      editBatteryPercentage.value = minValue;
+      updateEditBatteryInfo(minValue);
+    });
   }
 
   editVehicleModal.classList.remove("hidden");
@@ -1096,11 +1231,6 @@ async function confirmEditVehicle() {
     }
   }
 
-  if (!idParcheggio) {
-    showSnackbar("Seleziona un parcheggio", "warning");
-    return;
-  }
-
   try {
     confirmEditVehicleBtn.disabled = true;
     confirmEditVehicleBtn.innerHTML =
@@ -1158,6 +1288,8 @@ async function confirmEditVehicle() {
     }
 
     closeAllModals();
+
+    resetFilters();
     loadAllVehicles();
   } catch (error) {
     console.error("❌ Errore:", error);
@@ -1192,7 +1324,9 @@ async function confirmDelete() {
 
     showSnackbar("✅ Mezzo eliminato con successo!", "success");
     closeAllModals();
+
     loadAllVehicles();
+    loadVehicleStatistics();
   } catch (error) {
     console.error("❌ Errore:", error);
     showSnackbar(error.message, "error");
@@ -1305,4 +1439,41 @@ function sortVehicles(vehiclesToSort) {
 
     return batteryA - batteryB; // Dalla più bassa alla più alta
   });
+}
+
+function resetFilters() {
+  searchInput.value = "";
+  parkingFilter.value = "";
+  typeFilter.value = "";
+  statusFilter.value = "";
+  currentPage = 1;
+}
+
+// ===== UPDATE EDIT MODAL DISABLED STATE =====
+function updateEditModalDisabledState() {
+  const maintenanceToggle = document.getElementById("editMaintenanceToggle");
+  const isInMaintenance = maintenanceToggle.checked;
+
+  // ✅ Se in manutenzione, disabilita parcheggio e batteria
+  if (isInMaintenance) {
+    editParcheggio.disabled = true;
+    editParcheggio.style.opacity = "0.5";
+    editParcheggio.style.cursor = "not-allowed";
+
+    // ✅ Disabilita SEMPRE la batteria, indipendentemente dal display
+    editBatterySlider.disabled = true;
+    editBatteryPercentage.disabled = true;
+    batteryGroupEdit.style.opacity = "0.5";
+    batteryGroupEdit.style.cursor = "not-allowed";
+  } else {
+    // ✅ Se non in manutenzione, abilita tutto
+    editParcheggio.disabled = false;
+    editParcheggio.style.opacity = "1";
+    editParcheggio.style.cursor = "pointer";
+
+    editBatterySlider.disabled = false;
+    editBatteryPercentage.disabled = false;
+    batteryGroupEdit.style.opacity = "1";
+    batteryGroupEdit.style.cursor = "auto";
+  }
 }

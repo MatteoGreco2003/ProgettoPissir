@@ -749,7 +749,7 @@ function showSnackbar(message, type = "success") {
  */
 function formatVehicleName(tipoMezzo) {
   if (tipoMezzo === "N/A" || !tipoMezzo) {
-    return "Nessuno";
+    return "Nessuno o Eliminato";
   }
 
   const vehicleNames = {

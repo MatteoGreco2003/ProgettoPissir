@@ -117,6 +117,9 @@ async function loadAllParkings() {
       capacita: parseInt(p.capacita),
     }));
 
+    // ORDINA PER CAPACITÀ DECRESCENTE
+    allParkings.sort((a, b) => b.capacita - a.capacita);
+
     parkings = [...allParkings];
 
     renderParkings();
@@ -285,6 +288,10 @@ function filterParkings() {
   parkings = allParkings.filter((parking) =>
     parking.nome.toLowerCase().includes(searchTerm)
   );
+
+  // ORDINA PER CAPACITÀ DECRESCENTE
+  parkings.sort((a, b) => b.capacita - a.capacita);
+
   currentPage = 1;
   renderParkings();
   renderPagination();
@@ -454,7 +461,9 @@ async function confirmAddParking() {
 
     showSnackbar("✅ Parcheggio creato con successo!", "success");
     closeAllModals();
+
     loadAllParkings();
+    loadParkingUsageStatistics();
   } catch (error) {
     console.error("❌ Errore:", error);
   } finally {
@@ -537,7 +546,9 @@ async function confirmEditParking() {
 
     showSnackbar("✅ Parcheggio modificato con successo!", "success");
     closeAllModals();
+
     loadAllParkings();
+    loadParkingUsageStatistics();
   } catch (error) {
     console.error("❌ Errore:", error);
     editErrors.innerHTML = `<div class="error-message">Errore durante il salvataggio</div>`;
@@ -577,7 +588,9 @@ async function confirmDeleteParking() {
 
     showSnackbar("✅ Parcheggio eliminato con successo!", "success");
     closeAllModals();
+
     loadAllParkings();
+    loadParkingUsageStatistics();
   } catch (error) {
     console.error("❌ Errore:", error);
     deleteErrors.innerHTML = `<div class="error-message">Errore durante l'eliminazione</div>`;

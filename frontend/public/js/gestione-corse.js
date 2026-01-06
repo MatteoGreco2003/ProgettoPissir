@@ -154,7 +154,7 @@ function formatVehicleType(tipo) {
     bicicletta_elettrica: "Bicicletta Elettrica",
     monopattino: "Monopattino Elettrico",
   };
-  return map[tipo] || tipo;
+  return map[tipo] || "Mezzo Eliminato";
 }
 
 // ===== FORMAT DATE =====
