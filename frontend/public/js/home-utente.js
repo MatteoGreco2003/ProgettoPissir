@@ -973,7 +973,11 @@ function renderParkingsOnMap(parkings) {
 function renderParkings(parkings) {
   parkingGrid.innerHTML = "";
 
-  parkings.forEach((parking) => {
+  const sortedParkings = [...parkings].sort((a, b) =>
+    a.nome.localeCompare(b.nome, "it-IT", { sensitivity: "base" })
+  );
+
+  sortedParkings.forEach((parking) => {
     const card = document.createElement("div");
     const vehiclesInParking = state.vehicles.filter(
       (v) => v.id_parcheggio === parking.id_parcheggio
@@ -1103,7 +1107,6 @@ function renderVehicles(vehicles) {
     vehiclesGrid.innerHTML = `
       <div class="no-vehicles" style="
         grid-column: 1/-1;
-        padding: 20px 20px;
         text-align: center;
         color: var(--light-text);
       ">
@@ -1241,18 +1244,30 @@ function getVehiclesByType(filter) {
   }
 
   // Filtra per tipo mezzo
-  if (filter === "all") {
-    return vehicles;
+  if (filter !== "all") {
+    if (filter === "bicicletta_muscolare")
+      vehicles = vehicles.filter(
+        (v) => v.tipo_mezzo === "bicicletta_muscolare"
+      );
+    if (filter === "monopattini")
+      vehicles = vehicles.filter((v) => v.tipo_mezzo === "monopattino");
+    if (filter === "bicicletta_elettrica")
+      vehicles = vehicles.filter(
+        (v) => v.tipo_mezzo === "bicicletta_elettrica"
+      );
   }
 
-  return vehicles.filter((v) => {
-    if (filter === "bicicletta_muscolare")
-      return v.tipo_mezzo === "bicicletta_muscolare";
-    if (filter === "monopattini") return v.tipo_mezzo === "monopattino";
-    if (filter === "bicicletta_elettrica")
-      return v.tipo_mezzo === "bicicletta_elettrica";
-    return true;
+  const sortedVehicles = [...vehicles].sort((a, b) => {
+    if (a.tipo_mezzo !== b.tipo_mezzo) {
+      return a.tipo_mezzo.localeCompare(b.tipo_mezzo, "it-IT");
+    }
+    return a.codice_identificativo.localeCompare(
+      b.codice_identificativo,
+      "it-IT"
+    );
   });
+
+  return sortedVehicles;
 }
 
 // ===== LOGIC - PRENOTAZIONE =====

@@ -440,7 +440,11 @@ function loadParkings() {
 }
 
 function populateParkingSelect() {
-  const options = rideState.parkings
+  const parkingDisponibili = rideState.parkings.filter(
+    (p) => p.posti_liberi > 0
+  );
+
+  const options = parkingDisponibili
     .map((p) => `<option value="${p.id_parcheggio}">${p.nome}</option>`)
     .join("");
 
@@ -477,7 +481,7 @@ function calculateCost() {
     return;
   }
 
-  const minutes = Math.floor(rideState.elapsedSeconds / 60);
+  const minutes = Math.ceil(rideState.elapsedSeconds / 60);
   let cost = 0;
 
   const tariffaOraria = getTariffaOraria(rideState.vehicleData.tipo_mezzo);
@@ -589,7 +593,7 @@ function endRide() {
   endRideBtn.textContent = "Elaborazione...";
 
   // ✅ NUOVO: Calcola il costo ATTUALE (come fa il toggle)
-  const minutes = Math.floor(rideState.elapsedSeconds / 60);
+  const minutes = Math.ceil(rideState.elapsedSeconds / 60);
   let costoCorsa = 0;
   const tariffaOraria = getTariffaOraria(rideState.vehicleData.tipo_mezzo);
 
@@ -617,7 +621,7 @@ function endRide() {
       if (checkData.saldo_sufficiente) {
         return endRideWithPayment(checkData.costo);
       } else {
-        return endRideWithDebt(checkData);
+        return endRideWithDebt(checkData, checkData.costo);
       }
     })
     .catch((error) => {
@@ -674,33 +678,30 @@ function endRideWithPayment(cost) {
     });
 }
 
-function endRideWithDebt(checkData) {
+function endRideWithDebt(checkData, costoFinale) {
   const costoPrimaCorsa = 1.0; // Costo preventivo della prossima corsa
-  const debitoTotale = checkData.costo + costoPrimaCorsa;
-  const importoMancante = Math.max(
-    0,
-    checkData.costo - checkData.saldo_attuale
-  );
+  const debitoTotale = costoFinale + costoPrimaCorsa;
+  const importoMancante = Math.max(0, costoFinale - checkData.saldo_attuale);
 
   // ✅ Salva i dati nel state
   rideState.debtData = {
-    costoCorsa: checkData.costo,
+    costoCorsa: costoFinale,
     costoPrimaCorsa: costoPrimaCorsa,
     debitoTotale: debitoTotale,
     saldoAttuale: checkData.saldo_attuale,
     importoMancante: importoMancante,
   };
 
-  showDebtModal(checkData, importoMancante);
+  showDebtModal(checkData, importoMancante, costoFinale);
   endRideBtn.disabled = false;
   endRideBtn.textContent = "Termina Corsa";
 }
 
 // ✅ NUOVO: Modal per saldo insufficiente (DEBITO)
-function showDebtModal(checkData, importoMancante) {
+function showDebtModal(checkData, importoMancante, costoFinale) {
   const modal = document.createElement("div");
   const costoPrimaCorsa = 1.0;
-  const debitoTotale = checkData.costo + costoPrimaCorsa;
+  const debitoTotale = costoFinale + costoPrimaCorsa;
   const importoRicaricaMinimo =
     Math.ceil((importoMancante + costoPrimaCorsa) * 100) / 100;
 
@@ -764,7 +765,7 @@ function showDebtModal(checkData, importoMancante) {
           <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
             <span style="color: #666;">Costo corsa:</span>
             <span style="font-weight: bold; color: #dc2626;">−${formatCurrency(
-              checkData.costo
+              costoFinale
             )}</span>
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">

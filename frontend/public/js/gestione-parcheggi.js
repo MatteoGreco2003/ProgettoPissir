@@ -366,7 +366,7 @@ async function viewParkingDetail(parkingId) {
             }</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Posti Disponibili:</span>
+            <span class="detail-label">Posti Liberi:</span>
             <span class="detail-value" style="color: var(--primary-teal);">${
               parking.disponibili
             }</span>

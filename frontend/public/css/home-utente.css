@@ -1665,6 +1665,10 @@ body {
   margin-bottom: 24px;
 }
 
+.mb-6:last-child {
+  margin-bottom: 0;
+}
+
 .hidden {
   display: none !important;
   visibility: hidden !important;
