@@ -1,5 +1,3 @@
-// backend/routes/users.js
-
 import express from "express";
 import { verifyToken, isAdmin } from "../middleware/auth.js";
 import {
@@ -15,19 +13,18 @@ import {
 
 const router = express.Router();
 
-// Profilo utente corrente (protetto)
+// Profilo utente corrente
 router.get("/me", verifyToken, getProfile);
 
-// Modifica profilo (protetto)
+// Modifica profilo
 router.put("/me", verifyToken, updateProfile);
 
-// Elimina account (protetto)
+// Elimina account
 router.delete("/me", verifyToken, deleteAccount);
 
-// Cambio password (protetto)
+// Cambio password
 router.put("/change-password", verifyToken, changePassword);
 
-//ADMIN ENDPOINTS
 // Lista tutti gli utenti (solo admin)
 router.get("/admin/all", verifyToken, isAdmin, getAllUsers);
 

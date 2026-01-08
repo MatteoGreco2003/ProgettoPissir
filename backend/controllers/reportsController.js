@@ -1,11 +1,9 @@
-// backend/controllers/reportsController.js
-
 import Report from "../models/Report.js";
 import User from "../models/User.js";
 import Vehicle from "../models/Vehicle.js";
 import { Op } from "sequelize";
 
-// CREATE REPORT - Crea nuova segnalazione per un mezzo
+// CREATE REPORT - Crea segnalazione per un mezzo
 export const createReport = async (req, res) => {
   try {
     const { tipo_problema, id_mezzo, descrizione } = req.body;
@@ -17,7 +15,6 @@ export const createReport = async (req, res) => {
       });
     }
 
-    // Valida tipo di problema
     const tipiValidi = [
       "danno_fisico",
       "batteria_scarica",
@@ -26,13 +23,13 @@ export const createReport = async (req, res) => {
       "sporco",
       "altro",
     ];
+
     if (!tipiValidi.includes(tipo_problema)) {
       return res.status(400).json({
         error: `tipo_problema non valido. Validi: ${tipiValidi.join(", ")}`,
       });
     }
 
-    // Verifica che il mezzo esista
     const vehicle = await Vehicle.findByPk(id_mezzo);
     if (!vehicle) {
       return res.status(404).json({ error: "Mezzo non trovato" });
@@ -60,7 +57,7 @@ export const createReport = async (req, res) => {
   }
 };
 
-// GET MY REPORTS - Le mie segnalazioni
+// GET MY REPORTS - Visualizza le mie segnalazioni
 export const getMyReports = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -118,7 +115,6 @@ export const getReportById = async (req, res) => {
       return res.status(404).json({ error: "Segnalazione non trovata" });
     }
 
-    // Controlla autorizzazioni
     if (report.id_utente !== id_utente && req.user.role !== "admin") {
       return res.status(403).json({
         error: "Non hai permessi per visualizzare questa segnalazione",
@@ -168,7 +164,7 @@ export const getReportsByVehicleId = async (req, res) => {
   }
 };
 
-// GET ALL REPORTS - Tutte le segnalazioni (solo admin)
+// GET ALL REPORTS - Visualizza tutte le segnalazioni (utente admin)
 export const getAllReports = async (req, res) => {
   try {
     const { stato_segnalazione, tipo_problema } = req.query;
@@ -205,7 +201,7 @@ export const getAllReports = async (req, res) => {
   }
 };
 
-// UPDATE REPORT STATUS - Aggiorna stato segnalazione e mezzo (admin)
+// UPDATE REPORT STATUS - Aggiorna stato segnalazione e mezzo (utente admin)
 export const updateReportStatus = async (req, res) => {
   try {
     const { id_segnalazione } = req.params;
@@ -217,7 +213,6 @@ export const updateReportStatus = async (req, res) => {
         .json({ error: "stato_segnalazione è obbligatorio" });
     }
 
-    // Valida stato
     const statiValidi = ["aperta", "in_lavorazione", "risolta"];
     if (!statiValidi.includes(stato_segnalazione)) {
       return res.status(400).json({
@@ -241,7 +236,6 @@ export const updateReportStatus = async (req, res) => {
       if (stato_segnalazione === "in_lavorazione") {
         vehicle.stato = "in_manutenzione";
       } else if (stato_segnalazione === "risolta") {
-        // Controlla se ci sono altri report non risolti
         const otherActiveReports = await Report.count({
           where: {
             id_mezzo: report.id_mezzo,
@@ -254,12 +248,12 @@ export const updateReportStatus = async (req, res) => {
           },
         });
 
-        // Se NON ci sono altri report attivi, mette a disponibile
+        // Se non ci sono altri report attivi, mette a disponibile
         if (otherActiveReports === 0) {
           vehicle.stato = "disponibile";
         }
-        // Altrimenti rimane in manutenzione
       }
+
       await vehicle.save();
     }
 
@@ -280,7 +274,7 @@ export const updateReportStatus = async (req, res) => {
   }
 };
 
-// DELETE REPORT - Elimina segnalazione (admin)
+// DELETE REPORT - Elimina una segnalazione (utente admin)
 export const deleteReport = async (req, res) => {
   try {
     const { id_segnalazione } = req.params;
@@ -307,7 +301,7 @@ export const deleteReport = async (req, res) => {
         },
       });
 
-      // Se NON ci sono altri report attivi, metto il mezzo a disponibile
+      // Se non ci sono altri report attivi, metto il mezzo a disponibile
       if (otherActiveReports === 0) {
         const vehicle = await Vehicle.findByPk(id_mezzo);
         if (vehicle) {
@@ -327,7 +321,6 @@ export const deleteReport = async (req, res) => {
       }
     }
 
-    // Risposta standard se il mezzo non è stato modificato
     res.status(200).json({
       message: "Segnalazione eliminata con successo",
       id_segnalazione: id_segnalazione,

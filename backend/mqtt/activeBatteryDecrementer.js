@@ -1,10 +1,8 @@
-// backend/mqtt/activeBatteryDecrementer.js
-
 import mqtt from "mqtt";
 import Ride from "../models/Ride.js";
 import Vehicle from "../models/Vehicle.js";
 
-// Helper per ottenere tariffa base in base al tipo mezzo
+// Helper: tariffa base in base al tipo mezzo
 const getTariffaBaseByMezzo = (tipo_mezzo) => {
   switch (tipo_mezzo) {
     case "bicicletta_muscolare":
@@ -18,7 +16,7 @@ const getTariffaBaseByMezzo = (tipo_mezzo) => {
   }
 };
 
-// Helper per ottenere velocità media in base al tipo mezzo
+// Helper: velocità media in base al tipo mezzo
 const getVelocitaMediaByMezzo = (tipo_mezzo) => {
   switch (tipo_mezzo) {
     case "bicicletta_muscolare":
@@ -32,7 +30,7 @@ const getVelocitaMediaByMezzo = (tipo_mezzo) => {
   }
 };
 
-// Decrementa batteria di 1% ogni minuto per mezzi in uso
+// Decrementa batteria di 1% ogni minuto per mezzi in uso e gestisce avvisi (comandi MQTT)
 export const initActiveBatteryDecrementer = () => {
   const client = mqtt.connect(
     process.env.MQTT_BROKER_URL || "mqtt://localhost:1883"
@@ -64,9 +62,7 @@ export const initActiveBatteryDecrementer = () => {
             continue;
           }
 
-          // Decrementa 1% ogni minuto
           const newBattery = Math.max(0, vehicle.stato_batteria - 1);
-
           vehicle.stato_batteria = newBattery;
           await vehicle.save();
 
@@ -140,7 +136,6 @@ export const initActiveBatteryDecrementer = () => {
             ride.stato_corsa = "sospesa_batteria_esaurita";
             await ride.save();
 
-            // Notifica utente
             const batteryDeadMessage = JSON.stringify({
               id_mezzo: vehicle.id_mezzo,
               id_corsa: ride.id_corsa,
@@ -163,7 +158,7 @@ export const initActiveBatteryDecrementer = () => {
       } catch (error) {
         console.error("❌ Errore decremento batteria:", error.message);
       }
-    }, 60000); // Ogni 60 secondi
+    }, 60000);
   });
 
   client.on("error", (err) => {

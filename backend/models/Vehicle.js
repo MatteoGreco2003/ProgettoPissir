@@ -1,5 +1,3 @@
-// backend/models/Vehicle.js
-
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
@@ -11,7 +9,6 @@ const Vehicle = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    // Tipo mezzo: monopattino, bicicletta muscolare, bicicletta elettrica
     tipo_mezzo: {
       type: DataTypes.STRING(50),
       allowNull: false,
@@ -23,7 +20,6 @@ const Vehicle = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    // Stato mezzo: disponibile, in uso, in manutenzione, non prelevabile
     stato: {
       type: DataTypes.STRING(50),
       defaultValue: "disponibile",
@@ -31,7 +27,6 @@ const Vehicle = sequelize.define(
         isIn: [["disponibile", "in_uso", "in_manutenzione", "non_prelevabile"]],
       },
     },
-    // Percentuale batteria (null per biciclette muscolari)
     stato_batteria: {
       type: DataTypes.INTEGER,
       defaultValue: 100,
@@ -41,13 +36,11 @@ const Vehicle = sequelize.define(
         max: 100,
       },
     },
-    // Codice QR o identificativo univoco del mezzo
     codice_identificativo: {
       type: DataTypes.STRING(100),
       unique: true,
       allowNull: false,
     },
-    // Tariffa al minuto in euro
     tariffa_minuto: {
       type: DataTypes.DECIMAL(5, 2),
       defaultValue: 0.25,
@@ -55,7 +48,6 @@ const Vehicle = sequelize.define(
         min: 0,
       },
     },
-    // Data di creazione automatica
     creato_il: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

@@ -1,5 +1,3 @@
-// backend/routes/feedback.js
-
 import express from "express";
 import {
   createFeedback,
@@ -16,7 +14,7 @@ import { verifyToken, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Crea feedback (solo utenti loggati)
+// Crea feedback
 router.post("/", verifyToken, createFeedback);
 
 // Recupera i miei feedback
@@ -34,13 +32,13 @@ router.get("/vehicle/:id_mezzo", getFeedbackByVehicle);
 // Dettagli feedback singolo
 router.get("/:id_feedback", getFeedbackById);
 
-// Modifica feedback (solo autore)
+// Modifica feedback (solo proprietario del feedback)
 router.patch("/:id_feedback", verifyToken, updateFeedback);
 
-// Elimina feedback (solo autore)
+// Elimina feedback (solo proprietario del feedback)
 router.delete("/:id_feedback", verifyToken, deleteFeedback);
 
-// Elimina feedback (solo admin)
+// Elimina un feedback (solo admin)
 router.delete("/admin/:id_feedback", verifyToken, isAdmin, deleteFeedbackAdmin);
 
 export default router;

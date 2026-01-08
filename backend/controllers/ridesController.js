@@ -41,7 +41,7 @@ const calcolaKmPercorsi = (durataMinuti, tipo_mezzo) => {
   return (durataMinuti / 60) * velocitaMedia;
 };
 
-// START RIDE - Inizio corsa con sblocco MQTT
+// START RIDE - Inizio corsa (sblocco MQTT)
 export const startRide = async (req, res) => {
   try {
     const { id_mezzo } = req.body;
@@ -56,7 +56,6 @@ export const startRide = async (req, res) => {
       return res.status(404).json({ error: "Utente non trovato" });
     }
 
-    // Controlla stato account
     if (
       user.stato_account === "sospeso" ||
       user.stato_account === "in_attesa_approvazione"
@@ -69,7 +68,6 @@ export const startRide = async (req, res) => {
       });
     }
 
-    // Verifica saldo minimo
     const saldoNumero = parseFloat(user.saldo);
     if (saldoNumero < 1.0) {
       return res.status(402).json({
@@ -80,11 +78,9 @@ export const startRide = async (req, res) => {
       });
     }
 
-    // Controlla se ha già una corsa attiva
     const activeRide = await Ride.findOne({
       where: { id_utente, stato_corsa: "in_corso" },
     });
-
     if (activeRide) {
       return res.status(400).json({
         error: "Hai già una corsa attiva",
@@ -92,22 +88,18 @@ export const startRide = async (req, res) => {
       });
     }
 
-    // Verifica disponibilità mezzo
     const vehicle = await Vehicle.findByPk(id_mezzo, {
       include: [{ model: Parking, as: "parking" }],
     });
-
     if (!vehicle) {
       return res.status(404).json({ error: "Mezzo non trovato" });
     }
-
     if (vehicle.stato !== "disponibile") {
       return res.status(400).json({
         error: `Mezzo non disponibile. Stato: ${vehicle.stato}`,
       });
     }
 
-    // Verifica batteria minima
     if (
       vehicle.stato_batteria < 20 &&
       vehicle.tipo_mezzo != "bicicletta_muscolare"
@@ -173,7 +165,7 @@ export const startRide = async (req, res) => {
   }
 };
 
-// CHECK PAYMENT - Verifica saldo sufficiente per pagare
+// CHECK PAYMENT - Verifica se saldo è sufficiente per pagare
 export const checkPayment = async (req, res) => {
   try {
     const { ride_id } = req.params;
@@ -232,7 +224,7 @@ export const checkPayment = async (req, res) => {
   }
 };
 
-// END RIDE WITH PAYMENT - Fine corsa con pagamento immediato
+// END RIDE WITH PAYMENT - Fine corsa con pagamento immediato (blocco MQTT)
 export const endRideWithPayment = async (req, res) => {
   try {
     const { ride_id } = req.params;
@@ -287,7 +279,6 @@ export const endRideWithPayment = async (req, res) => {
       costo = parseFloat(ride.costo);
       kmPercorsi = ride.km_percorsi;
     } else {
-      // Calcola i valori live
       durataMinuti = Math.ceil((dataFine - ride.data_ora_inizio) / (1000 * 60));
 
       const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
@@ -305,7 +296,7 @@ export const endRideWithPayment = async (req, res) => {
     let saldoDisponibile = parseFloat(user.saldo);
     let punti_utilizzati = 0;
 
-    // Se ricarica, aggiorna saldo
+    // Applica ricarica se presente
     if (importo_ricarica && importo_ricarica > 0) {
       saldoDisponibile += importo_ricarica;
 
@@ -317,7 +308,7 @@ export const endRideWithPayment = async (req, res) => {
       });
     }
 
-    // Se vuole usare punti come sconto
+    // Applica punti fedeltà se richiesto
     const { usa_punti } = req.body;
     if (usa_punti && user.punti > 0) {
       const puntiNecessari = Math.ceil(costo / 0.05);
@@ -349,15 +340,12 @@ export const endRideWithPayment = async (req, res) => {
     ride.stato_corsa = "completata";
     await ride.save();
 
-    // Aggiorna mezzo
     const vehicle = ride.vehicle;
-
     if (vehicle.stato_batteria !== null && vehicle.stato_batteria < 20) {
       vehicle.stato = "non_prelevabile";
     } else {
       vehicle.stato = "disponibile";
     }
-
     vehicle.id_parcheggio = id_parcheggio_fine;
     await vehicle.save();
 
@@ -429,7 +417,6 @@ export const endRideWithPayment = async (req, res) => {
       console.warn("⚠️ MQTT publish fallito:", mqttError.message);
     }
 
-    // Aggiorna saldo utente
     user.saldo = saldoDisponibile - costo;
     user.stato_account = "attivo";
     await user.save();
@@ -473,7 +460,7 @@ export const endRideWithPayment = async (req, res) => {
   }
 };
 
-// END RIDE WITH DEBT - Fine corsa con debito e sospensione account
+// END RIDE WITH DEBT - Fine corsa con debito e sospensione account (blocco MQTT)
 export const endRideWithDebt = async (req, res) => {
   try {
     const { ride_id } = req.params;
@@ -565,7 +552,7 @@ export const endRideWithDebt = async (req, res) => {
     vehicle.id_parcheggio = id_parcheggio_fine;
     await vehicle.save();
 
-    // Crea transactions
+    // Crea transactions pagamento e debito prossima corsa
     await Transaction.create({
       id_utente,
       tipo_transazione: "pagamento_corsa",
@@ -642,7 +629,7 @@ export const endRideWithDebt = async (req, res) => {
   }
 };
 
-// GET ACTIVE RIDE - Corsa attiva in corso
+// GET ACTIVE RIDE - Corsa attiva in corso dell'utente
 export const getActiveRide = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -697,7 +684,6 @@ export const getActiveRide = async (req, res) => {
     const durataCorrenteMinuti = Math.ceil(
       (new Date() - ride.data_ora_inizio) / (1000 * 60)
     );
-
     const tariffa = getTariffaBaseByMezzo(ride.vehicle.tipo_mezzo);
     const kmPercorsi = calcolaKmPercorsi(
       durataCorrenteMinuti,
@@ -730,7 +716,7 @@ export const getActiveRide = async (req, res) => {
   }
 };
 
-// GET RIDE HISTORY - Storico delle corse completate
+// GET RIDE HISTORY - Storico delle corse completate dell'utente
 export const getRideHistory = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -913,7 +899,7 @@ export const getUserRideStatistics = async (req, res) => {
       raw: true,
     });
 
-    // Calcola la spesa REALE: costo - sconto punti
+    // Calcola la spesa: costo - sconto punti fedeltà applicato
     const totalSpent = rideTransactions.reduce((sum, ride) => {
       const sconto = ride.punti_fedeltà_usati * 0.05;
       const importoPagato = ride.costo - sconto;
@@ -946,7 +932,7 @@ export const getUserRideStatistics = async (req, res) => {
   }
 };
 
-// GET RIDES TODAY - Tutte le corse di oggi (admin)
+// GET RIDES TODAY - Visualizza tutte le corse di oggi (utente admin)
 export const getRidesToday = async (req, res) => {
   try {
     const startOfDay = new Date();
@@ -1011,7 +997,7 @@ export const getRidesToday = async (req, res) => {
   }
 };
 
-// GET ALL COMPLETED RIDES - Tutte le corse completate (admin)
+// GET ALL COMPLETED RIDES - Visualizza tutte le corse completate (utente admin)
 export const getAllCompletedRides = async (req, res) => {
   try {
     const rides = await Ride.findAll({

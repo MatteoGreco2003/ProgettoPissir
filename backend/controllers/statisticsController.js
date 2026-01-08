@@ -1,11 +1,8 @@
-// backend/controllers/statisticsController.js
-
 import Ride from "../models/Ride.js";
 import Vehicle from "../models/Vehicle.js";
 import Parking from "../models/Parking.js";
 import User from "../models/User.js";
 import sequelize from "../config/database.js";
-import { Op } from "sequelize";
 
 // GET PARKING STATISTICS - Disponibilità mezzi per parcheggio
 export const getParkingStatistics = async (req, res) => {
@@ -54,7 +51,7 @@ export const getParkingStatistics = async (req, res) => {
   }
 };
 
-// GET VEHICLE STATISTICS - Performance e utilizzo dei mezzi
+// GET VEHICLE STATISTICS - Utilizzo dei mezzi
 export const getVehicleStatistics = async (req, res) => {
   try {
     const vehicles = await Vehicle.findAll({
@@ -77,7 +74,7 @@ export const getVehicleStatistics = async (req, res) => {
         const rideData = await Ride.findAll({
           where: { id_mezzo: vehicle.id_mezzo, stato_corsa: "completata" },
           attributes: [
-            // Somma il costo reale: costo - (punti_fedeltà_usati * 0.05)
+            // Somma il costo: costo - (punti_fedeltà_usati * 0.05) per ogni corsa
             [
               sequelize.literal("SUM(costo - (punti_fedeltà_usati * 0.05))"),
               "ricavo_totale",
@@ -184,7 +181,7 @@ export const getOverviewStatistics = async (req, res) => {
   }
 };
 
-// GET SUSPENDED USERS WITH RELIABILITY - Utenti sospesi con valutazione
+// GET SUSPENDED USERS WITH RELIABILITY - Utenti sospesi con valutazione affidabilità
 export const getSuspendedUsersWithReliability = async (req, res) => {
   try {
     const suspendedUsers = await User.findAll({
@@ -270,7 +267,6 @@ export const getParkingUsageStatistics = async (req, res) => {
       subQuery: false,
     });
 
-    // Combina i dati con informazioni del parcheggio
     const parkings = await Parking.findAll({
       include: [
         {
@@ -312,7 +308,6 @@ export const getParkingUsageStatistics = async (req, res) => {
       };
     });
 
-    // Ordina per utilizzo decrescente
     parkingStatsUsage.sort((a, b) => b.corse_totali - a.corse_totali);
 
     res.status(200).json({

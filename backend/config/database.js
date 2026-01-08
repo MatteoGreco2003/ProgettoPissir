@@ -1,9 +1,9 @@
-// backend/config/database.js
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 
 dotenv.config();
 
+// Configurazione della connessione al database PostgreSQL
 const sequelize = new Sequelize(
   process.env.DB_NAME || "mobishare_db",
   process.env.DB_USER || "postgres",

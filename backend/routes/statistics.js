@@ -1,5 +1,3 @@
-// backend/routes/statistics.js
-
 import express from "express";
 import {
   getParkingStatistics,

@@ -2,7 +2,7 @@ import Transaction from "../models/Transaction.js";
 import User from "../models/User.js";
 import Ride from "../models/Ride.js";
 
-// RECHARGE CREDIT - Ricarica credito account
+// RECHARGE CREDIT - Ricarica credito account utente
 export const rechargeCredit = async (req, res) => {
   try {
     const { importo } = req.body;
@@ -35,7 +35,6 @@ export const rechargeCredit = async (req, res) => {
     );
     user.saldo = nuovoSaldo;
 
-    // Se era sospeso, passa a "in_attesa_approvazione"
     if (nuovoSaldo > 0 && user.stato_account === "sospeso")
       user.stato_account = "in_attesa_approvazione";
 
@@ -66,7 +65,7 @@ export const rechargeCredit = async (req, res) => {
   }
 };
 
-// GET TRANSACTION HISTORY - Storico transazioni con paginazione
+// GET TRANSACTION HISTORY - Storico transazioni dell'utente (con paginazione)
 export const getTransactionHistory = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -201,7 +200,7 @@ export const getTransactionById = async (req, res) => {
   }
 };
 
-// GET CURRENT BALANCE - Saldo attuale account
+// GET CURRENT BALANCE - Saldo attuale account utente
 export const getCurrentBalance = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -224,7 +223,7 @@ export const getCurrentBalance = async (req, res) => {
   }
 };
 
-// GET BALANCE SUMMARY - Riepilogo ricariche e spese
+// GET BALANCE SUMMARY - Riepilogo ricariche e spese utente
 export const getBalanceSummary = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -249,8 +248,7 @@ export const getBalanceSummary = async (req, res) => {
       0
     );
 
-    // ✅ CORRETTO: Per ogni transazione di pagamento, recupera i dati della ride
-    // e calcola l'importo reale pagato (con sconto applicato)
+    // Calcola il totale speso considerando sconti da punti fedeltà
     const totalSpese = await Promise.all(
       spese.map(async (transaction) => {
         if (transaction.id_corsa) {
@@ -293,7 +291,7 @@ export const getBalanceSummary = async (req, res) => {
   }
 };
 
-// REQUEST ACCOUNT REACTIVATION - Richiesta di riapertura account
+// REQUEST ACCOUNT REACTIVATION - Richiesta di riapertura account utente
 export const requestReactivation = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
@@ -334,7 +332,7 @@ export const requestReactivation = async (req, res) => {
   }
 };
 
-// APPROVE ACCOUNT REACTIVATION - Approva riapertura account (admin)
+// APPROVE ACCOUNT REACTIVATION - Approva riapertura account (utente admin)
 export const approveReactivation = async (req, res) => {
   try {
     const { id_utente } = req.params;

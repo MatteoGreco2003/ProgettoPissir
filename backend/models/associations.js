@@ -1,5 +1,3 @@
-// backend/models/associations.js
-
 import Vehicle from "./Vehicle.js";
 import Parking from "./Parking.js";
 import User from "./User.js";

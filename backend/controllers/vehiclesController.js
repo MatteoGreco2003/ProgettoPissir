@@ -1,10 +1,8 @@
 import Vehicle from "../models/Vehicle.js";
 import Parking from "../models/Parking.js";
 import Report from "../models/Report.js";
-import sequelize from "../config/database.js";
-import { Op } from "sequelize";
 
-// GET ALL VEHICLES - Lista mezzi con filtri opzionali
+// GET ALL VEHICLES - Lista mezzi con filtri opzionali (tipo, parcheggio, stato)
 export const getAllVehicles = async (req, res) => {
   try {
     const { tipo_mezzo, id_parcheggio, stato } = req.query;
@@ -73,7 +71,7 @@ export const getVehicleById = async (req, res) => {
   }
 };
 
-// CREATE VEHICLE - Crea nuovo mezzo (admin/gestore)
+// CREATE VEHICLE - Crea mezzo (utente admin)
 export const createVehicle = async (req, res) => {
   try {
     const { tipo_mezzo, id_parcheggio, codice_identificativo } = req.body;
@@ -111,7 +109,6 @@ export const createVehicle = async (req, res) => {
       }
     }
 
-    // Tariffa automatica in base al tipo mezzo
     let tariffa_minuto;
     switch (tipo_mezzo) {
       case "bicicletta_muscolare":
@@ -145,7 +142,7 @@ export const createVehicle = async (req, res) => {
   }
 };
 
-// UPDATE VEHICLE - Modifica mezzo (admin/gestore)
+// UPDATE VEHICLE - Modifica mezzo (utente admin)
 export const updateVehicle = async (req, res) => {
   try {
     const { id } = req.params;
@@ -156,7 +153,6 @@ export const updateVehicle = async (req, res) => {
       return res.status(404).json({ error: "Mezzo non trovato" });
     }
 
-    //Se si cambia lo stato a "disponibile", controlla i report
     if (stato === "disponibile") {
       const activeReport = await Report.findOne({
         where: {
@@ -164,7 +160,6 @@ export const updateVehicle = async (req, res) => {
           stato_segnalazione: "in_lavorazione",
         },
       });
-
       if (activeReport) {
         return res.status(400).json({
           error:
@@ -199,7 +194,6 @@ export const updateVehicle = async (req, res) => {
     if (tipo_mezzo) {
       vehicle.tipo_mezzo = tipo_mezzo;
 
-      // Aggiorna tariffa automaticamente se tipo mezzo cambia
       switch (tipo_mezzo) {
         case "bicicletta_muscolare":
           vehicle.tariffa_minuto = 0.15;
@@ -232,7 +226,6 @@ export const updateVehicle = async (req, res) => {
       vehicle.stato_batteria = stato_batteria;
     }
 
-    // Se cambi tipo a muscolare, batteria diventa null
     if (tipo_mezzo === "bicicletta_muscolare") {
       vehicle.stato_batteria = null;
     }
@@ -250,7 +243,7 @@ export const updateVehicle = async (req, res) => {
   }
 };
 
-// DELETE VEHICLE - Elimina mezzo (admin/gestore)
+// DELETE VEHICLE - Elimina mezzo (utente admin)
 export const deleteVehicle = async (req, res) => {
   try {
     const { id } = req.params;
@@ -299,7 +292,7 @@ export const getVehiclesByParking = async (req, res) => {
   }
 };
 
-// RECHARGE VEHICLE BATTERY - Ricarica batteria mezzo (admin/gestore)
+// RECHARGE VEHICLE BATTERY - Ricarica batteria mezzo (utente admin)
 export const rechargeVehicleBattery = async (req, res) => {
   try {
     const { id } = req.params;

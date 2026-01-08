@@ -1,5 +1,3 @@
-// backend/controllers/usersController.js
-
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import Ride from "../models/Ride.js";
@@ -30,7 +28,7 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// UPDATE PROFILE - Modifica nome e cognome
+// UPDATE PROFILE - Modifica nome e cognome utente
 export const updateProfile = async (req, res) => {
   try {
     const { nome, cognome } = req.body;
@@ -65,14 +63,12 @@ export const deleteAccount = async (req, res) => {
   try {
     const id_utente = req.user.id_utente;
 
-    // Controlla se ha corse attive
     const activeRide = await Ride.findOne({
       where: {
         id_utente,
         stato_corsa: ["in_corso", "sospesa_batteria_esaurita"],
       },
     });
-
     if (activeRide) {
       return res.status(400).json({
         error: "Non puoi eliminare il tuo account mentre hai una corsa attiva",
@@ -93,7 +89,7 @@ export const deleteAccount = async (req, res) => {
   }
 };
 
-// CHANGE PASSWORD - Cambio password
+// CHANGE PASSWORD - Cambio password utente
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -109,7 +105,6 @@ export const changePassword = async (req, res) => {
       return res.status(404).json({ error: "Utente non trovato" });
     }
 
-    // Verifica password attuale
     const isValidPassword = await bcrypt.compare(
       currentPassword,
       user.password_hash
@@ -129,7 +124,7 @@ export const changePassword = async (req, res) => {
   }
 };
 
-// GET ALL USERS - Lista tutti gli utenti (admin)
+// GET ALL USERS - Visualizza tutti gli utenti (utente admin)
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
@@ -158,7 +153,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// GET PENDING REACTIVATIONS - Utenti in attesa di approvazione (admin)
+// GET PENDING REACTIVATIONS - Visualizza gli utenti in attesa di approvazione (utente admin)
 export const getPendingReactivations = async (req, res) => {
   try {
     const pendingUsers = await User.findAll({
@@ -177,7 +172,7 @@ export const getPendingReactivations = async (req, res) => {
       order: [["data_sospensione", "DESC"]],
     });
 
-    // Arricchisci con calcolo debito minimo
+    // Calcolo debito minimo
     const usersWithMinAmount = pendingUsers.map((user) => {
       const debito = Math.abs(user.saldo);
       const importoMinimoPrimaCorsa = 1.0;
@@ -208,7 +203,7 @@ export const getPendingReactivations = async (req, res) => {
   }
 };
 
-// GET USER BY ID - Dettagli singolo utente (admin)
+// GET USER BY ID - Dettagli singolo utente (utente admin)
 export const getUserById = async (req, res) => {
   try {
     const { id_utente } = req.params;
@@ -233,7 +228,7 @@ export const getUserById = async (req, res) => {
       return res.status(404).json({ error: "Utente non trovato" });
     }
 
-    // Se ha debito, mostra l'importo minimo da ricaricare
+    // Mostra l'importo minimo da ricaricare se ha debito
     let debito = null;
     let importoMinimoRicarica = null;
     if (user.saldo < 0) {
@@ -255,7 +250,7 @@ export const getUserById = async (req, res) => {
   }
 };
 
-// DELETE USER AS ADMIN - Elimina account di un utente come amministratore
+// DELETE USER AS ADMIN - Elimina account di un utente (utente admin)
 export const deleteUserAsAdmin = async (req, res) => {
   try {
     const { id_utente } = req.params;
@@ -283,7 +278,6 @@ export const deleteUserAsAdmin = async (req, res) => {
       });
     }
 
-    // Controlla che l'utente esista
     const user = await User.findByPk(userIdToDelete);
     if (!user) {
       return res.status(404).json({
@@ -291,21 +285,19 @@ export const deleteUserAsAdmin = async (req, res) => {
       });
     }
 
-    // Proteggi l'admin principale
+    // Protegge l'admin principale
     if (userIdToDelete === 9) {
       return res.status(403).json({
         error: "Non puoi eliminare l'admin principale",
       });
     }
 
-    // Se l'utente ha una corsa in corso, non si può eliminare
     const activeRide = await Ride.findOne({
       where: {
         id_utente: userIdToDelete,
         stato_corsa: ["in_corso", "sospesa_batteria_esaurita"],
       },
     });
-
     if (activeRide) {
       return res.status(400).json({
         error:
@@ -313,7 +305,6 @@ export const deleteUserAsAdmin = async (req, res) => {
       });
     }
 
-    // Procedi con l'eliminazione
     await user.destroy();
 
     res.status(200).json({

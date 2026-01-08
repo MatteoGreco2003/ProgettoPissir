@@ -9,12 +9,11 @@ import sgMail from "@sendgrid/mail";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// REGISTER - Logica di registrazione
+// REGISTER - Registrazione nuovo utente/admin
 export const register = async (req, res) => {
   try {
     const { nome, cognome, email, password } = req.body;
 
-    // Validazione input
     if (!nome || !cognome || !email || !password) {
       return res.status(400).json({ error: "Tutti i campi sono obbligatori" });
     }
@@ -25,21 +24,17 @@ export const register = async (req, res) => {
         .json({ error: "La password deve avere almeno 8 caratteri" });
     }
 
-    // Controlla email duplicata
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: "Email già registrata" });
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
     // Determina ruolo in base all'email
     let role = "user";
     if (email === process.env.ADMIN_EMAIL) {
       role = "admin";
-    } else if (email === process.env.MANAGER_EMAIL) {
-      role = "manager";
     }
 
     // Crea utente
@@ -65,7 +60,7 @@ export const register = async (req, res) => {
   }
 };
 
-// LOGIN - Logica di login
+// LOGIN - Login utente/admin
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -84,7 +79,6 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: "Credenziali non valide" });
     }
 
-    // Genera JWT con role
     const token = jwt.sign(
       {
         id_utente: user.id_utente,

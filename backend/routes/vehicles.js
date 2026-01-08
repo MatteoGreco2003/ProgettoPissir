@@ -12,7 +12,6 @@ import { verifyToken, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Route generiche (meno specifiche)
 // Lista tutti i mezzi
 router.get("/data", getAllVehicles);
 
@@ -31,7 +30,6 @@ router.put("/:id", verifyToken, isAdmin, updateVehicle);
 // Elimina mezzo (solo admin)
 router.delete("/:id", verifyToken, isAdmin, deleteVehicle);
 
-// Route parametrizzate (specifiche) prima di quelle generiche
 // Ricarica batteria (solo admin)
 router.post(
   "/:id/recharge-battery",

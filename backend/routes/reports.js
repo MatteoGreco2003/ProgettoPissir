@@ -1,5 +1,3 @@
-// backend/routes/reports.js
-
 import express from "express";
 import {
   createReport,
@@ -20,10 +18,10 @@ router.get("/my-reports", verifyToken, getMyReports);
 // Report per mezzo specifico
 router.get("/by-vehicle/:id_mezzo", getReportsByVehicleId);
 
-// Dettagli report singolo (protetto)
+// Dettagli report singolo
 router.get("/:id_segnalazione", verifyToken, getReportById);
 
-// Crea report (protetto)
+// Crea report
 router.post("/", verifyToken, createReport);
 
 // Tutti i report (solo admin)
@@ -37,7 +35,7 @@ router.patch(
   updateReportStatus
 );
 
-// Elimina report (solo admin)
+// Elimina un report (solo admin)
 router.delete("/:id_segnalazione", verifyToken, isAdmin, deleteReport);
 
 export default router;

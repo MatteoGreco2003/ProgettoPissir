@@ -1,5 +1,3 @@
-// backend/middleware/auth.js
-
 import jwt from "jsonwebtoken";
 
 // Middleware di autenticazione universale
@@ -133,7 +131,7 @@ export const apiAuthMiddleware = (req, res, next) => {
 };
 
 // Middleware di autorizzazione
-// Verifica se utente è admin/gestore (usa dopo apiAuthMiddleware)
+// Verifica se utente è admin (usato dopo apiAuthMiddleware)
 export const isAdmin = (req, res, next) => {
   try {
     if (!req.user) {

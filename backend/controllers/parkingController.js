@@ -55,7 +55,6 @@ export const getParkingById = async (req, res) => {
       return res.status(404).json({ error: "Parcheggio non trovato" });
     }
 
-    // Calcola posti disponibili
     const disponibili = parking.capacita - (parking.vehicles?.length || 0);
 
     res.status(200).json({
@@ -72,7 +71,7 @@ export const getParkingById = async (req, res) => {
   }
 };
 
-// CREATE PARKING - Crea nuovo parcheggio (admin/gestore)
+// CREATE PARKING - Crea nuovo parcheggio (utente admin)
 export const createParking = async (req, res) => {
   try {
     const { nome, latitudine, longitudine, capacita } = req.body;
@@ -88,7 +87,6 @@ export const createParking = async (req, res) => {
       });
     }
 
-    // Valida coordinate
     if (latitudine < -90 || latitudine > 90) {
       return res
         .status(400)
@@ -122,7 +120,7 @@ export const createParking = async (req, res) => {
   }
 };
 
-// UPDATE PARKING - Modifica dati parcheggio (admin/gestore)
+// UPDATE PARKING - Modifica dati parcheggio (utente admin)
 export const updateParking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -133,7 +131,6 @@ export const updateParking = async (req, res) => {
       return res.status(404).json({ error: "Parcheggio non trovato" });
     }
 
-    // Valida coordinate se cambiate
     if (latitudine !== undefined) {
       if (latitudine < -90 || latitudine > 90) {
         return res.status(400).json({ error: "Latitudine non valida" });
@@ -155,11 +152,12 @@ export const updateParking = async (req, res) => {
         return res.status(400).json({ error: "Capacità minimo 1" });
       }
 
-      // Controlla se ci sono mezzi parcheggiati
+      // Controlla quanti sono i mezzi parcheggiati
       const vehicleCount = await Vehicle.count({
         where: { id_parcheggio: id },
       });
 
+      // Non permettere di ridurre capacità sotto il numero di mezzi parcheggiati
       if (capacita < vehicleCount) {
         return res.status(400).json({
           error: `Non puoi ridurre a ${capacita}, ci sono ${vehicleCount} mezzi parcheggiati`,
@@ -181,7 +179,7 @@ export const updateParking = async (req, res) => {
   }
 };
 
-// DELETE PARKING - Elimina parcheggio (admin/gestore)
+// DELETE PARKING - Elimina parcheggio (utente admin)
 export const deleteParking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -191,11 +189,12 @@ export const deleteParking = async (req, res) => {
       return res.status(404).json({ error: "Parcheggio non trovato" });
     }
 
-    // Non eliminare se contiene mezzi
+    // Controlla quanti sono i mezzi parcheggiati
     const vehicleCount = await Vehicle.count({
       where: { id_parcheggio: id },
     });
 
+    // Non elimina se ci sono mezzi parcheggiati
     if (vehicleCount > 0) {
       return res.status(400).json({
         error: `Impossibile eliminare contiene ${vehicleCount} mezzi`,

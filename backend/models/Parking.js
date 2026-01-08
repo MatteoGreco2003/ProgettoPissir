@@ -1,5 +1,3 @@
-// backend/models/Parking.js
-
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
@@ -15,7 +13,6 @@ const Parking = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    // Coordinate GPS per localizzazione
     latitudine: {
       type: DataTypes.DECIMAL(10, 8),
       validate: {
@@ -30,14 +27,12 @@ const Parking = sequelize.define(
         max: 180,
       },
     },
-    // Numero massimo di mezzi che può contenere
     capacita: {
       type: DataTypes.INTEGER,
       validate: {
         min: 1,
       },
     },
-    // Data di creazione automatica
     creato_il: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

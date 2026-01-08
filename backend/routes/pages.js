@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
-// Home / Login - Reindirizza a dashboard se già autenticato
+// Home o Login - Reindirizza a home se già autenticato
 router.get("/", (req, res) => {
   const token = req.cookies?.token || null;
 
@@ -24,7 +24,6 @@ router.get("/", (req, res) => {
       // Altrimenti reindirizza a home-utente
       return res.redirect("/home-utente");
     } catch (error) {
-      // Token invalido, mostra login
       res.clearCookie("token");
       return res.render("auth");
     }
@@ -33,12 +32,12 @@ router.get("/", (req, res) => {
   res.render("auth");
 });
 
-// Reset password - Pagina pubblica
+// Pagina di reset password
 router.get("/reset-password", (req, res) => {
   res.render("reset-password");
 });
 
-// Dashboard utente (protetto)
+// Home utente (protetto)
 router.get("/home-utente", authMiddleware, (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("home-utente");
@@ -48,13 +47,6 @@ router.get("/home-utente", authMiddleware, (req, res) => {
 router.get("/profile", authMiddleware, (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("profile-utente", { user: req.user });
-});
-
-// Pagina corsa (protetto)
-router.get("/ride", authMiddleware, (req, res) => {
-  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
-  const { ride_id } = req.query;
-  res.render("ride", { rideId: ride_id });
 });
 
 // Gestione credito (protetto)
@@ -69,11 +61,20 @@ router.get("/feedback", authMiddleware, (req, res) => {
   res.render("feedback");
 });
 
-// Dashboard admin (protetto)
+// Pagina corsa utente (protetto)
+router.get("/ride", authMiddleware, (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
+  const { ride_id } = req.query;
+  res.render("ride", { rideId: ride_id });
+});
+
+// Home admin (protetto)
 router.get("/home-admin", authMiddleware, (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("admin-dashboard");
 });
+
+// Profilo admin (protetto) --> Stessa pagina del profilo utente
 
 // Gestione utenti (protetto)
 router.get("/gestione-utenti", authMiddleware, (req, res) => {
@@ -104,49 +105,5 @@ router.get("/gestione-segnalazioni", authMiddleware, (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.render("gestione-segnalazioni");
 });
-
-/*
-// Gestione mezzi (protetto + solo gestori)
-router.get("/manager/vehicles", authMiddleware, (req, res) => {
-  if (req.user.role !== "manager" && req.user.role !== "admin") {
-    return res.status(403).render("404", {
-      title: "Accesso Negato",
-    });
-  }
-
-  res.render("manager/vehicles", {
-    title: "Gestione Mezzi - Mobishare",
-    user: req.user,
-  });
-});
-
-// Gestione parcheggi (protetto + solo gestori)
-router.get("/manager/parkings", authMiddleware, (req, res) => {
-  if (req.user.role !== "manager" && req.user.role !== "admin") {
-    return res.status(403).render("404", {
-      title: "Accesso Negato",
-    });
-  }
-
-  res.render("manager/parkings", {
-    title: "Gestione Parcheggi - Mobishare",
-    user: req.user,
-  });
-});
-
-// Gestione segnalazioni (protetto + solo gestori)
-router.get("/manager/reports", authMiddleware, (req, res) => {
-  if (req.user.role !== "manager" && req.user.role !== "admin") {
-    return res.status(403).render("404", {
-      title: "Accesso Negato",
-    });
-  }
-
-  res.render("manager/reports", {
-    title: "Segnalazioni - Mobishare",
-    user: req.user,
-  });
-});
-*/
 
 export default router;

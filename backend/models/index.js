@@ -1,4 +1,3 @@
-// backend/models/index.js
 import User from "./User.js";
 import Vehicle from "./Vehicle.js";
 import Parking from "./Parking.js";

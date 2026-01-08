@@ -12,24 +12,22 @@ import { verifyToken, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Route generiche (meno specifiche)
-// Ricarica credito (protetto)
+// Ricarica credito utente
 router.post("/recharge", verifyToken, rechargeCredit);
 
-// Storico transazioni (protetto)
+// Storico transazioni utente
 router.get("/history", verifyToken, getTransactionHistory);
 
-// Saldo attuale (protetto)
+// Saldo attuale utente
 router.get("/balance", verifyToken, getCurrentBalance);
 
-// Riepilogo spese e ricariche (protetto)
+// Riepilogo spese e ricariche utente
 router.get("/summary", verifyToken, getBalanceSummary);
 
-// Route parametrizzate (specifiche) prima di quelle generiche
-// Dettagli transazione singola (protetto)
+// Dettagli transazione singola
 router.get("/:transaction_id", verifyToken, getTransactionById);
 
-// Richiesta riapertura account (protetto)
+// Richiesta riapertura account (utente sospeso)
 router.post("/request-reactivation", verifyToken, requestReactivation);
 
 // Approva riapertura account (solo admin)

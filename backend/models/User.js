@@ -1,5 +1,3 @@
-// backend/models/User.js
-
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
@@ -31,22 +29,14 @@ const User = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    // Saldo credito in euro
     saldo: {
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0.0,
     },
-    // Stato account: attivo, sospeso, in attesa di approvazione, eliminato
     stato_account: {
-      type: DataTypes.ENUM(
-        "attivo",
-        "sospeso",
-        "in_attesa_approvazione",
-        "eliminato"
-      ),
+      type: DataTypes.ENUM("attivo", "sospeso", "in_attesa_approvazione"),
       defaultValue: "attivo",
     },
-    // Ruolo utente: user, admin, manager
     role: {
       type: DataTypes.STRING(50),
       defaultValue: "user",
@@ -54,7 +44,6 @@ const User = sequelize.define(
         isIn: [["user", "admin"]],
       },
     },
-    // Data di registrazione automatica
     data_registrazione: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -69,17 +58,14 @@ const User = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
-    // Data sospensione account
     data_sospensione: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    // Data riapertura account
     data_riapertura: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    // Punti fedeltà disponibili
     punti: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
@@ -87,7 +73,6 @@ const User = sequelize.define(
         min: 0,
       },
     },
-    // Numero di sospensioni per tracciare affidabilità
     numero_sospensioni: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
