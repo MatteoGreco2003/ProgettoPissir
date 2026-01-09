@@ -1,20 +1,8 @@
-// ==========================================
-// RESET PASSWORD - MOBISHARE
-// ==========================================
-
 document.addEventListener("DOMContentLoaded", function () {
-  // ===== DOM ELEMENTS =====
   const resetForm = document.getElementById("resetPasswordForm");
   const newPasswordInput = document.getElementById("newPassword");
   const confirmNewPasswordInput = document.getElementById("confirmNewPassword");
 
-  /**
-   * Controlla se la password rispetta i requisiti:
-   * - Minimo 8 caratteri
-   * - Almeno una maiuscola
-   * - Almeno una minuscola
-   * - Almeno un numero
-   */
   function isValidPassword(password) {
     const hasMinLength = password.length >= 8;
     const hasUpperCase = /[A-Z]/.test(password);
@@ -24,13 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return hasMinLength && hasUpperCase && hasLowerCase && hasNumber;
   }
 
-  /**
-   * Mostra gli errori di validazione nel DOM
-   * @param {Array} errors - Array di messaggi di errore
-   */
   function showErrors(errors) {
     const errorContainer = document.getElementById("resetErrors");
-    errorContainer.innerHTML = ""; // Pulisci errori precedenti
+    errorContainer.innerHTML = "";
 
     errors.forEach((error) => {
       const errorDiv = document.createElement("div");
@@ -45,10 +29,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  /**
-   * Estrae i parametri dalla URL (token e email)
-   * @returns {Object} Oggetto con token e email
-   */
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     return {
@@ -57,7 +37,6 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
-  // ===== FORM SUBMISSION =====
   resetForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -123,19 +102,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  /**
-   * Abilita il toggle della visibilità della password
-   * L'icona cambia da lucchetto (lock) a occhio (eye) quando scrivi
-   */
   document.querySelectorAll(".toggle-password").forEach((icon) => {
     const inputId = icon.getAttribute("data-input");
     const input = document.getElementById(inputId);
 
-    /**
-     * Aggiorna l'icona in base al contenuto dell'input
-     * Se c'è testo: mostra occhio (eye) e rendi cliccabile
-     * Se vuoto: mostra lucchetto (lock) e non cliccabile
-     */
     function updateIcon() {
       if (input.value.length > 0) {
         if (!icon.classList.contains("fa-eye")) {
@@ -151,7 +121,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    // Aggiorna l'icona mentre scrivi
     input.addEventListener("input", updateIcon);
 
     icon.addEventListener("click", () => {

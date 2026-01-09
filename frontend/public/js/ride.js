@@ -1,4 +1,4 @@
-// ===== RIDE STATE =====
+// Contiene tutti i dati della pagina in un unico oggetto
 let rideState = {
   rideId: new URLSearchParams(window.location.search).get("ride_id"),
   vehicleData: null,
@@ -16,7 +16,6 @@ let rideState = {
   importoRicaricaTemp: 0,
 };
 
-// ===== DOM ELEMENTS =====
 const timerDisplay = document.getElementById("timerDisplay");
 const endRideBtn = document.getElementById("endRideBtn");
 const parkingSelect = document.getElementById("parkingSelect");
@@ -32,7 +31,6 @@ const puntiDisponibili = document.getElementById("puntiDisponibili");
 const scontoCalcolato = document.getElementById("scontoCalcolato");
 const puntiInfo = document.getElementById("puntiInfo");
 
-// ===== TARIFFE PER TIPO MEZZO =====
 function getTariffaOraria(tipoMezzo) {
   const tariffe = {
     bicicletta_muscolare: 0.15,
@@ -42,7 +40,6 @@ function getTariffaOraria(tipoMezzo) {
   return tariffe[tipoMezzo] || 0.2;
 }
 
-// ✅ Formatta un numero come valuta EUR
 function formatCurrency(value) {
   return new Intl.NumberFormat("it-IT", {
     style: "currency",
@@ -50,33 +47,29 @@ function formatCurrency(value) {
   }).format(value);
 }
 
-// ✅ Calcola km percorsi da durata e tipo mezzo
 function calcolaKmPercorsiDaMinuti(minuti, tipoMezzo) {
   const velocitaMedia = getVelocitaMedia(tipoMezzo);
   return (minuti / 60) * velocitaMedia;
 }
 
-// ✅ Determina velocità media in base al tipo mezzo
 function getVelocitaMedia(tipoMezzo) {
   switch (tipoMezzo) {
     case "bicicletta_muscolare":
-      return 15; // km/h
+      return 15;
     case "bicicletta_elettrica":
-      return 25; // km/h
+      return 25;
     case "monopattino":
-      return 20; // km/h
+      return 20;
     default:
       return 15;
   }
 }
 
-// ✅ Controlla se il mezzo ha batteria
 function haBatteria(tipoMezzo) {
   const mezziConBatteria = ["monopattino", "bicicletta_elettrica"];
   return mezziConBatteria.includes(tipoMezzo);
 }
 
-// ===== SETUP MQTT LISTENER =====
 function setupMQTTListener() {
   document.addEventListener("mqtt-message", (event) => {
     const { topic, payload } = event.detail;
@@ -84,7 +77,6 @@ function setupMQTTListener() {
     try {
       const msg = JSON.parse(payload);
 
-      // 🔥 Ascolta gli alert di batteria
       const alertTopic = `Alerts/${rideState.rideData?.id_utente}/battery`;
 
       if (topic === alertTopic && msg.tipo) {
@@ -99,7 +91,6 @@ function setupMQTTListener() {
         showSnackbar("🔒 Mezzo bloccato! Corsa terminata.", "success", 2000);
       }
 
-      // Fallback vecchio sistema
       if (msg.level !== undefined && msg.id_mezzo !== undefined) {
         const newBattery = msg.level;
 
@@ -129,24 +120,22 @@ function setupMQTTListener() {
   });
 }
 
-// ✅ NUOVO: Animazione visiva quando batteria cambia
 function animateBatteryUpdate(newBattery) {
   const batteryElement = document.getElementById("batteryValue");
   batteryElement.style.transition = "color 0.3s ease";
 
   if (newBattery === null || newBattery === undefined) {
-    batteryElement.style.color = "#999"; // Grigio (N/A)
+    batteryElement.style.color = "#999";
   } else if (newBattery < 20) {
-    batteryElement.style.color = "#ef4444"; // Rosso
+    batteryElement.style.color = "#ef4444";
   } else if (newBattery < 50) {
-    batteryElement.style.color = "#f97316"; // Arancione
+    batteryElement.style.color = "#f97316";
   } else {
-    batteryElement.style.color = "#22c55e"; // Verde
+    batteryElement.style.color = "#22c55e";
   }
 }
 
 function handleBatteryZero() {
-  // ✅ Blocca solo se il mezzo HA batteria
   const tipoMezzo = rideState.vehicleData?.tipo_mezzo;
   if (!haBatteria(tipoMezzo)) {
     return;
@@ -158,7 +147,7 @@ function handleBatteryZero() {
   const ultimiDatiValidi = {
     km: parseFloat(distanceValue.textContent) || 0,
     durata: rideState.elapsedSeconds,
-    costo: costValue.textContent, // Salva la stringa con €
+    costo: costValue.textContent,
   };
 
   if (rideState.timerInterval) clearInterval(rideState.timerInterval);
@@ -168,7 +157,6 @@ function handleBatteryZero() {
   rideState.vehicleData.stato_batteria = 0;
   document.getElementById("summaryBatteria").textContent = "0%";
 
-  // Cambia colore batteria a rosso
   animateBatteryUpdate(0);
 
   endRideBtn.textContent = "Paga Ora";
@@ -254,35 +242,28 @@ function showBatteryZeroModal() {
   `;
   document.body.appendChild(modal);
 
-  // ✅ NUOVO: Quando clicchi OK, chiama getActiveRide e blocca tutto
   document.getElementById("closeModal").addEventListener("click", async () => {
     try {
-      // 📡 Chiama il backend per i dati veri
       const response = await fetch("/rides/active");
       const data = await response.json();
 
-      // ✅ Prendi i dati VERI dal backend
       const durata_minuti = data.durata_corrente_minuti;
       const km_percorsi = parseFloat(data.km_percorsi);
       const costo_stimato = data.costo_stimato;
 
-      // ✅ Aggiorna l'UI con i DATI VERI (non a 0)
       timerDisplay.textContent = formatMinutiInTimer(durata_minuti);
       distanceValue.textContent = km_percorsi.toFixed(2);
       costValue.textContent = `€${parseFloat(costo_stimato).toFixed(2)}`;
 
-      // ✅ Velocità e batteria rimangono a 0
       speedValue.textContent = "0";
       batteryValue.textContent = "0%";
       document.getElementById("summaryBatteria").textContent = "0%";
 
-      // ✅ BLOCCA il timer (niente aggiornamenti)
       rideState.batteryZero = true;
       if (rideState.timerInterval) {
         clearInterval(rideState.timerInterval);
       }
 
-      // 🔒 Impedisci qualsiasi ulteriore aggiornamento
       endRideBtn.textContent = "Paga Ora";
       endRideBtn.style.background = "#dc2626";
 
@@ -291,13 +272,11 @@ function showBatteryZeroModal() {
       console.error("❌ Errore caricamento dati:", error);
     }
 
-    // Chiudi modal
     modal.remove();
     parkingSelect.focus();
   });
 }
 
-// ✅ NUOVO: Carica punti fedeltà dell'utente
 function loadUserPunti() {
   fetch("/users/me")
     .then((res) => res.json())
@@ -321,7 +300,6 @@ function loadUserPunti() {
     });
 }
 
-// ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
   if (!rideState.rideId) {
     showError("Errore", "ID corsa non valido");
@@ -333,10 +311,10 @@ document.addEventListener("DOMContentLoaded", () => {
   loadUserPunti();
   setupEventListeners();
 
-  // ✅ NUOVO: Usa Singleton MQTT (connessione persistente)
+  // Inizializza MQTT
   MQTTManager.init();
 
-  // ✅ NUOVO: Ascolta messaggi MQTT da questa pagina
+  // Setup MQTT Listener
   setupMQTTListener();
 
   setTimeout(() => {
@@ -345,13 +323,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 500);
 });
 
-// ===== CLEANUP quando chiudi la pagina =====
-window.addEventListener("beforeunload", () => {
-  // ❌ NON disconnettere MQTT! Lascia che persista
-  // MQTTManager.disconnect();
-});
+/*window.addEventListener("beforeunload", () => {
+  MQTTManager.disconnect();
+});*/
 
-// ===== LOAD RIDE DATA =====
 function loadRideData() {
   fetch(`/rides/${rideState.rideId}`)
     .then((res) => {
@@ -403,7 +378,6 @@ function updateRideUI(ride) {
   document.getElementById("summaryPartenza").textContent =
     ride.parkingInizio?.nome || "N/A";
 
-  // ✅ Mostra batteria solo se il mezzo la ha
   const tipoMezzo = vehicle.tipo_mezzo;
   if (haBatteria(tipoMezzo)) {
     document.getElementById("summaryBatteria").textContent =
@@ -411,7 +385,6 @@ function updateRideUI(ride) {
     batteryValue.textContent =
       (vehicle.stato_batteria !== null ? vehicle.stato_batteria : "N/A") + "%";
   } else {
-    // Mezzo senza batteria
     document.getElementById("summaryBatteria").textContent = "Non Presente";
     batteryValue.textContent = "Non Presente";
     batteryValue.style.color = "#999";
@@ -426,7 +399,6 @@ function updateRideUI(ride) {
   }
 }
 
-// ===== LOAD PARKINGS =====
 function loadParkings() {
   fetch("/parking/data")
     .then((res) => res.json())
@@ -451,7 +423,6 @@ function populateParkingSelect() {
   parkingSelect.innerHTML = `${options}`;
 }
 
-// ===== TIMER =====
 function startTimer() {
   rideState.timerInterval = setInterval(() => {
     if (!rideState.isPaused) {
@@ -475,7 +446,6 @@ function updateTimerDisplay() {
   timerDisplay.textContent = `${hours}:${minutes}:${seconds}`;
 }
 
-// ===== COST CALCULATION =====
 function calculateCost() {
   if (!rideState.vehicleData) {
     return;
@@ -495,9 +465,7 @@ function calculateCost() {
   costValue.textContent = `€${cost.toFixed(2)}`;
 }
 
-// ===== SIMULATE RIDE DATA (Demo) - Con fallback se MQTT non disponibile =====
 function simulateRideData() {
-  // ✅ Controlla batteria SOLO se il mezzo la ha
   const tipoMezzo = rideState.vehicleData?.tipo_mezzo;
   if (haBatteria(tipoMezzo) && rideState.vehicleData.stato_batteria <= 0) {
     handleBatteryZero();
@@ -505,13 +473,11 @@ function simulateRideData() {
   }
 
   setInterval(() => {
-    // ⚠️ NUOVO: Salta tutto se batteria è a 0
     if (rideState.batteryZero) {
       return;
     }
 
     if (!rideState.isPaused && rideState.vehicleData) {
-      // ✅ Calcola km CORRETTAMENTE
       const minuti = rideState.elapsedSeconds / 60;
       const kmPercorsi = calcolaKmPercorsiDaMinuti(
         minuti,
@@ -519,13 +485,11 @@ function simulateRideData() {
       );
       distanceValue.textContent = kmPercorsi.toFixed(1);
 
-      // Simula velocità
       const speed = Math.floor(Math.random() * 10) + 15;
       speedValue.textContent = speed;
 
-      // ✅ Decrementa batteria SOLO se MQTT non è disponibile E il mezzo ha batteria
       if (haBatteria(tipoMezzo) && !MQTTManager.isConnected()) {
-        const batteryLoss = (rideState.elapsedSeconds / 60) * 1; // 1% al minuto
+        const batteryLoss = (rideState.elapsedSeconds / 60) * 1;
         const remainingBattery = Math.max(
           0,
           rideState.vehicleData.stato_batteria - batteryLoss
@@ -533,7 +497,6 @@ function simulateRideData() {
         batteryValue.textContent = remainingBattery.toFixed(1) + "%";
         rideState.vehicleData.stato_batteria = remainingBattery;
 
-        // ✅ Se batteria va a zero
         if (remainingBattery <= 0) {
           handleBatteryZero();
         }
@@ -542,19 +505,16 @@ function simulateRideData() {
   }, 1000);
 }
 
-// ===== EVENT LISTENERS =====
 function setupEventListeners() {
   endRideBtn.addEventListener("click", endRide);
   parkingSelect.addEventListener("change", (e) => {
     rideState.selectedParkingEnd = e.target.value;
   });
 
-  // ✅ NUOVO: Toggle punti fedeltà
   usaPuntiToggle.addEventListener("change", (e) => {
     rideState.usaPunti = e.target.checked;
 
     if (e.target.checked) {
-      // ✅ Calcola il costo ATTUALE
       const minutes = Math.floor(rideState.elapsedSeconds / 60);
       let costoCorsa = 0;
       const tariffaOraria = getTariffaOraria(rideState.vehicleData.tipo_mezzo);
@@ -565,24 +525,20 @@ function setupEventListeners() {
         costoCorsa = 1.0 + (minutes - 30) * tariffaOraria;
       }
 
-      // ✅ NUOVO: Calcola SOLO i punti necessari
-      const puntiNecessari = Math.ceil(costoCorsa / 0.05); // Quanti punti servono
-      const puntiUsabili = Math.min(puntiNecessari, rideState.punti_fedeltà); // Usa solo quelli necessari
+      const puntiNecessari = Math.ceil(costoCorsa / 0.05);
+      const puntiUsabili = Math.min(puntiNecessari, rideState.punti_fedeltà);
       const sconto = puntiUsabili * 0.05;
 
-      // ✅ AGGIORNA ENTRAMBI I VALORI
-      document.getElementById("puntiUsati").textContent = puntiUsabili; // ← QUESTO MANCAVA!
+      document.getElementById("puntiUsati").textContent = puntiUsabili;
       scontoCalcolato.textContent = `€${sconto.toFixed(2)}`;
       puntiInfo.classList.add("active");
     } else {
-      // ✅ Quando deselezioni, torna a 0
-      document.getElementById("puntiUsati").textContent = "0"; // ← RESET
+      document.getElementById("puntiUsati").textContent = "0";
       puntiInfo.classList.remove("active");
     }
   });
 }
 
-// ===== END RIDE =====
 function endRide() {
   if (!rideState.selectedParkingEnd) {
     showError("❌ Errore", "Seleziona un parcheggio di arrivo");
@@ -592,7 +548,6 @@ function endRide() {
   endRideBtn.disabled = true;
   endRideBtn.textContent = "Elaborazione...";
 
-  // ✅ NUOVO: Calcola il costo ATTUALE (come fa il toggle)
   const minutes = Math.ceil(rideState.elapsedSeconds / 60);
   let costoCorsa = 0;
   const tariffaOraria = getTariffaOraria(rideState.vehicleData.tipo_mezzo);
@@ -603,7 +558,6 @@ function endRide() {
     costoCorsa = 1.0 + (minutes - 30) * tariffaOraria;
   }
 
-  // ✅ NUOVO: Se usa punti, calcola lo sconto
   let costoFinale = costoCorsa;
   if (rideState.usaPunti) {
     const puntiNecessari = Math.ceil(costoCorsa / 0.05);
@@ -615,7 +569,6 @@ function endRide() {
   fetch(`/rides/${rideState.rideId}/check-payment`)
     .then((res) => res.json())
     .then((checkData) => {
-      // ✅ MODIFICA: Passa costoFinale invece di checkData.costo
       checkData.costo = costoFinale;
 
       if (checkData.saldo_sufficiente) {
@@ -650,7 +603,6 @@ function endRideWithPayment(cost) {
       showSnackbar("✅ Corsa terminata! Pagamento confermato.", "success");
       clearInterval(rideState.timerInterval);
 
-      // ✅ AGGIUNGI QUI - Prepara dati corsa per il feedback
       const rideDataForFeedback = {
         id_mezzo: rideState.vehicleData.id_mezzo,
         tipo_mezzo: rideState.vehicleData.tipo_mezzo,
@@ -659,20 +611,17 @@ function endRideWithPayment(cost) {
         costo_finale: cost,
       };
 
-      // Salva nei sessionStorage per recuperare nella home-utente
       sessionStorage.setItem(
         "pendingFeedback",
         JSON.stringify(rideDataForFeedback)
       );
 
-      // ❌ NON disconnettere MQTT!
       setTimeout(() => {
         window.location.href = "/home-utente";
       }, 4000);
     })
     .catch((error) => {
       console.error("❌ Errore:", error);
-      showError("❌ Errore", "Errore nella chiusura della corsa");
       endRideBtn.disabled = false;
       endRideBtn.textContent = "Termina Corsa";
     });
@@ -683,7 +632,6 @@ function endRideWithDebt(checkData, costoFinale) {
   const debitoTotale = costoFinale + costoPrimaCorsa;
   const importoMancante = Math.max(0, costoFinale - checkData.saldo_attuale);
 
-  // ✅ Salva i dati nel state
   rideState.debtData = {
     costoCorsa: costoFinale,
     costoPrimaCorsa: costoPrimaCorsa,
@@ -697,7 +645,6 @@ function endRideWithDebt(checkData, costoFinale) {
   endRideBtn.textContent = "Termina Corsa";
 }
 
-// ✅ NUOVO: Modal per saldo insufficiente (DEBITO)
 function showDebtModal(checkData, importoMancante, costoFinale) {
   const modal = document.createElement("div");
   const costoPrimaCorsa = 1.0;
@@ -705,18 +652,15 @@ function showDebtModal(checkData, importoMancante, costoFinale) {
   const importoRicaricaMinimo =
     Math.ceil((importoMancante + costoPrimaCorsa) * 100) / 100;
 
-  // ✅ NUOVO: Genera opzioni intelligenti
   const opzioniBase = [5, 10, 20, 50, 100];
   const opzioniDisponibili = opzioniBase.filter(
     (importo) => importo >= importoRicaricaMinimo
   );
 
-  // ✅ Se nessuna opzione base è sufficiente, aggiungi la minima arrotondata
   if (opzioniDisponibili.length === 0) {
     opzioniDisponibili.push(importoRicaricaMinimo);
   }
 
-  // ✅ Crea HTML delle opzioni
   const opzioniHTML = opzioniDisponibili
     .map(
       (importo) => `<option value="${importo}">€${importo.toFixed(2)}</option>`
@@ -898,7 +842,6 @@ function showDebtModal(checkData, importoMancante, costoFinale) {
   `;
   document.body.appendChild(modal);
 
-  // ✅ Gestione select importo custom
   const selectAmount = document.getElementById("debtRechargeAmount");
   const customInput = document.getElementById("debtCustomAmount");
 
@@ -911,7 +854,6 @@ function showDebtModal(checkData, importoMancante, costoFinale) {
     }
   });
 
-  // ✅ Button: Ricarica e Paga
   document.getElementById("debtRechargeBtn").addEventListener("click", () => {
     const oldErrors = document.querySelectorAll("[data-error-box]");
     oldErrors.forEach((err) => err.remove());
@@ -951,7 +893,6 @@ function showDebtModal(checkData, importoMancante, costoFinale) {
     } else {
       importoRicarica = parseFloat(selectedValue) || 0;
       if (importoRicarica === 0) {
-        // ✅ NUOVO: Mostra errore direttamente nella modal
         const errorBox = document.createElement("div");
         errorBox.setAttribute("data-error-box", "true");
         errorBox.style.cssText = `
@@ -973,7 +914,6 @@ function showDebtModal(checkData, importoMancante, costoFinale) {
             document.getElementById("debtRechargeBtn")
           );
 
-        // Rimuovi dopo 3 secondi
         setTimeout(() => errorBox.remove(), 5000);
         return;
       }
@@ -981,18 +921,14 @@ function showDebtModal(checkData, importoMancante, costoFinale) {
 
     rideState.importoRicaricaTemp = importoRicarica;
 
-    // ✅ Chiudi modal
     modal.remove();
 
-    // ✅ Chiama endRideWithPaymentAfterRecharge
     endRideWithPaymentAfterRecharge(importoRicarica);
   });
 
-  // ✅ Button: Ignora (crea debito)
   document.getElementById("debtIgnoreBtn").addEventListener("click", () => {
     modal.remove();
 
-    // ✅ Invia richiesta al backend per creare il debito
     const payload = {
       id_parcheggio_fine: parseInt(rideState.selectedParkingEnd),
     };
@@ -1007,16 +943,14 @@ function showDebtModal(checkData, importoMancante, costoFinale) {
         showSnackbar("⚠️ Account sospeso per debito", "warning");
         clearInterval(rideState.timerInterval);
 
-        // ✅ AGGIUNGI QUI - Prepara dati corsa per il feedback
         const rideDataForFeedback = {
           id_mezzo: rideState.vehicleData.id_mezzo,
           tipo_mezzo: rideState.vehicleData.tipo_mezzo,
           km_percorsi: parseFloat(distanceValue.textContent),
           durata_minuti: Math.floor(rideState.elapsedSeconds / 60),
-          costo_finale: checkData.costo, // ← CORRETTO!
+          costo_finale: checkData.costo,
         };
 
-        // Salva nei sessionStorage per recuperare nella home-utente
         sessionStorage.setItem(
           "pendingFeedback",
           JSON.stringify(rideDataForFeedback)
@@ -1028,12 +962,10 @@ function showDebtModal(checkData, importoMancante, costoFinale) {
       })
       .catch((error) => {
         console.error("❌ Errore:", error);
-        showError("❌ Errore", "Errore nella chiusura della corsa");
       });
   });
 }
 
-// ✅ NUOVO: Ricarica + Pagamento
 function endRideWithPaymentAfterRecharge(importoRicarica) {
   endRideBtn.disabled = true;
   endRideBtn.textContent = "Elaborazione...";
@@ -1064,7 +996,6 @@ function endRideWithPaymentAfterRecharge(importoRicarica) {
         costoCorsa = 1.0 + (minutes - 30) * tariffaOraria;
       }
 
-      // Se usa punti, calcola lo sconto
       let costoFinale = costoCorsa;
       if (rideState.usaPunti) {
         const puntiNecessari = Math.ceil(costoCorsa / 0.05);
@@ -1073,16 +1004,14 @@ function endRideWithPaymentAfterRecharge(importoRicarica) {
         costoFinale = costoCorsa - sconto;
       }
 
-      // ✅ CORRETTO: Usa costoFinale appena calcolato
       const rideDataForFeedback = {
         id_mezzo: rideState.vehicleData.id_mezzo,
         tipo_mezzo: rideState.vehicleData.tipo_mezzo,
         km_percorsi: parseFloat(distanceValue.textContent),
         durata_minuti: Math.floor(rideState.elapsedSeconds / 60),
-        costo_finale: costoFinale, // ← CORRETTO!
+        costo_finale: costoFinale,
       };
 
-      // Salva nei sessionStorage per recuperare nella home-utente
       sessionStorage.setItem(
         "pendingFeedback",
         JSON.stringify(rideDataForFeedback)
@@ -1094,13 +1023,11 @@ function endRideWithPaymentAfterRecharge(importoRicarica) {
     })
     .catch((error) => {
       console.error("❌ Errore:", error);
-      showError("❌ Errore", "Errore nella chiusura della corsa");
       endRideBtn.disabled = false;
       endRideBtn.textContent = "Termina Corsa";
     });
 }
 
-// ===== ERROR BOX =====
 function showError(title, message) {
   errorDiv.innerHTML = `
     <div>
@@ -1117,7 +1044,6 @@ function showError(title, message) {
   }, 10000);
 }
 
-// ===== SNACKBAR QUEUE SYSTEM =====
 let snackbarQueue = [];
 let snackbarActive = false;
 
@@ -1138,11 +1064,10 @@ function processSnackbarQueue() {
   setTimeout(() => {
     snackbar.classList.remove("show");
     snackbarActive = false;
-    processSnackbarQueue(); // Mostra la prossima
+    processSnackbarQueue();
   }, duration);
 }
 
-// ✅ Helper function: Converti minuti in formato HH:MM:SS
 function formatMinutiInTimer(minuti) {
   const totalSeconds = Math.round(minuti * 60);
   const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");

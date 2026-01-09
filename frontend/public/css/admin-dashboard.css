@@ -1,25 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-/* ============================================================================
-   CSS CUSTOM PROPERTIES E RESET
-   ========================================================================== */
-
 :root {
-  /* Colori primari e secondari */
   --primary-teal: rgba(33, 128, 141, 1);
   --primary-teal-dark: rgba(29, 116, 128, 1);
   --success-green: rgba(33, 128, 141, 1);
   --warning-orange: #e68161;
   --error-red: rgba(192, 21, 47, 1);
-
-  /* Colori neutrali */
   --light-bg: rgba(252, 252, 249, 1);
   --dark-text: rgba(19, 52, 59, 1);
   --light-text: rgba(98, 108, 113, 1);
   --white: rgba(255, 255, 255, 1);
   --border-color: rgba(94, 82, 64, 0.2);
-
-  /* Transizioni */
   --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -35,17 +26,11 @@ body {
   color: var(--dark-text);
 }
 
-/* ============================================================================
-   MAIN LAYOUT
-   ========================================================================== */
 main {
   margin-left: 250px;
   padding: 24px;
 }
 
-/* ============================================================================
-   KPI CARDS GRID
-   ========================================================================== */
 .kpi-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -111,10 +96,6 @@ main {
   margin: 16px 0;
 }
 
-/* ============================================================================
-   USERS CARD IMPROVEMENTS
-   ========================================================================== */
-
 .kpi-card--users {
   padding: 20px;
   flex-direction: column;
@@ -122,7 +103,6 @@ main {
   justify-content: space-between;
 }
 
-/* Status Breakdown */
 .users-status-breakdown {
   display: flex;
   flex-direction: column;
@@ -186,7 +166,6 @@ main {
   text-align: right;
 }
 
-/* Top User Info */
 .top-user-info {
   display: flex;
   align-items: center;
@@ -250,10 +229,6 @@ main {
   border: 1.5px solid var(--primary-teal);
 }
 
-/* ============================================================================
-   VEHICLES CARD IMPROVEMENTS
-   ========================================================================== */
-
 .kpi-card--vehicles {
   padding: 20px;
   flex-direction: column;
@@ -261,7 +236,6 @@ main {
   justify-content: space-between;
 }
 
-/* Vehicle Types Distribution */
 .vehicles-status-breakdown {
   display: flex;
   flex-direction: column;
@@ -315,7 +289,6 @@ main {
   color: var(--primary-teal);
 }
 
-/* Status dots per vehicles */
 .status-dot.available {
   background-color: var(--success-green);
   box-shadow: 0 0 8px rgba(33, 128, 141, 0.3);
@@ -336,10 +309,6 @@ main {
   box-shadow: 0 0 8px rgba(230, 129, 97, 0.3);
 }
 
-/* ============================================================================
-   PARKINGS CARD IMPROVEMENTS
-   ========================================================================== */
-
 .kpi-card--parkings {
   padding: 20px;
   flex-direction: column;
@@ -347,7 +316,6 @@ main {
   justify-content: space-between;
 }
 
-/* Parking Capacity Overview */
 .parkings-overview {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -395,7 +363,6 @@ main {
   color: var(--success-green);
 }
 
-/* Occupancy Progress Bar */
 .occupancy-container {
   width: 100%;
   margin-bottom: 16px;
@@ -443,10 +410,6 @@ main {
   background: linear-gradient(90deg, var(--warning-orange), var(--error-red));
 }
 
-/* ============================================================================
-   RIDES CARD IMPROVEMENTS
-   ========================================================================== */
-
 .kpi-card--rides {
   padding: 20px;
   flex-direction: column;
@@ -454,7 +417,6 @@ main {
   justify-content: space-between;
 }
 
-/* Rides Status Breakdown */
 .rides-status-breakdown {
   display: flex;
   flex-direction: column;
@@ -462,7 +424,6 @@ main {
   width: 100%;
 }
 
-/* Rides Stats Grid */
 .rides-stats-grid {
   margin-bottom: 16px;
   flex-grow: 1;
@@ -500,7 +461,6 @@ main {
   color: var(--dark-text);
 }
 
-/* Status dots per rides */
 .status-dot.completed {
   background-color: var(--success-green);
   box-shadow: 0 0 8px rgba(33, 128, 141, 0.3);
@@ -511,10 +471,6 @@ main {
   box-shadow: 0 0 8px rgba(230, 129, 97, 0.3);
 }
 
-/* ============================================================================
-   EARNINGS CARD IMPROVEMENTS
-   ========================================================================== */
-
 .kpi-card--earnings {
   padding: 20px;
   flex-direction: column;
@@ -522,7 +478,6 @@ main {
   justify-content: space-between;
 }
 
-/* Earnings Stats Grid */
 .earnings-stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -561,7 +516,6 @@ main {
   color: var(--success-green);
 }
 
-/* Earnings by Type */
 .earnings-by-type {
   display: flex;
   flex-direction: column;
@@ -606,10 +560,6 @@ main {
   text-align: right;
 }
 
-/* ============================================================================
-   REPORTS CARD IMPROVEMENTS
-   ========================================================================== */
-
 .kpi-card--reports {
   padding: 20px;
   flex-direction: column;
@@ -618,14 +568,12 @@ main {
   min-height: 380px;
 }
 
-/* Reports Status Breakdown */
 .reports-status-breakdown {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
-/* Reports by Problem Type Grid */
 .reports-problems-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -666,7 +614,6 @@ main {
   text-align: center;
 }
 
-/* Status dots per reports */
 .status-dot.report-open {
   background-color: var(--error-red);
   box-shadow: 0 0 8px rgba(192, 21, 47, 0.3);
@@ -682,7 +629,6 @@ main {
   box-shadow: 0 0 8px rgba(33, 128, 141, 0.3);
 }
 
-/* ===== SNACKBAR ===== */
 .snackbar {
   position: fixed;
   bottom: 16px;
@@ -714,9 +660,6 @@ main {
   background-color: #e68161;
 }
 
-/* ============================================================================
-   LOADING SPINNER
-   ========================================================================== */
 .spinner {
   border: 4px solid rgba(33, 128, 141, 0.1);
   border-top: 4px solid var(--primary-teal);
@@ -747,7 +690,6 @@ main {
   transition: all 150ms ease;
 }
 
-/* Responsive */
 @media (max-width: 1045px) {
   .kpi-grid {
     grid-template-columns: 1fr;

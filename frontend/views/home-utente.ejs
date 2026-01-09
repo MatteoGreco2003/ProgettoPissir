@@ -19,31 +19,23 @@
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
-    <!-- ✅ Libreria MQTT per browser -->
+    <!-- Libreria MQTT per browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
-    <!-- Poi: Singleton MQTT Manager -->
+    <!-- MQTT Manager -->
     <script src="/js/mqtt-manager.js"></script>
   </head>
 
   <body>
-    <!-- ===== APP CONTAINER ===== -->
     <div id="app">
-      <!-- ===== NAVBAR (IMPORTATO) ===== -->
       <%- include('./components/navbar') %>
-
-      <!-- ===== SIDEBAR (IMPORTATO) ===== -->
       <%- include('./components/sidebar') %>
 
-      <!-- ===== MAIN CONTENT ===== -->
       <main class="main-content">
         <div class="container">
-          <!-- ===== HOMEPAGE ===== -->
           <section id="homepage" class="page-section active">
-            <!-- TOP BANNER (Corsa attiva o Credito basso) -->
             <div id="topBannerContainer"></div>
 
-            <!-- ===== MAPPA PARCHEGGI CON LEAFLET ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
@@ -56,7 +48,6 @@
               </div>
             </div>
 
-            <!-- ===== MAPPA PARCHEGGI ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
@@ -66,12 +57,10 @@
               </div>
               <div class="card-body">
                 <div class="parking-grid" id="parkingGrid">
-                  <!-- Generato dinamicamente -->
                 </div>
               </div>
             </div>
 
-            <!-- ===== CARD VEICOLI CON FILTRI ===== -->
             <div class="card mb-6">
               <div class="card-header">
                 <h2 class="card-title">
@@ -79,7 +68,6 @@
                   Veicoli
                 </h2>
 
-                <!-- ===== FILTRI INTERNI DELLA CARD ===== -->
                 <div class="vehicles-filter-container mb-6">
                   <button class="filter-btn active" data-filter="all">
                     <i class="fas fa-th"></i>
@@ -99,7 +87,6 @@
                   </button>
                 </div>
 
-                <!-- ===== SELECT FILTER (HIDDEN DI DEFAULT) ===== -->
                 <select id="filterSelect" class="filter-select">
                   <option value="all">Tutti</option>
                   <option value="bicicletta_muscolare">
@@ -114,17 +101,13 @@
               <div class="card-body">
                 <select id="parkingFilterSelect" class="parking-filter-select">
                   <option value="">Tutti</option>
-                  <!-- Opzioni dinamiche generate da JS -->
                 </select>
-                <!-- ===== LOADING SPINNER ===== -->
                 <div id="loadingSpinner" class="loading-spinner hidden">
                   <div class="spinner"></div>
                   <p>Caricamento mezzi...</p>
                 </div>
 
-                <!-- ===== VEHICLES GRID ===== -->
                 <div class="vehicles-grid" id="vehiclesGrid">
-                  <!-- Generato dinamicamente -->
                 </div>
               </div>
             </div>
@@ -133,10 +116,9 @@
       </main>
     </div>
 
-    <!-- ===== SNACKBAR NOTIFICHE ===== -->
     <div id="snackbar" class="snackbar"></div>
 
-    <!-- ===== MODAL ELIMINA PROFILO ===== -->
+    <!-- MODAL ELIMINA PROFILO -->
     <div id="deleteProfileModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -163,7 +145,7 @@
       </div>
     </div>
 
-    <!-- ===== MODAL PRENOTAZIONE ===== -->
+    <!-- MODAL PRENOTAZIONE CORSA -->
     <div id="reservationModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -224,7 +206,7 @@
       </div>
     </div>
 
-    <!-- ===== MODAL FEEDBACK CORSA ===== -->
+    <!-- MODAL FEEDBACK CORSA -->
     <div id="feedbackModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content feedback-modal-content">
@@ -332,7 +314,6 @@
       </div>
     </div>
 
-    <!-- ===== SCRIPTS ===== -->
     <script src="/js/home-utente.js"></script>
   </body>
 </html>

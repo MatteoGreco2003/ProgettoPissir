@@ -4,23 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestione Parcheggi</title>
+    <link rel="stylesheet" href="/css/gestione-parcheggi.css" />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="/css/gestione-parcheggi.css" />
-    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
   </head>
   <body>
-    <!-- NAVBAR -->
-    <%- include('components/navbar') %>
+    <%- include('components/navbar') %> <%- include('components/sidebar') %>
 
-    <!-- SIDEBAR -->
-    <%- include('components/sidebar') %>
-
-    <!-- MAIN CONTENT -->
     <main class="main-content">
-      <!-- Header Stats -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon">
@@ -69,7 +63,6 @@
         </button>
       </div>
 
-      <!-- Actions Bar -->
       <div class="actions-bar">
         <div class="search-filter">
           <i class="fas fa-search"></i>
@@ -81,7 +74,6 @@
         </div>
       </div>
 
-      <!-- Parkings Table -->
       <div class="table-container">
         <table class="table">
           <thead>
@@ -110,10 +102,8 @@
         </table>
       </div>
 
-      <!-- Pagination -->
       <div id="paginationContainer" class="pagination-container"></div>
 
-      <!-- TOP PARKING USAGE SECTION -->
       <div class="parking-usage-section">
         <div class="parking-usage-header">
           <h2><i class="fas fa-fire"></i> Top 5 Parcheggi per Utilizzo</h2>
@@ -126,7 +116,7 @@
       </div>
     </main>
 
-    <!-- Modal: Add Parking -->
+    <!-- MODAL AGGIUNGI PARCHEGGIO -->
     <div id="addParkingModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -202,7 +192,7 @@
       </div>
     </div>
 
-    <!-- Modal: Edit Parking -->
+    <!-- MODAL MODIFICA PARCHEGGIO -->
     <div id="editParkingModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -271,7 +261,7 @@
       </div>
     </div>
 
-    <!-- Modal: Delete Parking -->
+    <!-- MODAL ELIMINA PARCHEGGIO -->
     <div id="deleteParkingModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content" style="max-width: 400px">
@@ -302,7 +292,7 @@
       </div>
     </div>
 
-    <!-- Modal: Parking Details -->
+    <!-- MODAL DETTAGLI PARCHEGGIO -->
     <div id="parkingDetailModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -321,7 +311,7 @@
       </div>
     </div>
 
-    <!-- Modal: Parking Statistics -->
+    <!-- MODAL STATISTICHE PARCHEGGIO (CLICK NOME PARCHEGGIO NELLA TABELLA) -->
     <div id="parkingStatisticsModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content modal-statistics">
@@ -341,7 +331,6 @@
       </div>
     </div>
 
-    <!-- Snackbar -->
     <div id="snackbar" class="snackbar"></div>
 
     <script src="/js/gestione-parcheggi.js"></script>

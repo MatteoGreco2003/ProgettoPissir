@@ -1,9 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-/* ============================================================================
-   RESET E VARIABILI GLOBALI
-   ========================================================================== */
-
 * {
   margin: 0;
   padding: 0;
@@ -41,13 +37,11 @@ body {
   color: var(--dark-text);
 }
 
-/* ===== MAIN CONTENT ===== */
 .main-content {
   margin-left: 250px;
   padding: 24px;
 }
 
-/* ===== CARD ===== */
 .card {
   background-color: var(--white);
   border-radius: 12px;
@@ -103,7 +97,6 @@ body {
   padding: 20px;
 }
 
-/* ===== INFO GRID ===== */
 .info-grid {
   display: flex;
   flex-direction: column;
@@ -157,7 +150,6 @@ body {
   width: 100%;
 }
 
-/* ===== STATUS BADGE ===== */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -209,7 +201,6 @@ body {
   border-color: rgba(192, 21, 47, 0.4);
 }
 
-/* ===== BALANCE SECTION ===== */
 .balance-container {
   padding: 20px;
   border-radius: 12px;
@@ -218,7 +209,6 @@ body {
   transition: all 250ms ease;
 }
 
-/* Stati dinamici per il saldo */
 .balance-container--danger {
   background: linear-gradient(
     135deg,
@@ -258,7 +248,6 @@ body {
   letter-spacing: -1px;
 }
 
-/* ===== BALANCE COLORS DINAMICI ===== */
 .balance-amount--danger {
   color: #c0152f;
 }
@@ -278,7 +267,6 @@ body {
   font-weight: 500;
 }
 
-/* ===== SECURITY SECTION ===== */
 .security-section {
   display: flex;
   flex-direction: column;
@@ -335,7 +323,6 @@ body {
   transform: translateY(-2px);
 }
 
-/* ===== MODAL ===== */
 .modal {
   position: fixed;
   top: 0;
@@ -432,7 +419,6 @@ body {
   justify-content: flex-end;
 }
 
-/* ===== BUTTON STYLES PER MODAL ===== */
 .btn {
   padding: 10px 20px;
   border-radius: 8px;
@@ -461,7 +447,6 @@ body {
   flex: 1;
 }
 
-/* ===== FORM ===== */
 .form-row {
   margin-top: 15px;
 }
@@ -529,10 +514,6 @@ body {
   user-select: none;
 }
 
-/* ============================================================================
-   MESSAGGI ERRORE
-   ========================================================================== */
-
 .error-messages {
   margin: 0px 20px 15px 20px;
   padding: 10px;
@@ -564,7 +545,6 @@ body {
   box-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
 }
 
-/* ===== SNACKBAR ===== */
 .snackbar {
   position: fixed;
   bottom: 16px;
@@ -596,7 +576,6 @@ body {
   background-color: #e68161;
 }
 
-/* ===== STATISTICS SECTION ===== */
 .stats-grid {
   display: flex;
   flex-direction: column;
@@ -673,7 +652,6 @@ body {
   letter-spacing: -0.5px;
 }
 
-/* ===== LOYALTY POINTS SECTION ===== */
 .loyalty-container {
   background: linear-gradient(
     135deg,
@@ -815,7 +793,6 @@ body {
   font-size: 14px;
 }
 
-/* ===== RIDES HISTORY ===== */
 .no-rides-message {
   display: flex;
   flex-direction: column;
@@ -934,7 +911,6 @@ body {
   font-size: 12px;
 }
 
-/* ===== PAGINATION CONTAINER ===== */
 .pagination-container {
   display: flex;
   align-items: center;
@@ -993,7 +969,6 @@ body {
   font-size: 12px;
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
   .card-title {
     font-size: 17px;

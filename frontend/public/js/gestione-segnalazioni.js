@@ -1,13 +1,10 @@
-// ============================================================================
-// GESTIONE SEGNALAZIONI - LOGIC (ADMIN ONLY)
-// ============================================================================
-
 let allReports = [];
 let currentReportId = null;
+
+// Variabili Paginazione
 let currentPage = 1;
 let itemsPerPage = 7;
 
-// ---- INIT ----
 document.addEventListener("DOMContentLoaded", () => {
   loadReports();
   setupEventListeners();
@@ -31,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 let originalReports = [];
 
-// ---- LOAD REPORTS ----
 async function loadReports() {
   try {
     const response = await fetch("/reports/admin/all-reports", {
@@ -52,18 +48,15 @@ async function loadReports() {
     updatePagination();
   } catch (error) {
     console.error("❌ Errore caricamento:", error);
-    showSnackbar("Errore nel caricamento delle segnalazioni", "error");
   }
 }
 
-// ---- GET PAGE DATA ----
 function getPageData() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   return allReports.slice(startIndex, endIndex);
 }
 
-// ---- RENDER REPORTS ----
 function renderReports(reports) {
   const tbody = document.getElementById("reportsTableBody");
 
@@ -124,7 +117,6 @@ function renderReports(reports) {
     .join("");
 }
 
-// ---- UPDATE PAGINATION ----
 function updatePagination() {
   const totalPages = Math.ceil(allReports.length / itemsPerPage);
   const paginationContainer = document.getElementById("paginationContainer");
@@ -172,7 +164,6 @@ function updatePagination() {
   });
 }
 
-// ---- UPDATE STATS ----
 function updateStats(reports) {
   const open = reports.filter((r) => r.stato_segnalazione === "aperta").length;
   const working = reports.filter(
@@ -188,7 +179,6 @@ function updateStats(reports) {
   document.getElementById("countTotal").textContent = reports.length;
 }
 
-// ---- FORMAT DATA ----
 function formatData(dataStr) {
   const date = new Date(dataStr);
   return (
@@ -224,14 +214,12 @@ function renderStatusBadge(stato) {
   return `<span class="status-badge ${s.class}">${s.icon} ${s.label}</span>`;
 }
 
-// ---- SETUP EVENT LISTENERS ----
 function setupEventListeners() {
   const btnNewReport = document.getElementById("btnNewReport");
   if (btnNewReport) {
     btnNewReport.style.display = "none";
   }
 
-  // Delete Modal
   document.getElementById("closeModalDelete").addEventListener("click", (e) => {
     e.stopPropagation();
     closeModal("modalConfirmDelete");
@@ -245,7 +233,6 @@ function setupEventListeners() {
     confirmDelete();
   });
 
-  // Change Status Modal
   document
     .getElementById("closeModalChangeStatus")
     .addEventListener("click", (e) => {
@@ -265,7 +252,6 @@ function setupEventListeners() {
       submitChangeStatus();
     });
 
-  // Details Modal
   document
     .getElementById("closeModalDetails")
     .addEventListener("click", (e) => {
@@ -277,7 +263,6 @@ function setupEventListeners() {
     closeModal("modalReportDetails");
   });
 
-  // Click outside modal to close - NON per modalConfirmDelete
   document.querySelectorAll(".modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {
       if (e.target === modal || e.target.classList.contains("modal-overlay")) {
@@ -288,7 +273,6 @@ function setupEventListeners() {
   });
 }
 
-// ---- SETUP FILTERS ----
 function setupFilters() {
   const filterStatus = document.getElementById("filterStatus");
   const filterType = document.getElementById("filterType");
@@ -331,9 +315,9 @@ function setupFilters() {
 
 function sortByStatus(reports) {
   const statusOrder = {
-    aperta: 1, // 1ª priorità
-    in_lavorazione: 2, // 2ª priorità
-    risolta: 3, // 3ª priorità
+    aperta: 1,
+    in_lavorazione: 2,
+    risolta: 3,
   };
 
   return reports.sort(
@@ -342,7 +326,6 @@ function sortByStatus(reports) {
   );
 }
 
-// ---- VIEW DETAILS ----
 async function viewDetails(id) {
   try {
     const response = await fetch(`/reports/${id}`, {
@@ -379,12 +362,10 @@ async function viewDetails(id) {
 
     const descriptionSection = document.getElementById("descriptionSection");
     if (report.descrizione && report.descrizione.trim() !== "") {
-      // Se c'è descrizione, mostrala
       document.getElementById("detailDescrizione").textContent =
         report.descrizione;
       descriptionSection.style.display = "block";
     } else {
-      // Se non c'è descrizione, nascondi la sezione
       descriptionSection.style.display = "none";
     }
 
@@ -398,7 +379,6 @@ async function viewDetails(id) {
       btnChangeStatus.className = "btn btn-primary";
       btnChangeStatus.textContent = "Cambia Stato";
 
-      // Se il veicolo è in uso, disabilita il pulsante
       if (isVehicleInUse) {
         btnChangeStatus.disabled = true;
         btnChangeStatus.style.opacity = "0.5";
@@ -418,11 +398,9 @@ async function viewDetails(id) {
     openModal("modalReportDetails");
   } catch (error) {
     console.error("❌ Errore:", error);
-    showSnackbar("Errore nel caricamento dettagli", "error");
   }
 }
 
-// ---- CHANGE STATUS ----
 function openChangeStatusModal() {
   let report = null;
 
@@ -441,7 +419,6 @@ function openChangeStatusModal() {
 
   if (!report) return;
 
-  // ⚠️ NUOVO: Nascondi "Aperta" se il report è già "in_lavorazione"
   const optionAperta = document.getElementById("optionAperta");
   const inputAperta = optionAperta.querySelector('input[value="aperta"]');
 
@@ -490,11 +467,9 @@ async function submitChangeStatus() {
     loadReports();
   } catch (error) {
     console.error("❌ Errore:", error);
-    errorDiv.innerHTML = `<div class="error-message">${error.message}</div>`;
   }
 }
 
-// ---- DELETE REPORT ----
 async function deleteReport(id) {
   currentReportId = id;
   openModal("modalConfirmDelete");
@@ -514,11 +489,9 @@ async function confirmDelete() {
     loadReports();
   } catch (error) {
     console.error("❌ Errore:", error);
-    showSnackbar(error.message, "error");
   }
 }
 
-// ---- MODAL HELPERS ----
 function openModal(id) {
   document.getElementById(id).classList.remove("hidden");
 }
@@ -546,7 +519,6 @@ function formatStatoMezzo(tipo) {
   return map[tipo] || tipo;
 }
 
-// ---- SNACKBAR HELPER ----
 function showSnackbar(message, type = "info") {
   const snackbar = document.getElementById("snackbar");
   snackbar.textContent = message;

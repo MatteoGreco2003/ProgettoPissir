@@ -25,7 +25,6 @@ body {
   overflow-y: auto;
 }
 
-/* Header */
 .ride-header {
   text-align: center;
   margin-bottom: 20px;
@@ -54,7 +53,6 @@ body {
   font-size: 14px;
 }
 
-/* Summary */
 .ride-summary {
   background: #f8f9fa;
   padding: 20px;
@@ -87,7 +85,6 @@ body {
   font-size: 16px;
 }
 
-/* Timer */
 .timer-section {
   text-align: center;
   margin-bottom: 30px;
@@ -109,7 +106,6 @@ body {
   letter-spacing: 3px;
 }
 
-/* Stats */
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -142,7 +138,6 @@ body {
   margin-top: 3px;
 }
 
-/* Cost */
 .cost-section {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -165,7 +160,6 @@ body {
   font-weight: 700;
 }
 
-/* Warning */
 .warning-box {
   background: #fff3cd;
   border: 1px solid #ffc107;
@@ -185,7 +179,6 @@ body {
   flex-shrink: 0;
 }
 
-/* Error Box */
 .error-box {
   background: #fee2e2;
   border: 1px solid #fca5a5;
@@ -223,7 +216,6 @@ body {
   line-height: 1.5;
 }
 
-/* Parking */
 .parking-section {
   margin-bottom: 30px;
 }
@@ -258,7 +250,6 @@ body {
   border-color: #667eea;
 }
 
-/* Buttons */
 .actions {
   display: flex;
   gap: 15px;
@@ -297,7 +288,6 @@ body {
   cursor: not-allowed;
 }
 
-/* ===== PUNTI FEDELTÀ TOGGLE ===== */
 .punti-fedeltà-container {
   margin-top: 16px;
   padding: 12px;
@@ -374,7 +364,6 @@ body {
   }
 }
 
-/* Snackbar */
 .snackbar {
   position: fixed;
   bottom: 20px;
@@ -401,7 +390,6 @@ body {
   background: #ef4444;
 }
 
-/* Responsive */
 @media (max-width: 600px) {
   .ride-container {
     padding: 20px;

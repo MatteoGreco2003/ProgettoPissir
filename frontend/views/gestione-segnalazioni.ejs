@@ -4,22 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestione Segnalazioni</title>
+    <link rel="stylesheet" href="/css/gestione-segnalazioni.css" />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="/css/gestione-segnalazioni.css" />
-    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
   </head>
   <body>
-    <!-- NAVBAR -->
-    <%- include('components/navbar') %>
-
-    <!-- SIDEBAR -->
-    <%- include('components/sidebar') %>
+    <%- include('components/navbar') %> <%- include('components/sidebar') %>
 
     <main class="main-content">
-      <!-- STATS GRID -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon">📋</div>
@@ -51,7 +46,6 @@
         </div>
       </div>
 
-      <!-- FILTERS & ACTIONS -->
       <div class="actions-bar">
         <div class="search-filter">
           <i class="fas fa-search"></i>
@@ -78,7 +72,6 @@
         </select>
       </div>
 
-      <!-- TABLE -->
       <div class="table-container">
         <table class="table">
           <thead>
@@ -103,7 +96,7 @@
           </tbody>
         </table>
       </div>
-      <!-- PAGINATION -->
+
       <div class="pagination-container" id="paginationContainer">
         <button class="pagination-btn" id="btnIndietro">
           <i class="fas fa-chevron-left"></i> Indietro
@@ -115,7 +108,7 @@
       </div>
     </main>
 
-    <!-- MODAL: DETTAGLI SEGNALAZIONE -->
+    <!-- MODAL DETTAGLI SEGNALAZIONE -->
     <div class="modal hidden" id="modalReportDetails">
       <div class="modal-overlay"></div>
       <div class="modal-content modal-content-large">
@@ -182,7 +175,7 @@
       </div>
     </div>
 
-    <!-- MODAL: CAMBIO STATO -->
+    <!-- MODAL CAMBIO STATO SEGNALAZIONE -->
     <div class="modal hidden" id="modalChangeStatus">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -229,7 +222,7 @@
       </div>
     </div>
 
-    <!-- MODAL: CONFERMA ELIMINAZIONE SEGNALAZIONE -->
+    <!-- MODAL ELIMINA SEGNALAZIONE -->
     <div class="modal hidden" id="modalConfirmDelete">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -250,7 +243,6 @@
       </div>
     </div>
 
-    <!-- SNACKBAR -->
     <div class="snackbar" id="snackbar"></div>
 
     <script src="/js/gestione-segnalazioni.js"></script>

@@ -4,26 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestione Credito</title>
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+    <link rel="stylesheet" href="/css/credit.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
-    <link rel="stylesheet" href="/css/credit.css" />
   </head>
 
   <body>
-    <!-- ========== NAVBAR (COMPONENTE IMPORTATO) ========== -->
-    <%- include('./components/navbar') %>
+    <%- include('./components/navbar') %> <%- include('./components/sidebar') %>
 
-    <!-- ========== SIDEBAR (COMPONENTE IMPORTATO) ========== -->
-    <%- include('./components/sidebar') %>
-
-    <!-- ========== MAIN CONTENT ========== -->
     <div class="main-content">
-      <!-- ========== ACCOUNT STATUS BANNER ==========
-           Mostra avviso se account sospeso o in attesa di approvazione
-      ========== -->
       <div id="accountStatusBanner" class="account-status-banner hidden">
         <div class="status-banner__content">
           <div>
@@ -42,9 +34,7 @@
         </button>
       </div>
 
-      <!-- ========== GRID LAYOUT (4 SEZIONI PRINCIPALI) ========== -->
       <div class="credit-grid">
-        <!-- ========== SEZIONE 1: CREDITO DISPONIBILE ========== -->
         <section class="card credit-card">
           <div class="card-body">
             <div class="credit-header">
@@ -52,13 +42,11 @@
             </div>
 
             <div class="credit-display">
-              <!-- Display saldo: chip con importo grande e colore dinamico -->
               <div class="credit-chip" id="creditChip">
                 <div class="chip-amount" id="creditAmount">€0.00</div>
                 <div class="chip-label">Saldo Attuale</div>
               </div>
 
-              <!-- Informazioni utente: nome, cognome, stato account -->
               <div class="credit-info">
                 <div class="info-item">
                   <span class="info-label">Nome:</span>
@@ -77,13 +65,11 @@
           </div>
         </section>
 
-        <!-- ========== SEZIONE 2: STATISTICHE ========== -->
         <section class="card stats-card">
           <div class="card-body">
             <h2 class="stats-title">📊 Statistiche</h2>
 
             <div class="stats-grid">
-              <!-- Stat box: Totale ricaricato -->
               <div class="stat-box">
                 <div class="stat-icon stat-icon--recharge">
                   <i class="fas fa-plus-circle"></i>
@@ -97,7 +83,6 @@
                 </div>
               </div>
 
-              <!-- Stat box: Totale speso (corse) -->
               <div class="stat-box">
                 <div class="stat-icon stat-icon--expense">
                   <i class="fas fa-minus-circle"></i>
@@ -109,7 +94,6 @@
                 </div>
               </div>
 
-              <!-- Stat box: Numero corse completate -->
               <div class="stat-box">
                 <div class="stat-icon stat-icon--rides">
                   <i class="fas fa-route"></i>
@@ -124,13 +108,11 @@
           </div>
         </section>
 
-        <!-- ========== SEZIONE 3: RICARICA CREDITO ========== -->
         <section class="card recharge-card">
           <div class="card-body">
             <h2 class="recharge-title">💵 Ricarica Credito</h2>
 
             <form id="rechargeForm" class="recharge-form">
-              <!-- Selezione importo: 5€, 10€, 20€, 50€, 100€ -->
               <div class="form-group">
                 <label for="rechargeAmount" class="form-label">
                   <i class="fas fa-euro-sign"></i> Importo
@@ -149,7 +131,6 @@
                 </div>
               </div>
 
-              <!-- Selezione metodo pagamento -->
               <div class="form-group">
                 <label for="paymentMethod" class="form-label">
                   <i class="fas fa-credit-card"></i> Metodo Pagamento
@@ -163,13 +144,11 @@
                 </select>
               </div>
 
-              <!-- Bottone ricarica con validazione form -->
               <button type="submit" class="btn-recharge" id="rechargeBtn">
                 Ricarica
               </button>
             </form>
 
-            <!-- Avviso pagamento: elaborazione in tempo reale -->
             <div class="payment-notice">
               <i class="fas fa-info-circle"></i>
               <p>La ricarica è elaborata in tempo reale.</p>
@@ -177,10 +156,8 @@
           </div>
         </section>
 
-        <!-- ========== SEZIONE 4: STORICO TRANSAZIONI ========== -->
         <section class="card history-card">
           <div class="card-body">
-            <!-- Header con titolo e filtro tipo transazione -->
             <div class="history-header">
               <h2 class="history-title">📜 Storico Transazioni</h2>
               <div class="history-controls">
@@ -192,13 +169,11 @@
               </div>
             </div>
 
-            <!-- Loading spinner durante caricamento -->
             <div id="historyLoading" class="loading-spinner hidden">
               <div class="spinner"></div>
               <p>Caricamento transazioni...</p>
             </div>
 
-            <!-- Tabella transazioni (Data, Tipo, Descrizione, Importo) -->
             <div id="historyContainer" class="history-container">
               <table class="transactions-table">
                 <thead>
@@ -209,19 +184,15 @@
                     <th class="text-right">Importo</th>
                   </tr>
                 </thead>
-                <tbody id="transactionsTableBody">
-                  <!-- Popola da JavaScript -->
-                </tbody>
+                <tbody id="transactionsTableBody"></tbody>
               </table>
             </div>
 
-            <!-- Empty state: nessuna transazione trovata -->
             <div id="historyEmpty" class="history-empty hidden">
               <i class="fas fa-inbox"></i>
               <p>Nessuna transazione trovata</p>
             </div>
 
-            <!-- Paginazione: bottoni prev/next e info pagina -->
             <div id="historyPagination" class="pagination hidden">
               <button id="prevPageBtn" class="pagination-btn">
                 <i class="fas fa-chevron-left"></i> Indietro
@@ -236,10 +207,9 @@
       </div>
     </div>
 
-    <!-- ========== SNACKBAR (NOTIFICHE TOAST) ========== -->
     <div id="snackbar" class="snackbar"></div>
 
-    <!-- ===== MODAL ELIMINA PROFILO ===== -->
+    <!-- MODAL ELIMINA PROFILO -->
     <div id="deleteProfileModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -266,7 +236,6 @@
       </div>
     </div>
 
-    <!-- ========== SCRIPT ========== -->
     <script src="/js/credit.js"></script>
   </body>
 </html>

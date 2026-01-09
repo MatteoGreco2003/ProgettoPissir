@@ -1,30 +1,20 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-/* ============================================================================
-   CSS CUSTOM PROPERTIES E RESET
-   ========================================================================== */
-
 :root {
-  /* Colori primari e secondari */
   --primary-teal: rgba(33, 128, 141, 1);
   --primary-teal-dark: rgba(29, 116, 128, 1);
   --success-green: rgba(33, 128, 141, 1);
   --warning-orange: #e68161;
   --error-red: rgba(192, 21, 47, 1);
   --info-blue: #2196f3;
-
   --error-bg: #ffe6e6;
   --error-color: #ff4444;
   --error-dark: #cc0000;
-
-  /* Colori neutrali */
   --light-bg: rgba(252, 252, 249, 1);
   --dark-text: rgba(19, 52, 59, 1);
   --light-text: rgba(98, 108, 113, 1);
   --white: rgba(255, 255, 255, 1);
   --border-color: rgba(94, 82, 64, 0.2);
-
-  /* Transizioni */
   --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -44,10 +34,6 @@ body {
   margin-left: 250px;
   padding: 24px;
 }
-
-/* ============================================================================
-   STAT CARDS
-   ========================================================================== */
 
 .stats-grid {
   display: grid;
@@ -74,10 +60,6 @@ body {
   transform: translateY(-2px);
 }
 
-/* ============================================================================
-   STAT ICONS - COLORS
-   ========================================================================== */
-
 .stat-icon {
   width: 50px;
   height: 50px;
@@ -90,25 +72,21 @@ body {
   transition: all var(--transition);
 }
 
-/* Parcheggi - Teal/Blue */
 .stat-card:nth-child(1) .stat-icon {
   background: rgba(33, 128, 141, 0.15);
   color: var(--primary-teal);
 }
 
-/* Posti Totali - Green */
 .stat-card:nth-child(2) .stat-icon {
   background: rgba(76, 175, 80, 0.15);
   color: #4caf50;
 }
 
-/* Posti Liberi - Cyan/Light Blue */
 .stat-card:nth-child(3) .stat-icon {
   background: rgba(0, 188, 212, 0.15);
   color: #00bcd4;
 }
 
-/* Occupati - Orange/Red */
 .stat-card:nth-child(4) .stat-icon {
   background: rgba(255, 107, 107, 0.15);
   color: #ff6b6b;
@@ -133,10 +111,6 @@ body {
   font-weight: 700;
   color: var(--dark-text);
 }
-
-/* ============================================================================
-   SEARCH & FILTER
-   ========================================================================== */
 
 .actions-bar {
   display: flex;
@@ -181,10 +155,6 @@ body {
   border-color: var(--primary-teal);
   box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
 }
-
-/* ============================================================================
-   TABLE
-   ========================================================================== */
 
 .table-container {
   background: var(--white);
@@ -238,7 +208,6 @@ body {
   white-space: nowrap;
 }
 
-/* Badge styles */
 .badge {
   display: inline-block;
   padding: 4px 10px;
@@ -249,7 +218,6 @@ body {
   color: var(--primary-teal);
 }
 
-/* Occupazione bar */
 .occupazione-bar {
   display: flex;
   align-items: center;
@@ -283,7 +251,6 @@ body {
   min-width: 45px;
 }
 
-/* Coordinates badge */
 .coordinates-badge {
   display: inline-flex;
   align-items: center;
@@ -296,17 +263,13 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 150ms ease;
-  white-space: nowrap; /* ← IMPORTANTE: non wrappare il testo */
-  min-width: fit-content; /* ← Per espandersi al contenuto */
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
 .coordinates-badge:hover {
   background: rgba(33, 128, 141, 0.2);
 }
-
-/* ============================================================================
-   ACTION BUTTONS
-   ========================================================================== */
 
 .action-buttons {
   display: flex;
@@ -367,10 +330,6 @@ body {
   background-color: #c01530;
 }
 
-/* ============================================================================
-   EMPTY STATE
-   ========================================================================== */
-
 .empty-state {
   text-align: center;
   padding: 20px 20px;
@@ -387,10 +346,6 @@ body {
   color: var(--light-text);
   font-size: 14px;
 }
-
-/* ============================================================================
-   PAGINATION
-   ========================================================================== */
 
 .pagination-container {
   display: flex;
@@ -433,10 +388,6 @@ body {
   opacity: 0.4;
   cursor: not-allowed;
 }
-
-/* ============================================================================
-   MODAL
-   ========================================================================== */
 
 .modal {
   position: fixed;
@@ -530,10 +481,6 @@ body {
   justify-content: flex-end;
 }
 
-/* ============================================================================
-   FORM ELEMENTS
-   ========================================================================== */
-
 .form-group {
   margin-bottom: 16px;
 }
@@ -583,10 +530,6 @@ body {
   color: var(--light-text);
   margin: 0 0 8px 0;
 }
-
-/* ============================================================================
-   BUTTON STYLES
-   ========================================================================== */
 
 .btn {
   padding: 11px 24px;
@@ -648,7 +591,6 @@ body {
   transform: translateY(0);
 }
 
-/* Error container: hidden by default, shows when errors exist */
 .error-messages {
   margin-top: 15px;
   padding: 10px;
@@ -659,7 +601,6 @@ body {
   text-align: center;
 }
 
-/* Show and animate error messages */
 .error-messages:not(:empty) {
   display: block;
   animation: slideUp 0.3s ease;
@@ -670,10 +611,6 @@ body {
   font-size: 14px;
   font-weight: 500;
 }
-
-/* ============================================================================
-   DETAIL SECTIONS
-   ========================================================================== */
 
 .parking-detail-info {
   display: flex;
@@ -721,7 +658,6 @@ body {
   font-size: 14px;
 }
 
-/* Vehicles breakdown */
 .vehicles-breakdown {
   display: flex;
   flex-direction: column;
@@ -771,10 +707,6 @@ body {
   width: 100%;
 }
 
-/* ============================================================================
-   SNACKBAR
-   ========================================================================== */
-
 .snackbar {
   position: fixed;
   bottom: 16px;
@@ -805,10 +737,6 @@ body {
 .snackbar--warning {
   background-color: var(--warning-orange);
 }
-
-/* ============================================================================
-   PARKING USAGE SECTION (TOP PARCHEGGI)
-   ========================================================================== */
 
 .parking-usage-section {
   margin-top: 40px;
@@ -932,7 +860,6 @@ body {
   font-size: 14px;
 }
 
-/* Loading skeleton */
 .loading-skeleton {
   display: flex;
   flex-direction: column;
@@ -955,10 +882,6 @@ body {
     background-position: -200% 0;
   }
 }
-
-/* ============================================================================
-   PARKING STATISTICS MODAL
-   ========================================================================== */
 
 .modal-statistics {
   max-width: 850px;
@@ -1005,7 +928,6 @@ body {
   color: var(--dark-text);
 }
 
-/* Occupancy Bar */
 .occupancy-bar-section {
   padding: 16px;
   background: #fafaf8;
@@ -1042,7 +964,6 @@ body {
   text-align: right;
 }
 
-/* Statistics Grid */
 .statistics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -1106,7 +1027,6 @@ body {
   transition: width 300ms ease;
 }
 
-/* Vehicles Table */
 .vehicles-table-section {
   padding: 12px;
   background: #fafaf8;
@@ -1114,7 +1034,6 @@ body {
   border: 1px solid var(--border-color);
 }
 
-/* ✅ NUOVO: Container solo per la tabella */
 .vehicles-table-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -1172,10 +1091,6 @@ body {
   background: linear-gradient(90deg, var(--primary-teal), #2ab8c6);
   border-radius: 2px;
 }
-
-/* ============================================================================
-   RESPONSIVE
-   ========================================================================== */
 
 @media (max-width: 1040px) {
   .stats-grid {

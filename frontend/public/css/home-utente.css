@@ -1,16 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-/* ============================================================================
-   RESET E VARIABILI GLOBALI
-   ========================================================================== */
-
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* ===== VARIABILI COLORI ===== */
 :root {
   --primary-teal: rgba(33, 128, 141, 1);
   --primary-teal-dark: rgba(29, 116, 128, 1);
@@ -23,10 +18,6 @@
   --white: rgba(255, 255, 255, 1);
   --border-color: rgba(94, 82, 64, 0.2);
 }
-
-/* ============================================================================
-   LAYOUT BASE
-   ========================================================================== */
 
 html,
 body {
@@ -42,13 +33,11 @@ body {
   color: var(--dark-text);
 }
 
-/* ===== MAIN CONTENT ===== */
 .main-content {
   margin-left: 250px;
   padding: 24px;
 }
 
-/* ===== CARD BASE ===== */
 .card {
   background-color: var(--white);
   border-radius: 12px;
@@ -89,7 +78,6 @@ body {
   padding: 24px;
 }
 
-/* ===== PARKING GRID - SCROLL ORIZZONTALE ===== */
 .parking-grid {
   display: flex;
   gap: 16px;
@@ -194,7 +182,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* ===== LOADING SPINNER ===== */
 .loading-spinner {
   display: flex;
   flex-direction: column;
@@ -229,7 +216,6 @@ body {
   margin: 0;
 }
 
-/* ===== VEHICLES FILTER - INTERNO DELLA CARD ===== */
 .vehicles-filter-container {
   display: flex;
   gap: 12px;
@@ -282,7 +268,6 @@ body {
   font-size: 13px;
 }
 
-/* ===== VEHICLES GRID ===== */
 .vehicles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -460,7 +445,6 @@ body {
   box-shadow: none;
 }
 
-/* ===== SNACKBAR ===== */
 .snackbar {
   position: fixed;
   bottom: 16px;
@@ -492,7 +476,6 @@ body {
   background-color: #e68161;
 }
 
-/* ===== MODAL ===== */
 .modal {
   position: fixed;
   top: 0;
@@ -588,7 +571,6 @@ body {
   justify-content: flex-end;
 }
 
-/* ===== BUTTON STYLES PER MODAL ===== */
 .btn {
   padding: 10px 20px;
   border-radius: 8px;
@@ -617,7 +599,6 @@ body {
   flex: 1;
 }
 
-/* ===== VEHICLE SUMMARY ===== */
 .vehicle-summary {
   background: linear-gradient(
     135deg,
@@ -652,7 +633,6 @@ body {
   font-weight: 700;
 }
 
-/* ===== WARNING BOX ===== */
 .warning-box,
 .warning-box.report-warning {
   background: linear-gradient(
@@ -695,7 +675,6 @@ body {
   text-align: center;
 }
 
-/* ===== LEAFLET MAP ===== */
 #parkingMap {
   width: 100%;
   height: 600px;
@@ -765,11 +744,6 @@ body {
   color: var(--error-red);
 }
 
-/* ============================================================================
-   TOP BANNER
-   ========================================================================== */
-
-/* ===== NASCONDE IL CONTAINER SE VUOTO ===== */
 #topBannerContainer:empty {
   margin-bottom: 0;
   display: none;
@@ -1027,10 +1001,6 @@ body {
   overflow-y: auto;
 }
 
-/* ============================================================================
-   MODAL FEEDBACK CORSA
-   ========================================================================== */
-
 .feedback-modal-content {
   max-width: 450px;
   max-height: 90vh;
@@ -1251,10 +1221,6 @@ body {
   }
 }
 
-/* ============================================================================
-   PARKING FILTER SELECT - INSIDE CARD BODY
-   ========================================================================== */
-
 #parkingFilterSelect {
   width: 100%;
   max-width: none;
@@ -1280,7 +1246,6 @@ body {
   outline: none;
 }
 
-/* ===== RESPONSIVE - TABLET SMALL (1200px) ===== */
 @media (max-width: 1200px) {
   .vehicles-filter-container {
     display: none;
@@ -1366,7 +1331,6 @@ body {
   }
 }
 
-/* ===== RESPONSIVE - TABLET ===== */
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
@@ -1482,7 +1446,6 @@ body {
   }
 }
 
-/* ===== RESPONSIVE - MOBILE ===== */
 @media (max-width: 480px) {
   .main-content {
     padding: 12px;

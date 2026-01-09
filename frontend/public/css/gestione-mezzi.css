@@ -1,30 +1,20 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-/* ============================================================================
-   CSS CUSTOM PROPERTIES E RESET
-   ========================================================================== */
-
 :root {
-  /* Colori primari e secondari */
   --primary-teal: rgba(33, 128, 141, 1);
   --primary-teal-dark: rgba(29, 116, 128, 1);
   --success-green: rgba(33, 128, 141, 1);
   --warning-orange: #e68161;
   --error-red: rgba(192, 21, 47, 1);
   --info-blue: #2196f3;
-
   --error-bg: #ffe6e6;
   --error-color: #ff4444;
   --error-dark: #cc0000;
-
-  /* Colori neutrali */
   --light-bg: rgba(252, 252, 249, 1);
   --dark-text: rgba(19, 52, 59, 1);
   --light-text: rgba(98, 108, 113, 1);
   --white: rgba(255, 255, 255, 1);
   --border-color: rgba(94, 82, 64, 0.2);
-
-  /* Transizioni */
   --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -44,10 +34,6 @@ body {
   margin-left: 250px;
   padding: 24px;
 }
-
-/* ============================================================================
-   STAT CARDS
-   ========================================================================== */
 
 .header-stats {
   display: grid;
@@ -127,10 +113,6 @@ body {
   color: var(--dark-text);
 }
 
-/* ============================================================================
-   SEARCH & FILTER
-   ========================================================================== */
-
 .search-filter {
   display: flex;
   gap: 12px;
@@ -194,10 +176,6 @@ body {
   box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
 }
 
-/* ============================================================================
-   TABLE
-   ========================================================================== */
-
 .table-responsive {
   background: var(--white);
   border: 1px solid var(--border-color);
@@ -249,7 +227,6 @@ body {
   white-space: nowrap;
 }
 
-/* Status badges */
 .status-badge {
   display: inline-block;
   padding: 4px 10px;
@@ -280,7 +257,6 @@ body {
   color: var(--error-red);
 }
 
-/* Vehicle type badges */
 .type-badge {
   display: inline-block;
   padding: 4px 10px;
@@ -305,7 +281,6 @@ body {
   color: #2196f3;
 }
 
-/* Battery indicator */
 .battery-indicator {
   display: inline-flex;
   align-items: center;
@@ -338,10 +313,6 @@ body {
   font-weight: 600;
   font-size: 12px;
 }
-
-/* ============================================================================
-   ACTION BUTTONS
-   ========================================================================== */
 
 .action-buttons {
   display: flex;
@@ -428,10 +399,6 @@ body {
   border: none !important;
 }
 
-/* ============================================================================
-   LOADING STATE
-   ========================================================================== */
-
 .loading-row {
   text-align: center;
   padding: 32px 16px;
@@ -473,10 +440,6 @@ body {
   color: var(--light-text);
   font-size: 14px;
 }
-
-/* ============================================================================
-   PAGINATION
-   ========================================================================== */
 
 .pagination-container {
   display: flex;
@@ -549,10 +512,6 @@ body {
   width: 100%;
 }
 
-/* ============================================================================
-   RATING CELL
-   ========================================================================== */
-
 .rating-cell {
   display: inline-flex;
   align-items: center;
@@ -575,17 +534,12 @@ body {
   transition: opacity 150ms ease;
 }
 
-/* ============================================================================
-   FEEDBACK MODAL
-   ========================================================================== */
-
 #feedbackVehicleModal .modal-content {
   max-width: 700px;
   max-height: 90vh;
   overflow-y: auto;
 }
 
-/* ===== FEEDBACK ITEMS ===== */
 .feedback-item {
   padding: 14px 16px;
   background: rgba(33, 128, 141, 0.06);
@@ -691,7 +645,6 @@ body {
   transform: translateY(0);
 }
 
-/* ===== MODAL ===== */
 .modal {
   position: fixed;
   top: 0;
@@ -788,7 +741,6 @@ body {
   justify-content: flex-end;
 }
 
-/* ===== BUTTON STYLES PER MODAL ===== */
 .btn {
   padding: 10px 20px;
   border-radius: 8px;
@@ -850,10 +802,6 @@ body {
   color: var(--dark-text);
   font-weight: 600;
 }
-
-/* ============================================================================
-   FORM ELEMENTS
-   ========================================================================== */
 
 .form-group {
   margin-bottom: 16px;
@@ -950,10 +898,6 @@ body {
   font-weight: 500;
 }
 
-/* ============================================================================
-   BUTTON STYLES PER MODAL
-   ========================================================================== */
-
 .btn {
   padding: 11px 24px;
   border-radius: 8px;
@@ -1031,7 +975,6 @@ body {
   transform: translateY(0);
 }
 
-/* ===== SNACKBAR ===== */
 .snackbar {
   position: fixed;
   bottom: 16px;
@@ -1066,10 +1009,6 @@ body {
 .hidden {
   display: none !important;
 }
-
-/* ============================================================================
-   DETAIL SECTIONS
-   ========================================================================== */
 
 .vehicle-detail-info {
   display: flex;
@@ -1122,7 +1061,6 @@ body {
   font-size: 14px;
 }
 
-/* Error container: hidden by default, shows when errors exist */
 .error-messages {
   margin-top: 15px;
   padding: 10px;
@@ -1133,7 +1071,6 @@ body {
   text-align: center;
 }
 
-/* Show and animate error messages */
 .error-messages:not(:empty) {
   display: block;
   animation: slideUp 0.3s ease;
@@ -1144,10 +1081,6 @@ body {
   font-size: 14px;
   font-weight: 500;
 }
-
-/* ============================================================================
-   VEHICLES PERFORMANCE SECTION
-   ========================================================================== */
 
 .vehicles-performance-section {
   margin-top: 40px;
@@ -1179,7 +1112,6 @@ body {
   color: #4caf50;
 }
 
-/* Performance Card */
 .perf-card {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -1255,7 +1187,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Loading skeleton */
 .perf-card-skeleton {
   height: 80px;
   background: linear-gradient(90deg, #fafaf8 25%, #f0f0f0 50%, #fafaf8 75%);
@@ -1273,7 +1204,6 @@ body {
   }
 }
 
-/* Maintenance Toggle */
 .maintenance-toggle-wrapper {
   display: flex;
   align-items: center;
@@ -1361,10 +1291,6 @@ body {
 .maintenance-toggle-wrapper.disabled .toggle-switch {
   pointer-events: none;
 }
-
-/* ============================================================================
-   RESPONSIVE
-   ========================================================================== */
 
 @media (max-width: 1160px) {
   .header-stats {

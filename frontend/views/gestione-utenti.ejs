@@ -6,22 +6,16 @@
     <title>Gestione Utenti</title>
     <link rel="stylesheet" href="/css/gestione-utenti.css" />
     <link rel="stylesheet" href="/css/navbar-sidebar.css" />
-
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
   </head>
   <body>
-    <!-- ===== NAVBAR (IMPORTATO) ===== -->
-    <%- include('./components/navbar') %>
+    <%- include('./components/navbar') %> <%- include('./components/sidebar') %>
 
-    <!-- ===== SIDEBAR (IMPORTATO) ===== -->
-    <%- include('./components/sidebar') %>
     <div class="admin-container">
-      <!-- MAIN CONTENT -->
       <main class="main-content">
-        <!-- Header sezione -->
         <div class="page-header">
           <div class="header-stats">
             <div class="stat-card">
@@ -55,7 +49,6 @@
           </div>
         </div>
 
-        <!-- TUTTI GLI UTENTI -->
         <div class="section-header">
           <div class="search-filter">
             <div class="search-box">
@@ -80,7 +73,6 @@
           </div>
         </div>
 
-        <!-- TABELLA UTENTI -->
         <div class="table-responsive">
           <table class="users-table">
             <thead>
@@ -103,15 +95,13 @@
           </table>
         </div>
 
-        <!-- PAGINAZIONE -->
         <div class="pagination-container" id="paginationContainer"></div>
       </main>
     </div>
 
-    <!-- ===== SNACKBAR NOTIFICHE ===== -->
     <div id="snackbar" class="snackbar"></div>
 
-    <!-- MODAL: CONFERMA ELIMINAZIONE UTENTE -->
+    <!-- MODAL ELIMINA UTENTE -->
     <div class="modal hidden" id="deleteUserModal">
       <div class="modal-overlay"></div>
 
@@ -157,7 +147,7 @@
       </div>
     </div>
 
-    <!-- MODAL: DETTAGLI UTENTE -->
+    <!-- MODAL DETTAGLI UTENTE -->
     <div class="modal hidden" id="userDetailModal">
       <div class="modal-overlay"></div>
 
@@ -175,7 +165,7 @@
       </div>
     </div>
 
-    <!-- MODAL: CONFERMA APPROVAZIONE -->
+    <!-- MODAL CONFERMA APPROVAZIONE ACCOUNT -->
     <div class="modal hidden" id="approveModal">
       <div class="modal-overlay"></div>
 

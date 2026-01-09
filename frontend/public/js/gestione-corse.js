@@ -1,18 +1,17 @@
-// ===== PAGINATION VARIABLES =====
+// Variabili Paginazione
 const ITEMS_PER_PAGE = 8;
 let currentPage = 1;
 let paginationContainer = document.getElementById("paginationContainer");
+
 let currentTab = "today";
 let allRides = [];
 
-// ===== DOM ELEMENTS =====
 const ridesTableBody = document.getElementById("ridesTableBody");
 const snackbar = document.getElementById("snackbar");
 const rideDetailModal = document.getElementById("rideDetailModal");
 const rideDetailBody = document.getElementById("rideDetailBody");
 const modalOverlay = document.querySelector(".modal-overlay");
 
-// ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
   loadRidesToday();
   setupModalClosing();
@@ -33,20 +32,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ===== SETUP MODAL CLOSING =====
 function setupModalClosing() {
-  // Chiude cliccando sul background
   if (modalOverlay) {
     modalOverlay.addEventListener("click", closeAllModals);
   }
 
-  // Chiude cliccando sulla X
   const modalClose = document.querySelector(".modal-close");
   if (modalClose) {
     modalClose.addEventListener("click", closeAllModals);
   }
 
-  // Chiude pressando ESC
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       closeAllModals();
@@ -54,7 +49,6 @@ function setupModalClosing() {
   });
 }
 
-// ===== LOAD RIDES TODAY =====
 async function loadRidesToday() {
   try {
     const response = await fetch("/rides/today", {
@@ -71,11 +65,9 @@ async function loadRidesToday() {
     updateStats("today");
   } catch (error) {
     console.error("❌ Errore:", error);
-    showSnackbar("Errore caricamento corse", "error");
   }
 }
 
-// ===== LOAD COMPLETED RIDES =====
 async function loadCompletedRides() {
   try {
     const response = await fetch("/rides/all-completed", {
@@ -92,11 +84,9 @@ async function loadCompletedRides() {
     updateStats("completed");
   } catch (error) {
     console.error("❌ Errore:", error);
-    showSnackbar("Errore caricamento corse", "error");
   }
 }
 
-// ===== CHANGE TAB =====
 function changeTab(tab) {
   currentTab = tab;
   currentPage = 1;
@@ -108,14 +98,12 @@ function changeTab(tab) {
   }
 }
 
-// ===== APPLY FILTERS =====
 function applyFilters() {
   currentPage = 1;
   renderRides();
   renderPagination();
 }
 
-// ===== GET FILTERED RIDES =====
 function getFilteredRides() {
   let filtered = allRides;
 
@@ -147,7 +135,6 @@ function getFilteredRides() {
   return filtered;
 }
 
-// ===== FORMAT VEHICLE TYPE =====
 function formatVehicleType(tipo) {
   const map = {
     bicicletta_muscolare: "Bicicletta Muscolare",
@@ -157,7 +144,6 @@ function formatVehicleType(tipo) {
   return map[tipo] || "Mezzo Eliminato";
 }
 
-// ===== FORMAT DATE =====
 function formatDate(date) {
   return new Date(date).toLocaleDateString("it-IT", {
     day: "2-digit",
@@ -168,7 +154,6 @@ function formatDate(date) {
   });
 }
 
-// ===== HELPER: Calcola costo effettivo (costo - sconto punti) =====
 function calculateEffectiveCost(ride) {
   const costoOriginale = parseFloat(ride.costo || 0);
   const puntiUsati = parseInt(ride.punti_fedeltà_usati || 0);
@@ -177,7 +162,6 @@ function calculateEffectiveCost(ride) {
   return Math.max(0, costoOriginale - sconto);
 }
 
-// ===== RENDER RIDES TABLE =====
 function renderRides() {
   const filtered = getFilteredRides();
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -232,7 +216,6 @@ function renderRides() {
     .join("");
 }
 
-// ===== VIEW RIDE DETAIL =====
 async function viewRideDetail(rideId) {
   try {
     const ride = allRides.find((r) => r.id_corsa === rideId);
@@ -242,12 +225,10 @@ async function viewRideDetail(rideId) {
       return;
     }
 
-    // Formatta nome e cognome
     const nomeUtente = ride.user
       ? `${ride.user.nome} ${ride.user.cognome}`.trim()
       : `Utente Eliminato`;
 
-    // Calcola costo effettivo
     const costoOriginale = parseFloat(ride.costo || 0);
     const costEffettivo = calculateEffectiveCost(ride);
     const puntiUsati = parseInt(ride.punti_fedeltà_usati || 0);
@@ -338,11 +319,9 @@ async function viewRideDetail(rideId) {
     rideDetailModal.classList.remove("hidden");
   } catch (error) {
     console.error("❌ Errore:", error);
-    showSnackbar("Errore caricamento dettagli", "error");
   }
 }
 
-// ===== RENDER PAGINATION =====
 function renderPagination() {
   const filtered = getFilteredRides();
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -373,7 +352,6 @@ function renderPagination() {
   paginationContainer.innerHTML = html;
 }
 
-// ===== GO TO PAGE =====
 function goToPage(page) {
   const filtered = getFilteredRides();
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -386,7 +364,6 @@ function goToPage(page) {
   }
 }
 
-// ===== UPDATE STATS =====
 function updateStats(tab) {
   const rides = allRides;
 
@@ -401,7 +378,6 @@ function updateStats(tab) {
   }
 
   const totalRides = rides.length;
-  // ← CAMBIATO: Usa il costo effettivo
   const totalRevenue = rides.reduce(
     (sum, r) => sum + calculateEffectiveCost(r),
     0
@@ -424,7 +400,6 @@ function updateStats(tab) {
   updateStatsLabels(tab);
 }
 
-// ===== UPDATE STATS LABELS =====
 function updateStatsLabels(tab) {
   const firstCardLabel = document.querySelectorAll(".stat-label")[0];
   const secondCardLabel = document.querySelectorAll(".stat-label")[1];
@@ -438,12 +413,10 @@ function updateStatsLabels(tab) {
   }
 }
 
-// ===== CLOSE ALL MODALS =====
 function closeAllModals() {
   rideDetailModal.classList.add("hidden");
 }
 
-// ===== SNACKBAR =====
 function showSnackbar(message, type = "success") {
   snackbar.textContent = message;
   snackbar.className = `snackbar show`;

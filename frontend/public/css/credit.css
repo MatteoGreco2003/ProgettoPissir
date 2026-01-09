@@ -1,25 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-/* ============================================================================
-   CSS CUSTOM PROPERTIES E RESET
-   ========================================================================== */
-
 :root {
-  /* Colori primari e secondari */
   --primary-teal: rgba(33, 128, 141, 1);
   --primary-teal-dark: rgba(29, 116, 128, 1);
   --success-green: rgba(33, 128, 141, 1);
   --warning-orange: #e68161;
   --error-red: rgba(192, 21, 47, 1);
-
-  /* Colori neutrali */
   --light-bg: rgba(252, 252, 249, 1);
   --dark-text: rgba(19, 52, 59, 1);
   --light-text: rgba(98, 108, 113, 1);
   --white: rgba(255, 255, 255, 1);
   --border-color: rgba(94, 82, 64, 0.2);
-
-  /* Transizioni */
   --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -35,16 +26,11 @@ body {
   color: var(--dark-text);
 }
 
-/* ============================================================================
-   LAYOUT BASE
-   ========================================================================== */
-
 .main-content {
   margin-left: 250px;
   padding: 24px;
 }
 
-/* ===== CARD COMPONENT (BASE PER TUTTE LE SEZIONI) ===== */
 .card {
   background-color: var(--white);
   border-radius: 12px;
@@ -62,16 +48,11 @@ body {
   padding: 24px;
 }
 
-/* ===== GRID LAYOUT (2 COLONNE PER DESKTOP) ===== */
 .credit-grid {
   display: grid;
   grid-template-columns: 2fr 2fr;
   gap: 24px;
 }
-
-/* ============================================================================
-   SEZIONE 1: CREDITO DISPONIBILE
-   ========================================================================== */
 
 .credit-card {
   grid-column: span 1;
@@ -97,7 +78,6 @@ body {
   gap: 24px;
 }
 
-/* ===== CREDIT CHIP (DISPLAY SALDO) ===== */
 .credit-chip {
   background: linear-gradient(
     135deg,
@@ -116,7 +96,6 @@ body {
   align-items: center;
 }
 
-/* Variazioni colore chip in base al saldo */
 .credit-chip.low-balance {
   background: linear-gradient(
     135deg,
@@ -158,7 +137,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* ===== CREDIT INFO (DATI UTENTE) ===== */
 .credit-info {
   display: flex;
   flex-direction: column;
@@ -186,10 +164,6 @@ body {
   color: var(--dark-text);
 }
 
-/* ============================================================================
-   SEZIONE 2: STATISTICHE
-   ========================================================================== */
-
 .stats-card {
   grid-column: span 1;
 }
@@ -207,7 +181,6 @@ body {
   gap: 16px;
 }
 
-/* ===== STAT BOX (ELEMENTI STATISTICHE) ===== */
 .stat-box {
   display: flex;
   align-items: center;
@@ -233,7 +206,6 @@ body {
   flex-shrink: 0;
 }
 
-/* Icone colorate per tipo statistica */
 .stat-icon--recharge {
   background: linear-gradient(
     135deg,
@@ -287,10 +259,6 @@ body {
   margin: 0;
 }
 
-/* ============================================================================
-   SEZIONE 3: RICARICA CREDITO
-   ========================================================================== */
-
 .recharge-card {
   grid-column: span 1;
 }
@@ -309,7 +277,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* ===== FORM ELEMENTS ===== */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -358,7 +325,6 @@ body {
   position: relative;
 }
 
-/* ===== RECHARGE BUTTON ===== */
 .btn-recharge {
   padding: 14px 20px;
   background: linear-gradient(
@@ -394,7 +360,6 @@ body {
   cursor: not-allowed;
 }
 
-/* ===== PAYMENT NOTICE ===== */
 .payment-notice {
   background: linear-gradient(
     135deg,
@@ -422,10 +387,6 @@ body {
   margin: 0;
   line-height: 1.4;
 }
-
-/* ============================================================================
-   SEZIONE 4: STORICO TRANSAZIONI
-   ========================================================================== */
 
 .history-card {
   grid-column: span 1 / -1;
@@ -475,7 +436,6 @@ body {
   box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
 }
 
-/* ===== LOADING SPINNER ===== */
 .loading-spinner {
   display: flex;
   flex-direction: column;
@@ -510,7 +470,6 @@ body {
   margin: 0;
 }
 
-/* ===== TRANSACTIONS TABLE ===== */
 .history-container {
   overflow-x: auto;
   margin-bottom: 20px;
@@ -570,7 +529,6 @@ body {
   flex-shrink: 0;
 }
 
-/* ===== TRANSACTION TYPE BADGE ===== */
 .transaction-type {
   display: inline-flex;
   align-items: center;
@@ -602,7 +560,6 @@ body {
   color: var(--error-red);
 }
 
-/* ===== TRANSACTION AMOUNT (COLORI DIVERSI PER TIPO) ===== */
 .transaction-amount {
   font-weight: 700;
   text-align: right;
@@ -618,7 +575,6 @@ body {
   color: var(--error-red);
 }
 
-/* ===== EMPTY STATE ===== */
 .history-empty {
   text-align: center;
   padding: 20px 20px;
@@ -641,7 +597,6 @@ body {
   margin: 0;
 }
 
-/* ===== PAGINATION ===== */
 .pagination {
   display: flex;
   justify-content: center;
@@ -690,10 +645,6 @@ body {
   min-width: 80px;
   text-align: center;
 }
-
-/* ============================================================================
-   ACCOUNT STATUS BANNER
-   ========================================================================== */
 
 .account-status-banner {
   background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
@@ -766,10 +717,6 @@ body {
   transform: translateY(0);
 }
 
-/* ============================================================================
-   SNACKBAR (NOTIFICHE TOAST)
-   ========================================================================== */
-
 .snackbar {
   position: fixed;
   bottom: 16px;
@@ -800,10 +747,6 @@ body {
 .snackbar.warning {
   background-color: #e68161;
 }
-
-/* ============================================================================
-   MODAL (DELETE PROFILE)
-   ========================================================================== */
 
 .modal {
   position: fixed;
@@ -900,7 +843,6 @@ body {
   justify-content: flex-end;
 }
 
-/* ===== BUTTON STYLES PER MODAL ===== */
 .btn {
   padding: 10px 20px;
   border-radius: 8px;
@@ -929,10 +871,6 @@ body {
   flex: 1;
 }
 
-/* ============================================================================
-   ANIMAZIONI
-   ========================================================================== */
-
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -944,20 +882,12 @@ body {
   }
 }
 
-/* ============================================================================
-   RESPONSIVE - DESKTOP GRANDE (1200px)
-   ========================================================================== */
-
 @media (max-width: 1200px) {
   .credit-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 }
-
-/* ============================================================================
-   RESPONSIVE - TABLET (768px)
-   ========================================================================== */
 
 @media (max-width: 768px) {
   .main-content {
@@ -1024,10 +954,6 @@ body {
     width: 100%;
   }
 }
-
-/* ============================================================================
-   RESPONSIVE - MOBILE (480px)
-   ========================================================================== */
 
 @media (max-width: 480px) {
   .main-content {

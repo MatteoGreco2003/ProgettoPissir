@@ -1,9 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-/* ============================================================================
-   RESET E VARIABILI GLOBALI
-   ========================================================================== */
-
 * {
   margin: 0;
   padding: 0;
@@ -13,38 +9,24 @@
   list-style: none;
 }
 
-/* ===== CSS CUSTOM PROPERTIES (COLORI E TRANSIZIONI) ===== */
 :root {
-  /* Primary colors - Teal (sustainable mobility brand) */
   --primary-teal: #0ea5a8;
   --primary-teal-dark: #0d9488;
-
-  /* Secondary colors - Green (eco-friendly) */
   --secondary-green: #10b981;
-
-  /* Neutral colors */
   --light-bg: #f0fdf4;
   --white: #fff;
   --dark-text: #333;
   --light-text: #888;
-
-  /* Feedback colors */
   --error-bg: #ffe6e6;
   --error-color: #ff4444;
   --error-dark: #cc0000;
   --success-bg: #e6ffe6;
   --success-color: #44dd44;
   --success-dark: #00aa00;
-
-  /* Animation durations */
   --transition-fast: 0.3s;
   --transition-medium: 0.6s ease-in-out;
   --transition-slow: 1.8s ease-in-out;
 }
-
-/* ============================================================================
-   LAYOUT BASE
-   ========================================================================== */
 
 html,
 body {
@@ -54,7 +36,6 @@ body {
   padding: 0;
 }
 
-/* Full screen centered layout with gradient background */
 body {
   display: flex;
   justify-content: center;
@@ -76,11 +57,6 @@ body {
   overflow: hidden;
 }
 
-/* ============================================================================
-   CONTAINER PRINCIPALE
-   ========================================================================== */
-
-/* Main container: white card with sliding forms and toggle panel */
 .container {
   position: relative;
   width: 950px;
@@ -101,15 +77,10 @@ body {
   margin: 15px 0;
 }
 
-/* ============================================================================
-   FORM BOX
-   ========================================================================== */
-
 form {
   width: 100%;
 }
 
-/* Form container: positioned right, hidden by default, slides in on toggle */
 .form-box {
   position: absolute;
   right: 0;
@@ -128,12 +99,10 @@ form {
   visibility: hidden;
 }
 
-/* Login form visible by default */
 .form-box.login {
   visibility: visible;
 }
 
-/* On toggle, forms slide left (register form moves into view) */
 .container.active .form-box {
   right: 50%;
 }
@@ -142,16 +111,11 @@ form {
   visibility: visible;
 }
 
-/* ============================================================================
-   INPUT BOX
-   ========================================================================== */
-
 .input-box {
   position: relative;
   margin: 15px 0;
 }
 
-/* Input field styling: gray background, teal focus border */
 .input-box input {
   width: 100%;
   padding: 13px 50px 13px 20px;
@@ -170,14 +134,12 @@ form {
   font-weight: 400;
 }
 
-/* Focus state: teal border and subtle shadow */
 .input-box input:focus {
   background: #f5f5f5;
   border-color: var(--primary-teal);
   box-shadow: 0 0 0 3px rgba(14, 165, 168, 0.1);
 }
 
-/* Icon positioning: absolute right with padding */
 .input-box i {
   position: absolute;
   right: 20px;
@@ -187,22 +149,16 @@ form {
   color: var(--light-text);
 }
 
-/* ===== PASSWORD TOGGLE ICON ===== */
 .password-input-box {
   position: relative;
 }
 
-/* Toggle password visibility on click */
 .toggle-password {
   cursor: pointer;
   user-select: none;
   transition: all var(--transition-fast);
   pointer-events: all !important;
 }
-
-/* ============================================================================
-   LINK
-   ========================================================================== */
 
 .forget-link {
   margin: -5px 0 15px;
@@ -218,11 +174,6 @@ form {
   color: var(--primary-teal);
 }
 
-/* ============================================================================
-   BUTTON
-   ========================================================================== */
-
-/* Primary button: teal background with shadow and hover effects */
 .btn {
   width: 100%;
   height: 48px;
@@ -247,17 +198,12 @@ form {
   transform: translateY(0);
 }
 
-/* ============================================================================
-   TOGGLE BOX (ANIMATED GRADIENT PANEL)
-   ========================================================================== */
-
 .toggle-box {
   position: absolute;
   width: 100%;
   height: 100%;
 }
 
-/* Animated gradient background that slides with the form */
 .toggle-box::before {
   content: "";
   position: absolute;
@@ -274,12 +220,10 @@ form {
   transition: var(--transition-slow);
 }
 
-/* Toggle active: gradient slides to right */
 .container.active .toggle-box::before {
   left: 50%;
 }
 
-/* Toggle panel: text content on gradient background */
 .toggle-panel {
   position: absolute;
   width: 50%;
@@ -293,7 +237,6 @@ form {
   transition: var(--transition-medium);
 }
 
-/* Left panel slides out when toggling to register */
 .toggle-panel.toggle-left {
   left: 0;
   transition-delay: 1.2s;
@@ -304,7 +247,6 @@ form {
   transition-delay: 0.6s;
 }
 
-/* Right panel slides in when toggling to register */
 .toggle-panel.toggle-right {
   right: -50%;
   transition-delay: 0.6s;
@@ -324,7 +266,6 @@ form {
   font-size: 14.5px;
 }
 
-/* Toggle button: white border, transparent background */
 .toggle-panel .btn {
   width: 160px;
   height: 46px;
@@ -337,11 +278,6 @@ form {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* ============================================================================
-   ERROR MESSAGES
-   ========================================================================== */
-
-/* Error container: hidden by default, shows when errors exist */
 .error-messages {
   margin: 15px 0;
   padding: 10px;
@@ -352,7 +288,6 @@ form {
   text-align: center;
 }
 
-/* Show and animate error messages */
 .error-messages:not(:empty) {
   display: block;
   animation: slideUp 0.3s ease;
@@ -364,7 +299,6 @@ form {
   font-weight: 500;
 }
 
-/* Input error state: red border and light red background */
 .input-error {
   border: 2px solid var(--error-color) !important;
   background-color: #fff5f5 !important;
@@ -375,11 +309,6 @@ form {
   box-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
 }
 
-/* ============================================================================
-   SUCCESS MESSAGES
-   ========================================================================== */
-
-/* Success message: green background, shown after successful action */
 .success-message {
   margin-top: 15px;
   padding: 10px;
@@ -392,11 +321,6 @@ form {
   animation: slideUp 0.3s ease;
 }
 
-/* ============================================================================
-   MODAL (PASSWORD RECOVERY)
-   ========================================================================== */
-
-/* Modal backdrop and container */
 .modal {
   position: fixed;
   z-index: 1000;
@@ -411,7 +335,6 @@ form {
   animation: fadeIn 0.3s ease;
 }
 
-/* Modal content card */
 .modal-content {
   background-color: var(--white);
   padding: 40px;
@@ -420,6 +343,8 @@ form {
   max-width: 500px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.3s ease;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .modal-content h2 {
@@ -436,7 +361,6 @@ form {
   color: var(--dark-text);
 }
 
-/* Close button (X) */
 .close {
   float: right;
   font-size: 28px;
@@ -450,7 +374,6 @@ form {
   color: var(--dark-text);
 }
 
-/* Modal button layout: 2 columns with gap */
 .modal-button-group {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
@@ -459,7 +382,6 @@ form {
   margin-bottom: 15px;
 }
 
-/* Cancel button: white with red border */
 .btn-modal-cancel {
   background: var(--white);
   color: var(--dark-text);
@@ -473,10 +395,6 @@ form {
   color: var(--error-color);
   transform: translateY(-2px);
 }
-
-/* ============================================================================
-   ANIMAZIONI
-   ========================================================================== */
 
 @keyframes slideUp {
   from {
@@ -498,20 +416,12 @@ form {
   }
 }
 
-/* ============================================================================
-   RESPONSIVE - TABLET (1024px)
-   ========================================================================== */
-
 @media (max-width: 1023px) {
   .container {
     width: 95%;
     margin: auto;
   }
 }
-
-/* ============================================================================
-   RESPONSIVE - TABLET (768px)
-   ========================================================================== */
 
 @media (max-width: 768px) {
   .form-box {
@@ -594,16 +504,11 @@ form {
   }
 }
 
-/* ============================================================================
-   RESPONSIVE - MOBILE LANDSCAPE (650px)
-   ========================================================================== */
-
 @media screen and (max-width: 650px) {
   .container {
     height: calc(100vh - 40px);
   }
 
-  /* Form occupies lower portion on mobile */
   .form-box {
     bottom: 0;
     width: 100%;
@@ -615,7 +520,6 @@ form {
     bottom: 30%;
   }
 
-  /* Gradient panel becomes vertical banner */
   .toggle-box::before {
     left: 0;
     top: -270%;
@@ -629,7 +533,6 @@ form {
     top: 70%;
   }
 
-  /* Toggle panels positioned vertically */
   .toggle-panel {
     width: 100%;
     height: 30%;
@@ -653,10 +556,6 @@ form {
     bottom: 0;
   }
 }
-
-/* ============================================================================
-   RESPONSIVE - MOBILE SMALL (480px)
-   ========================================================================== */
 
 @media screen and (max-width: 480px) {
   .container h1 {

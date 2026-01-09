@@ -285,10 +285,13 @@ export const deleteUserAsAdmin = async (req, res) => {
       });
     }
 
-    // Protegge l'admin principale
-    if (userIdToDelete === 9) {
+    // Protegge l'admin principale - Non permette di eliminare admin
+    if (
+      userIdToDelete.role === "admin" ||
+      userIdToDelete.email === "admin@gmail.com"
+    ) {
       return res.status(403).json({
-        error: "Non puoi eliminare l'admin principale",
+        error: "Non puoi eliminare un account amministratore",
       });
     }
 

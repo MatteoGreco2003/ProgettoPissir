@@ -1,4 +1,3 @@
-/* ===== NAVBAR ===== */
 .navbar {
   background-color: var(--white);
   border-bottom: 1px solid var(--primary-teal-dark);
@@ -14,14 +13,12 @@
   justify-content: space-between;
 }
 
-/* ===== NAVBAR RIGHT - LOGOUT ===== */
 .navbar-right {
   display: flex;
   align-items: center;
   gap: 24px;
 }
 
-/* ===== USER INFO SECTION - AVATAR + NOME ===== */
 .navbar-user-info {
   display: flex;
   align-items: center;
@@ -74,7 +71,6 @@
   color: var(--light-text);
 }
 
-/* ===== LOGOUT BUTTON ===== */
 .logout-btn {
   display: flex;
   align-items: center;
@@ -89,7 +85,6 @@
   transition: all 150ms ease;
 }
 
-/* ===== MENU TOGGLE - HAMBURGER ICON ===== */
 .menu-toggle {
   display: none;
   background: none;
@@ -99,7 +94,6 @@
   cursor: pointer;
 }
 
-/* ===== SIDEBAR ===== */
 .sidebar {
   position: fixed;
   left: 0;
@@ -121,7 +115,6 @@
   flex: 1;
 }
 
-/* ===== NAV ITEM - LINK DI NAVIGAZIONE ===== */
 .nav-item {
   display: flex;
   align-items: center;
@@ -156,7 +149,6 @@
   text-align: center;
 }
 
-/* ===== SIDEBAR FOOTER ===== */
 .sidebar-footer {
   display: flex;
   flex-direction: column;
@@ -165,7 +157,6 @@
   border-top: 1px solid var(--primary-teal);
 }
 
-/* ===== DELETE PROFILE BUTTON ===== */
 .delete-profile-btn {
   display: flex;
   justify-content: center;
@@ -187,16 +178,10 @@
   font-size: 16px;
 }
 
-/* Sidebar footer per admin (senza border-top) */
 .sidebar-footer.admin {
   border-top: none;
   padding: 0;
 }
-
-/* ============================================================================
-   RESPONSIVE DESIGN - TABLET/MOBILE (≤768px)
-   ============================================================================
-*/
 
 @media (max-width: 768px) {
   .navbar-container {
@@ -222,11 +207,6 @@
     left: 0;
   }
 }
-
-/* ============================================================================
-   RESPONSIVE DESIGN - MOBILE PICCOLO (≤480px)
-   ============================================================================
-*/
 
 @media (max-width: 480px) {
   .logout-btn {

@@ -1,9 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-/* ============================================================================
-   RESET E VARIABILI GLOBALI
-   ========================================================================== */
-
 * {
   margin: 0;
   padding: 0;
@@ -37,17 +33,12 @@ body {
   color: var(--dark-text);
 }
 
-/* ============================================================================
-   MAIN CONTENT
-   ========================================================================== */
-
 .main-content {
   margin-left: 250px;
   padding: 24px;
   min-height: calc(100vh - 60px);
 }
 
-/* ===== CARD BASE ===== */
 .card {
   background-color: var(--white);
   border-radius: 12px;
@@ -89,7 +80,6 @@ body {
   padding: 24px;
 }
 
-/* ===== LOADING SPINNER ===== */
 .loading-spinner {
   display: flex;
   flex-direction: column;
@@ -124,8 +114,6 @@ body {
   margin: 0;
 }
 
-/* ===== MY FEEDBACK CONTAINER ===== */
-
 .feedback-list {
   display: flex;
   flex-direction: column;
@@ -153,13 +141,11 @@ body {
   background: linear-gradient(135deg, rgba(33, 128, 141, 0.05), transparent);
 }
 
-/* ===== FEEDBACK HEADER - GRID LAYOUT ===== */
 .feedback-card-header {
   grid-column: 1 / -1;
   display: contents;
 }
 
-/* LEFT: Vehicle Info */
 .feedback-card-left {
   grid-column: 1;
   display: flex;
@@ -167,7 +153,6 @@ body {
   gap: 12px;
 }
 
-/* RIGHT: Date & Rating */
 .feedback-card-right {
   grid-column: 2;
   display: flex;
@@ -177,7 +162,6 @@ body {
   text-align: right;
 }
 
-/* Comment (full width at bottom) */
 .feedback-commento {
   grid-column: 1 / -1;
   padding: 12px;
@@ -194,7 +178,6 @@ body {
   margin: 0;
 }
 
-/* Actions (full width at bottom) */
 .feedback-actions {
   grid-column: 1 / -1;
   display: flex;
@@ -202,7 +185,6 @@ body {
   justify-content: center;
 }
 
-/* ===== VEHICLE INFO ===== */
 .feedback-vehicle-info {
   display: flex;
   align-items: center;
@@ -228,7 +210,6 @@ body {
   color: var(--light-text);
 }
 
-/* ===== USER INFO ===== */
 .feedback-user-info {
   font-size: 12px;
   color: var(--light-text);
@@ -238,7 +219,6 @@ body {
   color: var(--dark-text);
 }
 
-/* ===== RATING & DATE ===== */
 .feedback-rating {
   font-size: 14px;
   color: #ffc107;
@@ -251,7 +231,6 @@ body {
   font-weight: 500;
 }
 
-/* ===== FEEDBACK ACTIONS ===== */
 .feedback-btn-action {
   padding: 6px 12px;
   border: none;
@@ -283,7 +262,6 @@ body {
   background: rgba(192, 21, 47, 0.2);
 }
 
-/* ===== EMPTY STATE ===== */
 .empty-state {
   text-align: center;
 }
@@ -310,7 +288,6 @@ body {
   display: none;
 }
 
-/* ===== COMMUNITY FILTERS ===== */
 .community-filters {
   display: flex;
   gap: 12px;
@@ -357,7 +334,6 @@ body {
   border-color: var(--primary-teal);
 }
 
-/* ===== PAGINATION ===== */
 .pagination {
   display: flex;
   justify-content: center;
@@ -408,7 +384,6 @@ body {
   text-align: center;
 }
 
-/* ===== MODAL ===== */
 .modal {
   position: fixed;
   top: 0;
@@ -505,7 +480,6 @@ body {
   justify-content: flex-end;
 }
 
-/* ===== EDIT MODAL ===== */
 .vehicle-info-edit {
   background: rgba(33, 128, 141, 0.08);
   padding: 12px;
@@ -599,7 +573,6 @@ body {
   font-weight: 500;
 }
 
-/* ===== BUTTON STYLES ===== */
 .btn {
   padding: 10px 20px;
   border-radius: 8px;
@@ -629,7 +602,6 @@ body {
   flex: 1;
 }
 
-/* ===== SNACKBAR ===== */
 .snackbar {
   position: fixed;
   bottom: 16px;
@@ -661,10 +633,6 @@ body {
   background-color: var(--warning-orange);
 }
 
-/* ============================================================================
-   RESPONSIVE - TABLET (768px)
-   ========================================================================== */
-
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
@@ -685,10 +653,6 @@ body {
     width: 230px;
   }
 }
-
-/* ============================================================================
-   RESPONSIVE - MOBILE (480px)
-   ========================================================================== */
 
 @media (max-width: 480px) {
   .card-header {

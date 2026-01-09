@@ -1,37 +1,15 @@
-<!-- ============================================================================
-     SIDEBAR - COMPONENTE RIUSABILE
-     ============================================================================
-     Sidebar responsive con navigazione principale e pulsante elimina profilo.
-     Incluso script inline per gestione nav attivo e modal eliminazione.
-     ========================================================================== -->
-
-<!-- ===== SIDEBAR CONTAINER ===== -->
 <aside class="sidebar" id="sidebar">
-  <!-- ===== NAVIGAZIONE PRINCIPALE ===== -->
   <nav class="sidebar-nav" id="sidebarNav">
-    <!-- I nav-item generati dinamicamente in base al ruolo -->
+    <!-- I nav-item vengono generati dinamicamente in base al ruolo -->
   </nav>
 
-  <!-- ===== SIDEBAR FOOTER ===== -->
   <div class="sidebar-footer" id="sidebarFooter">
     <!-- Il pulsante delete profile verrà aggiunto solo se l'utente non è admin -->
   </div>
 </aside>
 
-<!-- ============================================================================
-     SCRIPT INLINE - SIDEBAR LOGIC
-     ============================================================================
-     Gestisce:
-     - Carica il ruolo utente via API
-     - Genera dinamicamente i nav item in base al ruolo
-     - Evidenziazione nav item attivo in base al percorso
-     - Apertura/chiusura modal eliminazione profilo (solo per utenti non-admin)
-     - Eliminazione profilo con API call
-     ========================================================================== -->
 <script>
-  /**
-   * Configurazione navigazione per UTENTE
-   */
+  // Configurazione navigazione per UTENTE
   const UTENTE_NAV = [
     {
       href: "/home-utente",
@@ -59,9 +37,7 @@
     },
   ];
 
-  /**
-   * Configurazione navigazione per ADMIN
-   */
+  // Configurazione navigazione per ADMIN
   const ADMIN_NAV = [
     {
       href: "/home-admin",
@@ -107,10 +83,7 @@
     },
   ];
 
-  /**
-   * Genera dinamicamente i nav item in base al ruolo
-   * @param {string} userRole - Ruolo dell'utente ('utente' o 'admin')
-   */
+  // Genera dinamicamente i nav item in base al ruolo
   function generateNavItems(userRole) {
     const sidebarNav = document.getElementById("sidebarNav");
     if (!sidebarNav) return;
@@ -118,10 +91,8 @@
     // Seleziona la configurazione in base al ruolo
     const navConfig = userRole === "admin" ? ADMIN_NAV : UTENTE_NAV;
 
-    // Pulisci nav precedente
     sidebarNav.innerHTML = "";
 
-    // Crea e inserisci i nav item
     navConfig.forEach((item) => {
       const navLink = document.createElement("a");
       navLink.href = item.href;
@@ -134,23 +105,16 @@
       sidebarNav.appendChild(navLink);
     });
 
-    // Dopo la generazione, evidenzia il link attivo
     setActiveNavItem();
   }
 
-  /**
-   * Genera il footer della sidebar in base al ruolo
-   * Se l'utente non è admin, mostra il pulsante delete profile
-   * @param {string} userRole - Ruolo dell'utente ('utente' o 'admin')
-   */
+  // Genera il footer della sidebar in base al ruolo (se l'utente non è admin, mostra il pulsante delete profile)
   function generateSidebarFooter(userRole) {
     const sidebarFooter = document.getElementById("sidebarFooter");
     if (!sidebarFooter) return;
 
-    // Pulisci footer precedente
     sidebarFooter.innerHTML = "";
 
-    // Se è admin, aggiungi la classe 'admin' al footer per nascondere il border
     if (userRole === "admin") {
       sidebarFooter.classList.add("admin");
     } else {
@@ -168,14 +132,11 @@
     `;
       sidebarFooter.appendChild(deleteBtn);
 
-      // Aggiungi event listener al pulsante
       deleteBtn.addEventListener("click", openDeleteProfileModal);
     }
   }
 
-  /**
-   * Evidenzia il nav item corrispondente alla pagina corrente
-   */
+  // Evidenzia il nav item corrispondente alla pagina corrente
   function setActiveNavItem() {
     const currentPath = window.location.pathname;
     const navItems = document.querySelectorAll(".nav-item");
@@ -184,7 +145,6 @@
       item.classList.remove("active");
     });
 
-    // Cerca il nav item che corrisponde al percorso
     navItems.forEach((item) => {
       const href = item.getAttribute("href");
       if (
@@ -196,9 +156,6 @@
     });
   }
 
-  /**
-   * Carica il ruolo utente e genera la navigazione
-   */
   async function loadAndGenerateNavigation() {
     try {
       const response = await fetch("/users/me", {
@@ -211,9 +168,7 @@
 
       if (response.ok) {
         const userData = await response.json();
-        // Genera nav in base al ruolo
         generateNavItems(userData.ruolo);
-        // Genera footer (con pulsante delete solo se NON admin)
         generateSidebarFooter(userData.ruolo);
       } else {
         console.error("❌ Errore caricamento profilo:", response.status);
@@ -223,11 +178,6 @@
     }
   }
 
-  /**
-   * Mostra snackbar notifica temporanea
-   * @param {string} message - Messaggio da mostrare
-   * @param {string} type - Tipo: 'success', 'error', 'warning'
-   */
   function showSnackbar(message, type = "success") {
     const snackbar = document.getElementById("snackbar");
     if (snackbar) {
@@ -239,7 +189,6 @@
     }
   }
 
-  // ✅ SIDEBAR PROFILE MODAL FUNCTIONS (DIVERSI DA REPORTS)
   function openDeleteProfileModal() {
     const modal = document.getElementById("deleteProfileModal");
     if (modal) {
@@ -254,10 +203,6 @@
     }
   }
 
-  /**
-   * Esegue l'eliminazione del profilo via API
-   * Mostra snackbar, esegue DELETE /users/me, reindirizza a home
-   */
   async function confirmDeleteProfile() {
     closeDeleteProfileModal();
     showSnackbar("Eliminazione profilo in corso...", "success");
@@ -289,12 +234,9 @@
     }
   }
 
-  // ===== INIT =====
   document.addEventListener("DOMContentLoaded", () => {
-    // ===== CARICA NAV IN BASE AL RUOLO =====
     loadAndGenerateNavigation();
 
-    // ===== EVENT LISTENER: Sidebar Modal Buttons (DIVERSI) =====
     const sidebarDeleteBtn = document.getElementById("deleteProfileBtn");
     const sidebarCancel = document.getElementById("sidebarModalCancel");
     const sidebarClose = document.getElementById("sidebarModalClose");
@@ -312,7 +254,6 @@
       sidebarConfirm.addEventListener("click", confirmDeleteProfile);
     }
 
-    // Chiude modal quando clicchi fuori dal contenuto (SOLO PER SIDEBAR)
     const sidebarModal = document.getElementById("deleteProfileModal");
     if (sidebarModal) {
       sidebarModal.addEventListener("click", (e) => {

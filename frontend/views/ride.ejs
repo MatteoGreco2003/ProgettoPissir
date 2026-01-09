@@ -10,22 +10,20 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
 
-    <!-- ✅ Libreria MQTT per browser -->
+    <!-- Libreria MQTT per browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
-    <!-- Poi: Singleton MQTT Manager -->
+    <!-- MQTT Manager -->
     <script src="/js/mqtt-manager.js"></script>
     <script src="/js/mqtt-battery-alerts.js"></script>
   </head>
   <body>
     <div class="ride-container">
-      <!-- Header -->
       <div class="ride-header">
         <div class="ride-title" id="vehicleTitle">Monopattino Elettrico</div>
         <div class="ride-status">🟢 Corsa in Corso</div>
       </div>
 
-      <!-- Vehicle Summary -->
       <div class="ride-summary">
         <div class="summary-row">
           <span class="summary-label">Mezzo</span>
@@ -45,13 +43,11 @@
         </div>
       </div>
 
-      <!-- Timer -->
       <div class="timer-section">
         <div class="timer-label">Tempo Trascorso</div>
         <div class="timer" id="timerDisplay">00:00:00</div>
       </div>
 
-      <!-- Stats -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon">📍</div>
@@ -70,13 +66,11 @@
         </div>
       </div>
 
-      <!-- Cost Display -->
       <div class="cost-section">
         <div class="cost-label">Costo Attuale</div>
         <div class="cost-value" id="costValue">€0.00</div>
       </div>
 
-      <!-- Warning -->
       <div class="warning-box">
         <i class="fas fa-info-circle"></i>
         <span id="warningText"
@@ -84,13 +78,11 @@
         >
       </div>
 
-      <!-- Parking Selection -->
       <div class="parking-section">
         <label class="parking-label">Parcheggio di Arrivo</label>
         <select class="parking-select" id="parkingSelect" size="4"></select>
       </div>
 
-      <!-- ✅ NUOVO: TOGGLE PUNTI FEDELTÀ -->
       <div class="punti-fedeltà-container">
         <label class="punti-fedeltà-label">
           <input
@@ -113,10 +105,8 @@
         </div>
       </div>
 
-      <!-- Error Box -->
       <div id="rideError" class="error-box hidden"></div>
 
-      <!-- Action Buttons -->
       <div class="actions">
         <button class="btn btn-primary" id="endRideBtn">
           <i class="fas fa-stop-circle"></i> Termina Corsa
@@ -124,7 +114,6 @@
       </div>
     </div>
 
-    <!-- Snackbar -->
     <div id="snackbar" class="snackbar"></div>
 
     <script src="/js/ride.js"></script>

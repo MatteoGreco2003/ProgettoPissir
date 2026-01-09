@@ -1,20 +1,17 @@
-// ===== PAGINATION VARIABLES =====
+// Variabili Paginazione
 const ITEMS_PER_PAGE = 5;
 let currentPage = 1;
 let paginationContainer = document.getElementById("paginationContainer");
 
-// ===== STATO GLOBALE =====
 let parkings = [];
 let allParkings = [];
 let currentParkingId = null;
 let currentEditParkingId = null;
 
-// ===== DOM ELEMENTS =====
 const parkingsTableBody = document.getElementById("parkingsTableBody");
 const searchInput = document.getElementById("searchInput");
 const snackbar = document.getElementById("snackbar");
 
-// Modal: Add Parking
 const addParkingModal = document.getElementById("addParkingModal");
 const addParkingForm = document.getElementById("addParkingForm");
 const nomeInput = document.getElementById("nomeInput");
@@ -24,7 +21,6 @@ const capacitaInput = document.getElementById("capacitaInput");
 const addErrors = document.getElementById("addErrors");
 const confirmAddParkingBtn = document.getElementById("confirmAddParkingBtn");
 
-// Modal: Edit Parking
 const editParkingModal = document.getElementById("editParkingModal");
 const editParkingForm = document.getElementById("editParkingForm");
 const editNomeInput = document.getElementById("editNomeInput");
@@ -35,7 +31,6 @@ const capacitaInfo = document.getElementById("capacitaInfo");
 const editErrors = document.getElementById("editErrors");
 const confirmEditParkingBtn = document.getElementById("confirmEditParkingBtn");
 
-// Modal: Delete Parking
 const deleteParkingModal = document.getElementById("deleteParkingModal");
 const deleteParkingName = document.getElementById("deleteParkingName");
 const deleteErrors = document.getElementById("deleteErrors");
@@ -43,15 +38,12 @@ const confirmDeleteParkingBtn = document.getElementById(
   "confirmDeleteParkingBtn"
 );
 
-// Modal: Detail
 const parkingDetailModal = document.getElementById("parkingDetailModal");
 const detailParkingName = document.getElementById("detailParkingName");
 const parkingDetailBody = document.getElementById("parkingDetailBody");
 
-// Parking Usage Container
 const parkingUsageContainer = document.getElementById("parkingUsageContainer");
 
-// ===== INIT =====
 document.addEventListener("DOMContentLoaded", async () => {
   setupEventListeners();
   loadAllParkings();
@@ -73,16 +65,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// ===== EVENT LISTENERS =====
 function setupEventListeners() {
   searchInput.addEventListener("input", filterParkings);
 
-  // Modal close buttons
   document.querySelectorAll(".modal-close").forEach((btn) => {
     btn.addEventListener("click", closeAllModals);
   });
 
-  // Click outside modal
   [
     addParkingModal,
     editParkingModal,
@@ -98,7 +87,6 @@ function setupEventListeners() {
   });
 }
 
-// ===== LOAD ALL PARKINGS =====
 async function loadAllParkings() {
   try {
     const response = await fetch("/parking/data", {
@@ -109,7 +97,6 @@ async function loadAllParkings() {
 
     const data = await response.json();
 
-    // ✅ Converti stringhe in numeri
     allParkings = data.parkings.map((p) => ({
       ...p,
       latitudine: parseFloat(p.latitudine),
@@ -117,7 +104,6 @@ async function loadAllParkings() {
       capacita: parseInt(p.capacita),
     }));
 
-    // ORDINA PER CAPACITÀ DECRESCENTE
     allParkings.sort((a, b) => b.capacita - a.capacita);
 
     parkings = [...allParkings];
@@ -130,7 +116,6 @@ async function loadAllParkings() {
   }
 }
 
-// ===== LOAD PARKING USAGE STATISTICS =====
 async function loadParkingUsageStatistics() {
   try {
     const response = await fetch("/statistics/parking-usage", {
@@ -152,7 +137,6 @@ async function loadParkingUsageStatistics() {
   }
 }
 
-// ===== RENDER PARKING USAGE =====
 function renderParkingUsage(parkings) {
   const rankingEmojis = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
 
@@ -190,7 +174,6 @@ function renderParkingUsage(parkings) {
   parkingUsageContainer.innerHTML = html;
 }
 
-// ===== RENDER PARKINGS TABLE =====
 function renderParkings() {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -282,14 +265,12 @@ function renderParkings() {
     .join("");
 }
 
-// ===== FILTER PARKINGS =====
 function filterParkings() {
   const searchTerm = searchInput.value.toLowerCase();
   parkings = allParkings.filter((parking) =>
     parking.nome.toLowerCase().includes(searchTerm)
   );
 
-  // ORDINA PER CAPACITÀ DECRESCENTE
   parkings.sort((a, b) => b.capacita - a.capacita);
 
   currentPage = 1;
@@ -297,7 +278,6 @@ function filterParkings() {
   renderPagination();
 }
 
-// ===== VIEW PARKING DETAIL =====
 async function viewParkingDetail(parkingId) {
   try {
     const response = await fetch(`/parking/${parkingId}`, {
@@ -409,14 +389,12 @@ async function viewParkingDetail(parkingId) {
   }
 }
 
-// ===== OPEN ADD PARKING MODAL =====
 function openAddParkingModal() {
   addParkingForm.reset();
   addErrors.innerHTML = "";
   addParkingModal.classList.remove("hidden");
 }
 
-// ===== CONFIRM ADD PARKING =====
 async function confirmAddParking() {
   addErrors.innerHTML = "";
 
@@ -472,7 +450,6 @@ async function confirmAddParking() {
   }
 }
 
-// ===== OPEN EDIT PARKING MODAL =====
 function openEditParkingModal(parkingId) {
   currentEditParkingId = parkingId;
   const parking = allParkings.find((p) => p.id_parcheggio === parkingId);
@@ -489,7 +466,6 @@ function openEditParkingModal(parkingId) {
   editParkingModal.classList.remove("hidden");
 }
 
-// ===== CONFIRM EDIT PARKING =====
 async function confirmEditParking() {
   editErrors.innerHTML = "";
 
@@ -500,7 +476,6 @@ async function confirmEditParking() {
 
   const errors = [];
 
-  // Validation
   if (!nome) errors.push("Il nome è obbligatorio");
   if (isNaN(latitudine) || latitudine < -90 || latitudine > 90)
     errors.push("Latitudine non valida (-90 a 90)");
@@ -508,7 +483,6 @@ async function confirmEditParking() {
     errors.push("Longitudine non valida (-180 a 180)");
   if (isNaN(capacita) || capacita < 1) errors.push("Capacità minimo 1");
 
-  // Check if capacity is enough
   const parking = allParkings.find(
     (p) => p.id_parcheggio === currentEditParkingId
   );
@@ -551,14 +525,12 @@ async function confirmEditParking() {
     loadParkingUsageStatistics();
   } catch (error) {
     console.error("❌ Errore:", error);
-    editErrors.innerHTML = `<div class="error-message">Errore durante il salvataggio</div>`;
   } finally {
     confirmEditParkingBtn.disabled = false;
     confirmEditParkingBtn.innerHTML = "Salva Modifiche";
   }
 }
 
-// ===== OPEN DELETE MODAL =====
 function openDeleteModal(parkingId, nome) {
   currentParkingId = parkingId;
   deleteParkingName.textContent = nome;
@@ -566,7 +538,6 @@ function openDeleteModal(parkingId, nome) {
   deleteParkingModal.classList.remove("hidden");
 }
 
-// ===== CONFIRM DELETE =====
 async function confirmDeleteParking() {
   deleteErrors.innerHTML = "";
 
@@ -593,14 +564,12 @@ async function confirmDeleteParking() {
     loadParkingUsageStatistics();
   } catch (error) {
     console.error("❌ Errore:", error);
-    deleteErrors.innerHTML = `<div class="error-message">Errore durante l'eliminazione</div>`;
   } finally {
     confirmDeleteParkingBtn.disabled = false;
     confirmDeleteParkingBtn.innerHTML = "Elimina";
   }
 }
 
-// ===== UPDATE STATS =====
 function updateStats() {
   const totalParcheggi = allParkings.length;
   const capacitaTot = allParkings.reduce((sum, p) => sum + p.capacita, 0);
@@ -616,7 +585,6 @@ function updateStats() {
   document.getElementById("statOccupatiTot").textContent = occupatiTot;
 }
 
-// ===== RENDER PAGINATION =====
 function renderPagination() {
   const totalPages = Math.ceil(parkings.length / ITEMS_PER_PAGE);
 
@@ -646,7 +614,6 @@ function renderPagination() {
   paginationContainer.innerHTML = html;
 }
 
-// ===== PARKING STATISTICS MODAL =====
 const parkingStatisticsModal = document.getElementById(
   "parkingStatisticsModal"
 );
@@ -677,11 +644,9 @@ async function openParkingStatisticsModal(parkingId) {
       return;
     }
 
-    // Salva dati globali per paginazione
     currentParkingStatisticsData = parking;
     currentParkingStatisticsPage = 1;
 
-    // Calcola percentuali per ogni stato
     const total = parking.total_mezzi || 1;
     const percDisponibili = Math.round(
       (parking.disponibili / parking.capacita) * 100
@@ -712,14 +677,12 @@ async function openParkingStatisticsModal(parkingId) {
   }
 }
 
-// Funzione per determinare il colore della batteria
 function getBatteryColor(batteria) {
-  if (batteria < 20) return "#f44336"; // Rosso
-  if (batteria < 50) return "#ff9800"; // Arancio
-  return "var(--primary-teal)"; // Teal
+  if (batteria < 20) return "#f44336";
+  if (batteria < 50) return "#ff9800";
+  return "var(--primary-teal)";
 }
 
-// Renderizza il contenuto delle statistiche con paginazione
 function renderStatisticsContent(
   parking,
   percDisponibili,
@@ -786,7 +749,6 @@ function renderStatisticsContent(
     `;
   }
 
-  // ✅ Costruisci la paginazione HTML
   let paginationHTML = "";
   if (totalPages > 1) {
     paginationHTML = `
@@ -910,7 +872,6 @@ function renderStatisticsContent(
   `;
 }
 
-// Funzione per la paginazione della tabella mezzi
 function goToParkingStatisticsPage(page) {
   if (!currentParkingStatisticsData) return;
 
@@ -922,7 +883,6 @@ function goToParkingStatisticsPage(page) {
   if (page >= 1 && page <= totalPages) {
     currentParkingStatisticsPage = page;
 
-    // Ricalcola percentuali
     const total = currentParkingStatisticsData.total_mezzi || 1;
     const percDisponibili = Math.round(
       (currentParkingStatisticsData.disponibili /
@@ -956,7 +916,6 @@ function goToParkingStatisticsPage(page) {
   }
 }
 
-// Helper per formattare tipo mezzo in breve
 function formatTipoMezzoShort(tipo) {
   const map = {
     monopattino: "Monopattino Elettrico",
@@ -966,7 +925,6 @@ function formatTipoMezzoShort(tipo) {
   return map[tipo] || tipo;
 }
 
-// ===== GO TO PAGE =====
 function goToPage(page) {
   const totalPages = Math.ceil(parkings.length / ITEMS_PER_PAGE);
   if (page >= 1 && page <= totalPages) {
@@ -977,7 +935,6 @@ function goToPage(page) {
   }
 }
 
-// ===== CLOSE ALL MODALS =====
 function closeAllModals() {
   addParkingModal.classList.add("hidden");
   editParkingModal.classList.add("hidden");
@@ -986,7 +943,6 @@ function closeAllModals() {
   parkingStatisticsModal.classList.add("hidden");
 }
 
-// ===== SNACKBAR =====
 function showSnackbar(message, type = "success") {
   snackbar.textContent = message;
   snackbar.className = `snackbar show`;
@@ -998,7 +954,6 @@ function showSnackbar(message, type = "success") {
   }, 3000);
 }
 
-// ===== UTILITY FUNCTIONS =====
 function formatData(data) {
   const date = new Date(data);
   return date.toLocaleDateString("it-IT", {
@@ -1008,7 +963,6 @@ function formatData(data) {
   });
 }
 
-// Formatta lo stato del mezzo
 function formatStato(stato) {
   const map = {
     disponibile: "Disponibile",
@@ -1019,7 +973,6 @@ function formatStato(stato) {
   return map[stato] || stato;
 }
 
-// ✅ FIXED: Funzione asincrona con await corretto
 async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);

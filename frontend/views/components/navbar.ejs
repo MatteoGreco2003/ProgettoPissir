@@ -1,41 +1,25 @@
-<!-- ============================================================================
-     NAVBAR - COMPONENTE RIUSABILE
-     ============================================================================
-     Navbar responsive con user info, avatar, e logout button.
-     Incluso script inline per caricamento dati utente e logout.
-     ========================================================================== -->
-
 <nav class="navbar">
   <div class="navbar-container">
-    <!-- ===== MENU TOGGLE MOBILE (SINISTRA) ===== -->
-    <!-- Bottone hamburger per aprire sidebar su mobile (visibile solo < 768px) -->
     <button class="menu-toggle" id="menuToggle">
       <i class="fas fa-bars"></i>
     </button>
 
-    <!-- ===== USER INFO (CENTRO) ===== -->
-    <!-- Mostra avatar + nome utente, nascosto su mobile (< 768px) -->
-    <!-- Cliccabile per tornare a home-utente -->
     <div
       class="navbar-user-info"
       id="userProfileArea"
       style="cursor: pointer"
       title="Clicca per ricaricare"
     >
-      <!-- Avatar circolare con INIZIALE del nome -->
       <div class="user-avatar" id="userAvatar">
         <span id="userInitial">M</span>
       </div>
 
-      <!-- Nome e cognome + ruolo utente -->
       <div class="user-details">
         <span class="user-name" id="userNameNavbar">Matteo Rossi</span>
         <span class="user-role" id="userRoleNavbar">Utente</span>
       </div>
     </div>
 
-    <!-- ===== LOGOUT BUTTON (DESTRA) ===== -->
-    <!-- Bottone disconnessione sempre visibile -->
     <div class="navbar-right">
       <button class="logout-btn" id="logoutBtn">
         <i class="fas fa-sign-out-alt"></i>
@@ -45,21 +29,7 @@
   </div>
 </nav>
 
-<!-- ============================================================================
-     SCRIPT INLINE - NAVBAR LOGIC
-     ============================================================================
-     Gestisce:
-     - Caricamento dati utente all'avvio
-     - Aggiornamento nome/avatar nella navbar
-     - Redirect al click su profilo
-     - Logout con redirect a auth
-     ========================================================================== -->
 <script>
-  /**
-   * Mostra snackbar notifica temporanea
-   * @param {string} message - Messaggio da mostrare
-   * @param {string} type - Tipo: 'success', 'error', 'warning'
-   */
   function showSnackbar(message, type = "success") {
     const snackbar = document.getElementById("snackbar");
     if (snackbar) {
@@ -71,10 +41,6 @@
     }
   }
 
-  /**
-   * Carica dati utente e aggiorna navbar con nome e avatar
-   * Eseguito all'avvio della pagina
-   */
   async function loadAndUpdateNavbar() {
     try {
       const response = await fetch("/users/me", {
@@ -88,15 +54,11 @@
       if (response.ok) {
         const userData = await response.json();
 
-        // ===== MEMORIZZA IL RUOLO COME DATA ATTRIBUTE =====
-        // Serve per il redirect dinamico nel click del profilo
         const userProfileArea = document.getElementById("userProfileArea");
         if (userProfileArea) {
           userProfileArea.setAttribute("data-user-role", userData.ruolo);
         }
 
-        // ===== AGGIORNA NOME NAVBAR =====
-        // Mostra "Nome Cognome" nella navbar
         const userNameNavbar = document.getElementById("userNameNavbar");
         if (userNameNavbar) {
           if (userData.ruolo === "admin") {
@@ -106,7 +68,6 @@
           }
         }
 
-        // ===== AGGIORNA RUOLO NAVBAR =====
         const userRoleNavbar = document.getElementById("userRoleNavbar");
         if (userRoleNavbar) {
           if (userData.ruolo === "admin") {
@@ -116,8 +77,6 @@
           }
         }
 
-        // ===== AGGIORNA AVATAR =====
-        // Mostra prima lettera del nome in maiuscolo
         const userInitial = document.getElementById("userInitial");
         if (userInitial && userData.nome) {
           userInitial.textContent = userData.nome.charAt(0).toUpperCase();
@@ -130,10 +89,6 @@
     }
   }
 
-  /**
-   * Esegue logout e reindirizza a home
-   * Mostra snackbar di conferma, poi redirect dopo 1.5s
-   */
   async function logout() {
     showSnackbar("Logout in corso...", "success");
 
@@ -160,12 +115,9 @@
     }
   }
 
-  // ===== INIT =====
   document.addEventListener("DOMContentLoaded", () => {
     loadAndUpdateNavbar();
 
-    // ===== EVENT LISTENER: Click su profilo =====
-    // Redirect dinamico in base al ruolo
     const userProfileArea = document.getElementById("userProfileArea");
     if (userProfileArea) {
       userProfileArea.addEventListener("click", () => {
@@ -179,7 +131,6 @@
       });
     }
 
-    // ===== EVENT LISTENER: Logout button =====
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", logout);

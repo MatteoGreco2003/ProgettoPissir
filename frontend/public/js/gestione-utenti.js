@@ -1,12 +1,11 @@
-// ===== CONFIGURAZIONE GLOBALE =====
+// Variabili Paginazione
 const ITEMS_PER_PAGE = 10;
-
 let currentPage = 1;
+
 let allUsers = [];
 let filteredUsers = [];
 let pendingUsers = [];
 
-// ===== DOM ELEMENTS =====
 const searchInput = document.getElementById("searchInput");
 const statusFilter = document.getElementById("statusFilter");
 const usersTableBody = document.getElementById("usersTableBody");
@@ -22,7 +21,6 @@ const approveModal = document.getElementById("approveModal");
 const cancelApproveBtn = document.getElementById("cancelApproveBtn");
 const confirmApproveBtn = document.getElementById("confirmApproveBtn");
 
-// ===== STATS ELEMENTS =====
 const activeCountEl = document.getElementById("activeCount");
 const pendingCountEl = document.getElementById("pendingCount");
 const suspendedCountEl = document.getElementById("suspendedCount");
@@ -30,7 +28,6 @@ const suspendedCountEl = document.getElementById("suspendedCount");
 let userToDelete = null;
 let userToApprove = null;
 
-// ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   loadAllUsers();
@@ -51,13 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ===== EVENT LISTENERS =====
 function setupEventListeners() {
-  // Search & Filter
   searchInput.addEventListener("input", filterUsers);
   statusFilter.addEventListener("change", filterUsers);
 
-  // Modals
   modalCloseButtons.forEach((btn) => {
     btn.addEventListener("click", closeAllModals);
   });
@@ -67,7 +61,6 @@ function setupEventListeners() {
   cancelDeleteBtn.addEventListener("click", closeAllModals);
   confirmDeleteBtn.addEventListener("click", confirmDelete);
 
-  // Close modal quando clicchi fuori (sul backdrop)
   const modals = [userDetailModal, deleteUserModal, approveModal];
   modals.forEach((modal) => {
     modal.addEventListener("click", (e) => {
@@ -78,7 +71,6 @@ function setupEventListeners() {
   });
 }
 
-// ===== LOAD ALL USERS =====
 async function loadAllUsers() {
   try {
     const response = await fetch("/users/admin/all", {
@@ -98,9 +90,7 @@ async function loadAllUsers() {
   }
 }
 
-// ===== UPDATE STATS =====
 function updateStats() {
-  // Filtra gli utenti escludendo l'admin (email = 'admin@gmail.com')
   const regularUsers = allUsers.filter((u) => u.email !== "admin@gmail.com");
 
   const pending = regularUsers.filter(
@@ -118,7 +108,6 @@ function updateStats() {
   suspendedCountEl.textContent = suspended;
 }
 
-// ===== FILTER USERS =====
 function filterUsers() {
   const searchTerm = searchInput.value.toLowerCase();
   const statusTerm = statusFilter.value;
@@ -139,9 +128,7 @@ function filterUsers() {
   renderUsers();
 }
 
-// ===== RENDER USERS TABLE =====
 function renderUsers() {
-  // Esclude l'admin dalla visualizzazione
   const usersWithoutAdmin = filteredUsers.filter(
     (u) => u.email !== "admin@gmail.com"
   );
@@ -210,7 +197,6 @@ function renderUsers() {
   renderPagination();
 }
 
-// ===== RENDER PAGINATION =====
 function renderPagination() {
   const usersWithoutAdmin = filteredUsers.filter(
     (u) => u.email !== "admin@gmail.com"
@@ -224,7 +210,6 @@ function renderPagination() {
 
   let html = "";
 
-  // Previous button
   html += `
     <button class="pagination-btn ${currentPage === 1 ? "disabled" : ""}" 
       onclick="goToPage(${currentPage - 1})" ${
@@ -234,14 +219,12 @@ function renderPagination() {
     </button>
   `;
 
-  // Info paginazione: "Pagina 1 di 27"
   html += `
     <div class="pagination-info">
       Pagina ${currentPage} di ${totalPages}
     </div>
   `;
 
-  // Next button
   html += `
     <button class="pagination-btn ${
       currentPage === totalPages ? "disabled" : ""
@@ -256,7 +239,6 @@ function renderPagination() {
   paginationContainer.innerHTML = html;
 }
 
-// ===== GO TO PAGE =====
 function goToPage(page) {
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
   if (page >= 1 && page <= totalPages) {
@@ -265,7 +247,6 @@ function goToPage(page) {
   }
 }
 
-// ===== VIEW USER DETAIL =====
 async function viewUserDetail(userId) {
   try {
     const response = await fetch(`/users/admin/${userId}`, {
@@ -281,7 +262,6 @@ async function viewUserDetail(userId) {
       "it-IT"
     );
 
-    // Formatta le date di sospensione e riapertura
     const dataSospensione = user.data_sospensione
       ? new Date(user.data_sospensione).toLocaleDateString("it-IT")
       : "N/A";
@@ -375,11 +355,9 @@ async function viewUserDetail(userId) {
   }
 }
 
-// ===== APPROVE MODAL =====
 function openApproveModal(userId, userName, saldo, dataSospensione) {
   userToApprove = userId;
 
-  // Formatta la data
   const dataSospensioneFormatted = dataSospensione
     ? new Date(dataSospensione).toLocaleDateString("it-IT")
     : "N/A";
@@ -394,7 +372,6 @@ function openApproveModal(userId, userName, saldo, dataSospensione) {
   approveModal.classList.remove("hidden");
 }
 
-// ===== CONFIRM APPROVE =====
 async function confirmApprove() {
   if (!userToApprove) return;
 
@@ -431,12 +408,10 @@ async function confirmApprove() {
   }
 }
 
-// ===== DELETE MODAL =====
 function openDeleteModal(userId, userName) {
   userToDelete = userId;
   document.getElementById("deleteUserName").textContent = userName;
 
-  // Reset dello stato della modal
   const errorMessage = document.getElementById("deleteErrorMessage");
   errorMessage.classList.add("hidden");
   confirmDeleteBtn.disabled = false;
@@ -447,7 +422,6 @@ function openDeleteModal(userId, userName) {
   deleteUserModal.classList.remove("hidden");
 }
 
-// ===== CONFIRM DELETE =====
 async function confirmDelete() {
   if (!userToDelete) return;
 
@@ -464,14 +438,12 @@ async function confirmDelete() {
     const data = await response.json();
 
     if (!response.ok) {
-      // ⚠️ ERRORE: Mostra il messaggio di errore nella modal
       const errorMessage = document.getElementById("deleteErrorMessage");
       const errorText = document.getElementById("deleteErrorText");
 
       errorText.textContent = data.error || "Errore durante l'eliminazione";
       errorMessage.classList.remove("hidden");
 
-      // Disabilita il pulsante se c'è una corsa attiva
       if (data.error.includes("corsa attiva")) {
         confirmDeleteBtn.disabled = true;
         confirmDeleteBtn.innerHTML =
@@ -479,7 +451,6 @@ async function confirmDelete() {
         confirmDeleteBtn.style.opacity = "0.5";
         confirmDeleteBtn.style.cursor = "not-allowed";
       } else {
-        // Per altri errori, abilita il bottone per riprovare
         confirmDeleteBtn.disabled = false;
         confirmDeleteBtn.innerHTML = "Elimina";
         confirmDeleteBtn.style.opacity = "1";
@@ -500,7 +471,6 @@ async function confirmDelete() {
   }
 }
 
-// ===== UTILITY FUNCTIONS =====
 function getStatusLabel(status) {
   const statusMap = {
     attivo: "Attivo",
@@ -517,7 +487,6 @@ function closeAllModals() {
   deleteUserModal.classList.add("hidden");
 }
 
-// ===== SNACKBAR NOTIFICATIONS =====
 function showSnackbar(message, type = "success", duration = 4000) {
   snackbar.textContent = message;
   snackbar.className = "snackbar show";

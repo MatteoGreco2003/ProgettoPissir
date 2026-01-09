@@ -1,6 +1,4 @@
-// ====================================================================
-// STATE
-// ====================================================================
+// Contiene tutti i dati della pagina in un unico oggetto
 let adminState = {
   vehicles: [],
   rides: [],
@@ -10,9 +8,6 @@ let adminState = {
   isLoading: false,
 };
 
-// ====================================================================
-// UTILITY FUNCTIONS
-// ====================================================================
 function showSnackbar(message, type = "success") {
   const snackbar = document.getElementById("snackbar");
   snackbar.textContent = message;
@@ -26,12 +21,8 @@ function navigateTo(url) {
   window.location.href = url;
 }
 
-// ====================================================================
-// LOAD USERS DATA
-// ====================================================================
 async function loadUsersData() {
   try {
-    // Carica tutti gli utenti
     const [allUsersResponse, pendingUsersResponse] = await Promise.all([
       fetch("/users/admin/all", {
         method: "GET",
@@ -52,25 +43,18 @@ async function loadUsersData() {
     const allUsersData = await allUsersResponse.json();
     const pendingUsersData = await pendingUsersResponse.json();
 
-    // Store in state
     adminState.users = allUsersData.users || [];
     adminState.pendingUsers = pendingUsersData.pending_users || [];
 
     renderUsersCard();
   } catch (error) {
     console.error("❌ Errore loadUsersData:", error);
-    showSnackbar("❌ Errore caricamento dati utenti", "error");
   }
 }
-
-// ====================================================================
-// RENDER USERS CARD
-// ====================================================================
 
 function renderUsersCard() {
   const allUsers = adminState.users || [];
 
-  // Conta per stato
   const activeUsers = allUsers.filter(
     (u) => u.stato_account === "attivo"
   ).length;
@@ -81,32 +65,27 @@ function renderUsersCard() {
     (u) => u.stato_account === "in_attesa_approvazione"
   ).length;
 
-  // Calcola top spender di SEMPRE (tutte le corse completate)
   let topSpender = null;
   let topSpenderAmount = 0;
 
   if (adminState.allCompletedRides && adminState.allCompletedRides.length > 0) {
-    // Somma i costi per ogni utente da TUTTE le corse di sempre
     const userSpending = {};
 
     adminState.allCompletedRides.forEach((ride) => {
       const userId = ride.id_utente;
       const originalCost = parseFloat(ride.costo || 0);
 
-      // ⚠️ NUOVO: Calcola il costo effettivo considerando i punti fedeltà usati
       const loyaltyPointsUsed = ride.punti_fedeltà_usati || 0;
-      const loyaltyDiscount = loyaltyPointsUsed * 0.05; // 0.05€ per punto
-      const effectiveCost = Math.max(0, originalCost - loyaltyDiscount); // Non può essere negativo
+      const loyaltyDiscount = loyaltyPointsUsed * 0.05;
+      const effectiveCost = Math.max(0, originalCost - loyaltyDiscount);
 
       if (!userSpending[userId]) {
         userSpending[userId] = 0;
       }
-      userSpending[userId] += effectiveCost; // ✅ Usa il costo effettivo
+      userSpending[userId] += effectiveCost;
     });
 
-    // Trova l'utente con la spesa maggiore
     for (const userId in userSpending) {
-      // Trova l'utente nei dati
       const user = allUsers.find((u) => u.id_utente === parseInt(userId));
 
       if (user && userSpending[userId] > topSpenderAmount) {
@@ -116,13 +95,11 @@ function renderUsersCard() {
     }
   }
 
-  // Aggiorna DOM
   document.getElementById("totalUsersCount").textContent = allUsers.length;
   document.getElementById("activeUsersCount").textContent = activeUsers;
   document.getElementById("suspendedUsersCount").textContent = suspendedUsers;
   document.getElementById("pendingUsersCount").textContent = pendingUsers;
 
-  // Aggiorna Top Spender (di sempre, non solo oggi)
   if (topSpender) {
     const topSpenderName =
       topSpender.nome && topSpender.cognome
@@ -143,9 +120,6 @@ function renderUsersCard() {
   }
 }
 
-// ====================================================================
-// LOAD ALL COMPLETED RIDES DATA (per calcolare top spender di sempre)
-// ====================================================================
 async function loadAllCompletedRidesData() {
   try {
     const response = await fetch("/rides/all-completed", {
@@ -161,16 +135,12 @@ async function loadAllCompletedRidesData() {
     const data = await response.json();
     adminState.allCompletedRides = data.rides || [];
 
-    renderUsersCard(); // Aggiorna la card utenti con nuovo top spender
+    renderUsersCard();
   } catch (error) {
     console.error("❌ Errore loadAllCompletedRidesData:", error);
-    // Non mostrare snackbar per questo, è un dato secondario
   }
 }
 
-// ====================================================================
-// LOAD VEHICLES DATA
-// ====================================================================
 async function loadVehiclesData() {
   try {
     const response = await fetch("/vehicles/data", {
@@ -189,17 +159,12 @@ async function loadVehiclesData() {
     renderVehiclesCard();
   } catch (error) {
     console.error("❌ Errore loadVehiclesData:", error);
-    showSnackbar("❌ Errore caricamento dati mezzi", "error");
   }
 }
 
-// ====================================================================
-// RENDER VEHICLES CARD
-// ====================================================================
 function renderVehiclesCard() {
   const allVehicles = adminState.vehicles || [];
 
-  // Calcola conteggi per stato
   const totalVehicles = allVehicles.length;
   const availableVehicles = allVehicles.filter(
     (v) => v.stato === "disponibile"
@@ -212,7 +177,6 @@ function renderVehiclesCard() {
   ).length;
   const inUseVehicles = allVehicles.filter((v) => v.stato === "in_uso").length;
 
-  // Calcola conteggi per tipo
   const bikeCount = allVehicles.filter(
     (v) => v.tipo_mezzo === "bicicletta_muscolare"
   ).length;
@@ -223,7 +187,6 @@ function renderVehiclesCard() {
     (v) => v.tipo_mezzo === "monopattino"
   ).length;
 
-  // Aggiorna valori nel DOM - Status
   document.getElementById("totalVehiclesCount").textContent = totalVehicles;
   document.getElementById("availableVehiclesCount").textContent =
     availableVehicles;
@@ -233,16 +196,12 @@ function renderVehiclesCard() {
     maintenanceVehicles;
   document.getElementById("inUseVehiclesCount").textContent = inUseVehicles;
 
-  // Aggiorna valori nel DOM - Tipi
   document.querySelector("#bikeBadge .type-count").textContent = bikeCount;
   document.querySelector("#ebikeBadge .type-count").textContent = ebikeCount;
   document.querySelector("#scooterBadge .type-count").textContent =
     scooterCount;
 }
 
-// ====================================================================
-// LOAD PARKINGS DATA
-// ====================================================================
 async function loadParkingsData() {
   try {
     const response = await fetch("/parking/data", {
@@ -261,20 +220,14 @@ async function loadParkingsData() {
     renderParkingsCard();
   } catch (error) {
     console.error("❌ Errore loadParkingsData:", error);
-    showSnackbar("❌ Errore caricamento dati parcheggi", "error");
   }
 }
 
-// ====================================================================
-// RENDER PARKINGS CARD
-// ====================================================================
 function renderParkingsCard() {
   const allParkings = adminState.parkings || [];
 
-  // Calcola totali
   const totalParkings = allParkings.length;
 
-  // Calcola occupazione globale
   let totalCapacity = 0;
   let totalOccupied = 0;
 
@@ -287,7 +240,6 @@ function renderParkingsCard() {
   const occupancyPercent =
     totalCapacity > 0 ? Math.round((totalOccupied / totalCapacity) * 100) : 0;
 
-  // Aggiorna valori nel DOM
   document.getElementById("totalParkingsCount").textContent = totalParkings;
   document.getElementById("totalCapacity").textContent = totalCapacity;
   document.getElementById("totalOccupied").textContent = totalOccupied;
@@ -296,11 +248,9 @@ function renderParkingsCard() {
     "occupancyPercent"
   ).textContent = `${occupancyPercent}%`;
 
-  // Aggiorna progress bar
   const occupancyFill = document.getElementById("occupancyFill");
   occupancyFill.style.width = `${occupancyPercent}%`;
 
-  // Cambia colore della progress bar se occupazione alta (>80%)
   if (occupancyPercent > 80) {
     occupancyFill.classList.add("high");
   } else {
@@ -308,9 +258,6 @@ function renderParkingsCard() {
   }
 }
 
-// ====================================================================
-// LOAD RIDES TODAY DATA
-// ====================================================================
 async function loadRidesTodayData() {
   try {
     const response = await fetch("/rides/today", {
@@ -330,17 +277,12 @@ async function loadRidesTodayData() {
     renderEarningsCard();
   } catch (error) {
     console.error("❌ Errore loadRidesTodayData:", error);
-    showSnackbar("❌ Errore caricamento dati corse", "error");
   }
 }
 
-// ====================================================================
-// RENDER RIDES CARD
-// ====================================================================
 function renderRidesCard() {
   const allRides = adminState.ridesToday || [];
 
-  // Calcola conteggi per stato
   const totalRides = allRides.length;
   const completedRides = allRides.filter(
     (r) => r.stato_corsa === "completata"
@@ -351,13 +293,11 @@ function renderRidesCard() {
       r.stato_corsa === "sospesa_batteria_esaurita"
   ).length;
 
-  // Calcola km totali
   const totalKm = allRides.reduce(
     (sum, r) => sum + parseFloat(r.km_percorsi || 0),
     0
   );
 
-  // Aggiorna valori nel DOM
   document.getElementById("totalRidesTodayCount").textContent = totalRides;
   document.getElementById("completedRidesCount").textContent = completedRides;
   document.getElementById("activeRidesCount").textContent = activeRides;
@@ -366,16 +306,11 @@ function renderRidesCard() {
   )} km`;
 }
 
-// ====================================================================
-// RENDER EARNINGS CARD
-// ====================================================================
 function renderEarningsCard() {
   const allRides = adminState.ridesToday || [];
 
-  // Filtra solo corse completate (corse pagate)
   const paidRides = allRides.filter((r) => r.stato_corsa === "completata");
 
-  // ✅ MODIFICA: Calcola il costo REALE (con sconto applicato)
   const totalEarnings = paidRides.reduce((sum, r) => {
     const costoBase = parseFloat(r.costo || 0);
     const scontoTotale = (r.punti_fedeltà_usati || 0) * 0.05;
@@ -383,11 +318,9 @@ function renderEarningsCard() {
     return sum + costoReale;
   }, 0);
 
-  // ✅ MODIFICA: Calcola le medie con il costo REALE
   const avgPerRide =
     paidRides.length > 0 ? totalEarnings / paidRides.length : 0;
 
-  // ✅ MODIFICA: Trova il max con il costo REALE
   const maxRideEarning =
     paidRides.length > 0
       ? Math.max(
@@ -399,7 +332,6 @@ function renderEarningsCard() {
         )
       : 0;
 
-  // ✅ MODIFICA: Calcola incassi per tipo di mezzo con costo REALE
   const earningsByType = {
     bicicletta_muscolare: 0,
     bicicletta_elettrica: 0,
@@ -418,7 +350,6 @@ function renderEarningsCard() {
     }
   });
 
-  // Aggiorna valori nel DOM
   document.getElementById(
     "totalEarningsValue"
   ).textContent = `€${totalEarnings.toFixed(2)}`;
@@ -430,7 +361,6 @@ function renderEarningsCard() {
     "maxRideEarning"
   ).textContent = `€${maxRideEarning.toFixed(2)}`;
 
-  // Aggiorna incassi per tipo
   document.getElementById(
     "earningsBike"
   ).textContent = `€${earningsByType.bicicletta_muscolare.toFixed(2)}`;
@@ -442,9 +372,6 @@ function renderEarningsCard() {
   ).textContent = `€${earningsByType.monopattino.toFixed(2)}`;
 }
 
-// ====================================================================
-// LOAD REPORTS DATA
-// ====================================================================
 async function loadReportsData() {
   try {
     const response = await fetch("/reports/admin/all-reports", {
@@ -463,17 +390,12 @@ async function loadReportsData() {
     renderReportsCard();
   } catch (error) {
     console.error("❌ Errore loadReportsData:", error);
-    showSnackbar("❌ Errore caricamento dati segnalazioni", "error");
   }
 }
 
-// ====================================================================
-// RENDER REPORTS CARD
-// ====================================================================
 function renderReportsCard() {
   const allReports = adminState.reports || [];
 
-  // Calcola conteggi per stato
   const totalOpenReports = allReports.filter(
     (r) => r.stato_segnalazione === "aperta"
   ).length;
@@ -484,14 +406,12 @@ function renderReportsCard() {
     (r) => r.stato_segnalazione === "risolta"
   ).length;
 
-  // Filtra SOLO segnalazioni aperte e in lavorazione
   const openAndInProgressReports = allReports.filter(
     (r) =>
       r.stato_segnalazione === "aperta" ||
       r.stato_segnalazione === "in_lavorazione"
   );
 
-  // Calcola conteggi per tipo di problema (SOLO aperte e in lavorazione)
   const problemCounts = {
     danno_fisico: 0,
     batteria_scarica: 0,
@@ -507,7 +427,6 @@ function renderReportsCard() {
     }
   });
 
-  // Aggiorna valori nel DOM - Status
   document.getElementById("totalOpenReportsCount").textContent =
     totalOpenReports;
   document.getElementById("openReportsCount").textContent = totalOpenReports;
@@ -515,7 +434,6 @@ function renderReportsCard() {
     inProgressReports;
   document.getElementById("resolvedReportsCount").textContent = resolvedReports;
 
-  // Aggiorna valori nel DOM - Tipi di problema
   document.querySelector("#damagoBadge .problem-count").textContent =
     problemCounts.danno_fisico;
   document.querySelector("#batteryBadge .problem-count").textContent =
@@ -530,9 +448,6 @@ function renderReportsCard() {
     problemCounts.altro;
 }
 
-// ====================================================================
-// INIT
-// ====================================================================
 document.addEventListener("DOMContentLoaded", () => {
   loadUsersData();
   loadVehiclesData();

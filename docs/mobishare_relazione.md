@@ -52,8 +52,7 @@
   - 5.1 Setup e Avvio Sistema
     - 5.1.1 Prerequisiti
     - 5.1.2 Installazione Backend
-    - 5.1.3 Installazione Frontend
-    - 5.1.4 Configurazione Database
+    - 5.1.3 Configurazione Database
   - 5.2 Accesso alle Interfacce
     - 5.2.1 Applicazione Web
     - 5.2.2 API Documentation /_eliminato_/
@@ -576,7 +575,7 @@ mobishare/backend/
 **Software richiesto**:
 
 - Node.js v18 o superiore
-- PostgreSQL v12 o superiore
+- PostgreSQL v12 o superiore (PgAdmin)
 - Git per versionamento
 - Postman per testing API (opzionale)
 - Mosquitto per simulazione dispositivi IoT
@@ -596,16 +595,21 @@ cd mobishare/backend
 # 2. Installare dipendenze
 npm install
 
-# 3. Configurare variabili ambiente
+# 3. Configurare variabili ambiente (noi le lasciamo essendo un progetto universitario)
 cp .env.example .env
 # Modificare .env con credenziali database
 
-# 4. Sincronizzare database
+# 4. Sincronizzare database (crea il db)
 node setup-db.js
 
 # 5. Avviare server
 npm start
 # Server disponibile su http://localhost:3000
+
+# 3. Avviare development server
+npm run dev
+# App disponibile su http://localhost:3000
+
 ```
 
 #### 5.1.3 Installazione Frontend
@@ -617,15 +621,13 @@ cd ../frontend
 # 2. Installare dipendenze
 npm install
 
-# 3. Avviare development server
-npm run dev
-# App disponibile su http://localhost:3000
+
 ```
 
 #### 5.1.4 Configurazione Database
 
 ```bash
-# Connessione PostgreSQL
+# Connessione PostgreSQL (se creazione a buon fine con i models si puo evitare)
 psql -U postgres
 
 # Creare database

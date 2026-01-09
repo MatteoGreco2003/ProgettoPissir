@@ -1,14 +1,10 @@
-// ==========================================
-// HOME UTENTE - MOBISHARE (HOMEPAGE)
-// ==========================================
-
-// ========== DISABILITA BACK BUTTON ==========
+// Disabilità il back button del browser
 window.history.pushState(null, null, window.location.href);
 window.addEventListener("popstate", function () {
   window.history.pushState(null, null, window.location.href);
 });
 
-// ===== STATE MANAGEMENT =====
+// Contiene tutti i dati della pagina in un unico oggetto
 let state = {
   currentFilter: "all",
   selectedParking: "",
@@ -29,7 +25,6 @@ let state = {
   accountBanner: null,
 };
 
-// ===== DOM ELEMENTS =====
 const parkingGrid = document.getElementById("parkingGrid");
 const vehiclesGrid = document.getElementById("vehiclesGrid");
 const filterButtons = document.querySelectorAll(".filter-btn");
@@ -40,29 +35,25 @@ const confirmReservationBtn = document.getElementById("confirmReservation");
 const cancelReservationBtn = document.getElementById("cancelReservation");
 const loadingSpinner = document.getElementById("loadingSpinner");
 
-// ===== AUTO REFRESH =====
 let refreshInterval = null;
 
-// ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   setupFeedbackModalListeners();
   initMap();
   loadUserProfile();
 
-  // Usa Singleton MQTT (connessione persistente)
+  // Inizializza MQTT
   MQTTManager.init();
 
-  // Ascolta messaggi MQTT da questa pagina
+  // Setup MQTT Listener
   setupMQTTListener();
 });
 
-// ===== STOP REFRESH QUANDO CHIUDI LA PAGINA =====
 window.addEventListener("beforeunload", () => {
   stopAutoRefresh();
 });
 
-// ===== SETUP MQTT LISTENER =====
 function setupMQTTListener() {
   document.addEventListener("mqtt-message", (event) => {
     const { topic, payload } = event.detail;
@@ -76,18 +67,14 @@ function setupMQTTListener() {
 
         console.log(`⚡ MQTT Home: Mezzo ${idMezzo} batteria ${newBattery}%`);
 
-        // Aggiorna nel state
         const vehicle = state.vehicles.find((v) => v.id_mezzo === idMezzo);
         if (vehicle) {
           vehicle.stato_batteria = newBattery;
 
-          // Aggiorna nella griglia dei veicoli
           updateVehicleInGrid(vehicle);
 
-          // Aggiorna nella mappa
           updateVehicleInMap(vehicle);
 
-          // Aggiorna il banner se c'è una corsa attiva
           if (
             state.activeRideBanner &&
             state.activeRideBanner.id_mezzo === idMezzo
@@ -102,7 +89,6 @@ function setupMQTTListener() {
   });
 }
 
-// Aggiorna batteria nella griglia
 function updateVehicleInGrid(vehicle) {
   const vehicleCard = document.querySelector(
     `[data-vehicle-id="${vehicle.id_mezzo}"]`
@@ -115,7 +101,6 @@ function updateVehicleInGrid(vehicle) {
   }
 }
 
-// Aggiorna batteria nella mappa
 function updateVehicleInMap(vehicle) {
   const parking = state.parkings.find(
     (p) => p.id_parcheggio === vehicle.id_parcheggio
@@ -132,7 +117,6 @@ function updateVehicleInMap(vehicle) {
   }
 }
 
-// ===== CARICA PROFILO UTENTE DAL BACKEND =====
 async function loadUserProfile() {
   try {
     const response = await fetch("/users/me", {
@@ -154,7 +138,6 @@ async function loadUserProfile() {
 
       loadHomepageData();
     } else if (response.status === 401 || response.status === 403) {
-      // Non autenticato o token scaduto - reindirizza al login
       console.error("❌ Token non valido o scaduto");
       window.location.href = "/";
     } else {
@@ -163,11 +146,9 @@ async function loadUserProfile() {
     }
   } catch (error) {
     console.error("❌ Errore di connessione:", error);
-    showSnackbar("❌ Errore di connessione", "error");
   }
 }
 
-// Controlla corsa attiva e stato account
 async function checkActiveRideAndStatus() {
   try {
     const res = await fetch("/rides/active", {
@@ -179,7 +160,6 @@ async function checkActiveRideAndStatus() {
     const data = await res.json();
 
     if (data.id_corsa) {
-      // Corsa attiva presente
       state.activeRideBanner = {
         id_corsa: data.id_corsa,
         id_mezzo: data.id_mezzo,
@@ -203,12 +183,10 @@ async function checkActiveRideAndStatus() {
   }
 }
 
-// Costruisce il banner account/credito
 function buildAccountBanner() {
   const saldo = state.user.credito || 0;
   const stato = state.user.stato || "attivo";
 
-  // Account sospeso CON ricarica in attesa
   if (stato === "in_attesa_approvazione") {
     state.accountBanner = {
       type: "pending_approval",
@@ -219,7 +197,6 @@ function buildAccountBanner() {
     return;
   }
 
-  // Account sospeso (per debito)
   if (stato === "sospeso" || stato === "suspended") {
     state.accountBanner = {
       type: "blocked",
@@ -230,7 +207,6 @@ function buildAccountBanner() {
     return;
   }
 
-  // Credito basso
   if (saldo < 1) {
     state.accountBanner = {
       type: "low_credit",
@@ -244,7 +220,6 @@ function buildAccountBanner() {
   state.accountBanner = null;
 }
 
-// Renderizza il banner in alto
 function renderTopBanner() {
   const container = document.getElementById("topBannerContainer");
   if (!container) return;
@@ -286,7 +261,6 @@ function renderTopBanner() {
       batteryHTML = `<div class="top-banner__battery-badge ${batteryClass}">🔋 ${battery}%</div>`;
     }
 
-    // Se batteria è esaurita, mostra avviso
     const avviso =
       b.stato_corsa === "sospesa_batteria_esaurita"
         ? `<div class="top-banner__warning-box">
@@ -386,7 +360,6 @@ function renderTopBanner() {
   }
 }
 
-// ===== EVENT LISTENERS =====
 function setupEventListeners() {
   const menuToggle = document.querySelector(".menu-toggle");
   const sidebar = document.querySelector(".sidebar");
@@ -403,7 +376,6 @@ function setupEventListeners() {
     });
   }
 
-  // Filter buttons (filtro mezzi nella card)
   filterButtons.forEach((btn) => {
     btn.addEventListener("click", filterVehiclesByType);
   });
@@ -417,7 +389,6 @@ function setupEventListeners() {
     });
   }
 
-  //Window resize listener per sincronizzare filtri
   window.addEventListener("resize", () => {
     syncFilterUI();
   });
@@ -436,7 +407,6 @@ function setupEventListeners() {
     }
   });
 
-  // ===== CONTROLLA SE C'È UN FEEDBACK IN SOSPESO =====
   const pendingFeedback = sessionStorage.getItem("pendingFeedback");
   if (pendingFeedback) {
     try {
@@ -452,29 +422,24 @@ function setupEventListeners() {
   }
 }
 
-// ===== SETUP PARKING FILTER =====
 function setupParkingFilter() {
   const parkingFilterSelect = document.getElementById("parkingFilterSelect");
   if (!parkingFilterSelect) return;
 
-  // Popola le opzioni con i parcheggi
   parkingFilterSelect.addEventListener("change", (e) => {
     state.selectedParking = e.target.value;
-    renderVehicles(state.vehicles); // Re-renderizza i veicoli filtrati
+    renderVehicles(state.vehicles);
   });
 }
 
-// ===== POPOLA SELECT PARCHEGGI =====
 function populateParkingFilter(parkings) {
   const parkingFilterSelect = document.getElementById("parkingFilterSelect");
   if (!parkingFilterSelect) return;
 
-  // Pulisci opzioni eccetto la prima
   while (parkingFilterSelect.options.length > 1) {
     parkingFilterSelect.remove(1);
   }
 
-  // Aggiungi ogni parcheggio come opzione
   parkings.forEach((parking) => {
     const option = document.createElement("option");
     option.value = parking.id_parcheggio;
@@ -483,7 +448,6 @@ function populateParkingFilter(parkings) {
   });
 }
 
-// Listener per comando UNLOCK del mezzo
 function setupUnlockListener(id_mezzo, onUnlockConfirmed) {
   const handleUnlockMessage = (event) => {
     const { topic, payload } = event.detail;
@@ -491,7 +455,6 @@ function setupUnlockListener(id_mezzo, onUnlockConfirmed) {
     try {
       const msg = JSON.parse(payload);
 
-      // Controlla solo il comando e l'id_mezzo
       if (msg.id_mezzo == id_mezzo && msg.command === "unlock") {
         onUnlockConfirmed();
 
@@ -509,7 +472,7 @@ function setupUnlockListener(id_mezzo, onUnlockConfirmed) {
   };
 }
 
-// ===== FEEDBACK MODAL STATE =====
+// Contiene tutti i dati della pagina in un unico oggetto
 let feedbackState = {
   isOpen: false,
   rideData: null,
@@ -519,7 +482,6 @@ let feedbackState = {
   reportDescription: "",
 };
 
-// ===== SETUP FEEDBACK MODAL EVENT LISTENERS =====
 function setupFeedbackModalListeners() {
   const feedbackModal = document.getElementById("feedbackModal");
   const feedbackModalClose = document.getElementById("feedbackModalClose");
@@ -589,7 +551,6 @@ function setupFeedbackModalListeners() {
   reportTypeSelect.addEventListener("change", (e) => {
     feedbackState.reportType = e.target.value;
 
-    // 🆕 Mostra/nascondi textarea descrizione se c'è un problema
     if (e.target.value && e.target.value !== "") {
       reportDescriptionContainer.style.display = "block";
       reportDescription.value = "";
@@ -610,7 +571,6 @@ function setupFeedbackModalListeners() {
   submitFeedbackBtn.addEventListener("click", submitFeedback);
 }
 
-// ===== IMPOSTA RATING STELLE =====
 function setFeedbackRating(rating) {
   feedbackState.selectedRating = rating;
 
@@ -632,7 +592,6 @@ function setFeedbackRating(rating) {
     ratingTexts[rating - 1];
 }
 
-// ===== APRI MODAL FEEDBACK =====
 function openFeedbackModal(rideData) {
   feedbackState.rideData = rideData;
   feedbackState.selectedRating = 0;
@@ -664,7 +623,6 @@ function openFeedbackModal(rideData) {
   feedbackModal.classList.remove("hidden");
 }
 
-// ===== CHIUDI MODAL FEEDBACK =====
 function closeFeedbackModal() {
   feedbackState.isOpen = false;
   feedbackState.rideData = null;
@@ -677,7 +635,6 @@ function closeFeedbackModal() {
   feedbackModal.classList.add("hidden");
 }
 
-// ===== INVIA FEEDBACK AL BACKEND =====
 async function submitFeedback() {
   clearFeedbackErrors();
 
@@ -696,7 +653,6 @@ async function submitFeedback() {
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio...';
 
   try {
-    // 1️⃣ Invia il feedback
     const feedbackResponse = await fetch("/feedback", {
       method: "POST",
       headers: {
@@ -715,7 +671,6 @@ async function submitFeedback() {
       throw new Error(error.error || "Errore nell'invio del feedback");
     }
 
-    // 2️⃣ Se ha selezionato un report, invialo
     if (feedbackState.reportType) {
       const reportResponse = await fetch("/reports", {
         method: "POST",
@@ -744,7 +699,6 @@ async function submitFeedback() {
     closeFeedbackModal();
   } catch (error) {
     console.error("❌ Errore:", error.message);
-    showFeedbackError(error.message);
   } finally {
     submitBtn.disabled = false;
     submitBtn.innerHTML = "Invia Feedback";
@@ -766,7 +720,6 @@ function clearFeedbackErrors() {
   container.innerHTML = "";
 }
 
-// ===== SINCRONIZZAZIONE FILTRI TRA SELECT E BUTTONS =====
 function updateFilterUI() {
   filterButtons.forEach((btn) => {
     if (btn.getAttribute("data-filter") === state.currentFilter) {
@@ -786,9 +739,7 @@ function syncFilterUI() {
   updateFilterUI();
 }
 
-// ===== MAP INITIALIZATION =====
 function initMap() {
-  // Centra sulla Novara
   const defaultLat = 45.4458;
   const defaultLng = 8.6158;
 
@@ -803,7 +754,6 @@ function initMap() {
   }).addTo(state.map);
 }
 
-// ===== DATA LOADING =====
 function loadHomepageData() {
   showLoading(true);
 
@@ -832,12 +782,10 @@ function loadHomepageData() {
     })
     .catch((error) => {
       console.error("❌ Errore caricamento dati:", error);
-      showSnackbar("❌ Errore nel caricamento dei dati", "error");
       showLoading(false);
     });
 }
 
-// ===== AUTO REFRESH DATI =====
 function startAutoRefresh(interval = 15000) {
   refreshInterval = setInterval(() => {
     const hasActiveRide = state.vehicles.some((v) => v.stato === "in_uso");
@@ -854,10 +802,8 @@ function startAutoRefresh(interval = 15000) {
   }, interval);
 }
 
-// Auto-refresh banner corsa attiva ogni 15 secondi
 function startBannerRefresh(interval = 15000) {
   setInterval(() => {
-    // Aggiorna solo se c'è una corsa attiva
     if (state.activeRideBanner) {
       checkActiveRideAndStatus();
     }
@@ -908,7 +854,6 @@ function refreshVehicleData() {
     });
 }
 
-// ===== RENDERING - MAPPA PARCHEGGI CON LEAFLET =====
 function renderParkingsOnMap(parkings) {
   Object.values(state.markers).forEach((marker) => {
     state.map.removeLayer(marker);
@@ -969,7 +914,6 @@ function renderParkingsOnMap(parkings) {
   });
 }
 
-// ===== RENDERING - PARCHEGGI NELLA GRIGLIA =====
 function renderParkings(parkings) {
   parkingGrid.innerHTML = "";
 
@@ -1016,7 +960,6 @@ function createParkingPopup(parking, vehicles) {
       const batteryClass = getBatteryClass(v.stato_batteria);
       const icon = v.tipo_mezzo === "monopattino" ? "🛴" : "🚲";
 
-      // Se è bicicletta muscolare, spazio vuoto per mantenere allineamento
       const batteryHTML =
         v.tipo_mezzo === "bicicletta_muscolare"
           ? `<span style="width: 48px;"></span>`
@@ -1098,7 +1041,6 @@ function getBatteryClass(batteria) {
   return "battery-critical";
 }
 
-// ===== RENDERING - LISTA MEZZI =====
 function renderVehicles(vehicles) {
   const filtered = getVehiclesByType(state.currentFilter);
   vehiclesGrid.innerHTML = "";
@@ -1221,7 +1163,6 @@ function createVehicleCard(vehicle) {
   return card;
 }
 
-// ===== FILTERING - FILTRI MEZZI =====
 function filterVehiclesByType(event) {
   filterButtons.forEach((btn) => btn.classList.remove("active"));
   event.target.closest(".filter-btn").classList.add("active");
@@ -1236,14 +1177,12 @@ function filterVehiclesByType(event) {
 function getVehiclesByType(filter) {
   let vehicles = state.vehicles;
 
-  // Filtra per parcheggio se selezionato
   if (state.selectedParking) {
     vehicles = vehicles.filter(
       (v) => v.id_parcheggio === parseInt(state.selectedParking)
     );
   }
 
-  // Filtra per tipo mezzo
   if (filter !== "all") {
     if (filter === "bicicletta_muscolare")
       vehicles = vehicles.filter(
@@ -1270,15 +1209,12 @@ function getVehiclesByType(filter) {
   return sortedVehicles;
 }
 
-// ===== LOGIC - PRENOTAZIONE =====
 async function reserveVehicle(vehicle) {
-  // 1: Verifica stato account
   if (state.user.stato === "sospeso") {
     showSnackbar("❌ Account sospeso! Ricaricare il saldo e attendi.", "error");
     return;
   }
 
-  // 2: Verifica stato account
   if (state.user.stato === "in_attesa_approvazione") {
     showSnackbar(
       "❌ Account in attesa di approvazione! Attendi l'approvazione del gestore.",
@@ -1287,20 +1223,17 @@ async function reserveVehicle(vehicle) {
     return;
   }
 
-  // 3: Verifica credito
   if (state.user.credito < 1) {
     showSnackbar("❌ Credito insufficiente! Ricarica il tuo saldo.", "error");
     return;
   }
 
-  // 4: Verifica corsa attiva
   const activeRide = await getActiveRide();
   if (activeRide) {
     showSnackbar("❌ Hai già una corsa attiva! Termina quella prima.", "error");
     return;
   }
 
-  // Salva mezzo e apri modal
   state.selectedVehicle = vehicle;
   openReservationModal(vehicle);
 }
@@ -1335,7 +1268,6 @@ async function getActiveRide() {
   }
 }
 
-// ===== MODAL HANDLING =====
 function openReservationModal(vehicle) {
   const parking = state.parkings.find(
     (p) => p.id_parcheggio === vehicle.id_parcheggio
@@ -1381,7 +1313,6 @@ function confirmReservation() {
     }
   }, 5000);
 
-  // Setup listener MQTT prima della richiesta
   unsubscribe = setupUnlockListener(state.selectedVehicle.id_mezzo, () => {
     unlockConfirmed = true;
     clearTimeout(unlockTimeout);
@@ -1491,7 +1422,6 @@ async function fetchAndDisplayReport(mezzoId) {
   }
 }
 
-// ===== UTILITIES =====
 function showSnackbar(message, type = "success") {
   snackbarElement.textContent = message;
   snackbarElement.className = `snackbar show snackbar--${type}`;
@@ -1520,7 +1450,6 @@ function showParkingDetails(parking, vehicles) {
   }
 }
 
-// ===== UTILITY - FORMATTAZIONE STATO =====
 function formatVehicleStatus(stato) {
   const statusMap = {
     disponibile: "Disponibile",
@@ -1531,7 +1460,6 @@ function formatVehicleStatus(stato) {
   return statusMap[stato] || stato;
 }
 
-// ========== FUNZIONE PER LEGGERE COOKIE ==========
 function getCookie(name) {
   const nameEQ = name + "=";
   const cookies = document.cookie.split(";");

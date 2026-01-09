@@ -4,32 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Admin</title>
-
-    <!-- FontAwesome -->
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
+    <link rel="stylesheet" href="/css/admin-dashboard.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
-
-    <!-- Stili Admin -->
-    <link rel="stylesheet" href="/css/admin-dashboard.css" />
   </head>
 
   <body>
-    <!-- ========== NAVBAR (COMPONENTE IMPORTATO) ========== -->
-    <%- include('./components/navbar') %>
+    <%- include('./components/navbar') %> <%- include('./components/sidebar') %>
 
-    <!-- ========== SIDEBAR (COMPONENTE IMPORTATO) ========== -->
-    <%- include('./components/sidebar') %>
-
-    <!-- ====================================================================
-       MAIN CONTENT
-       ==================================================================== -->
     <main>
-      <!-- KPI Cards Grid -->
       <div class="kpi-grid" id="kpiGrid">
-        <!-- UTENTI CARD -->
         <div class="kpi-card kpi-card--users" id="usersCard">
           <div class="kpi-header">
             <div class="kpi-icon">👥</div>
@@ -41,9 +28,7 @@
 
           <div class="kpi-divider"></div>
 
-          <!-- Status Breakdown -->
           <div class="users-status-breakdown">
-            <!-- Utenti Attivi -->
             <div class="status-item">
               <div class="status-dot active"></div>
               <div class="status-info">
@@ -52,7 +37,6 @@
               </div>
             </div>
 
-            <!-- Utenti Sospesi -->
             <div class="status-item">
               <div class="status-dot suspended"></div>
               <div class="status-info">
@@ -61,7 +45,6 @@
               </div>
             </div>
 
-            <!-- In Attesa di Approvazione -->
             <div class="status-item">
               <div class="status-dot pending"></div>
               <div class="status-info">
@@ -85,7 +68,6 @@
 
           <div class="kpi-divider"></div>
 
-          <!-- Action Button -->
           <button
             class="btn btn-sm btn-outline"
             id="viewUsersBtn"
@@ -96,7 +78,6 @@
           </button>
         </div>
 
-        <!-- SEGNALAZIONI CARD - COMPLETA E MODERNA -->
         <div class="kpi-card kpi-card--reports" id="reportsCard">
           <div class="kpi-header">
             <div class="kpi-icon">📋</div>
@@ -108,9 +89,7 @@
 
           <div class="kpi-divider"></div>
 
-          <!-- Reports Status Breakdown -->
           <div class="reports-status-breakdown">
-            <!-- Aperte -->
             <div class="status-item">
               <div class="status-dot report-open"></div>
               <div class="status-info">
@@ -119,7 +98,6 @@
               </div>
             </div>
 
-            <!-- In Lavorazione -->
             <div class="status-item">
               <div class="status-dot report-in-progress"></div>
               <div class="status-info">
@@ -128,7 +106,6 @@
               </div>
             </div>
 
-            <!-- Risolte -->
             <div class="status-item">
               <div class="status-dot report-resolved"></div>
               <div class="status-info">
@@ -138,7 +115,6 @@
             </div>
           </div>
 
-          <!-- Reports by Problem Type -->
           <div class="kpi-divider"></div>
           <div class="reports-problems-grid">
             <div class="problem-badge" id="damagoBadge">
@@ -167,10 +143,8 @@
             </div>
           </div>
 
-          <!-- Divider before button -->
           <div class="kpi-divider"></div>
 
-          <!-- Action Button -->
           <button
             class="btn btn-sm btn-outline"
             id="viewReportsBtn"
@@ -181,7 +155,6 @@
           </button>
         </div>
 
-        <!-- MEZZI CARD -->
         <div class="kpi-card kpi-card--vehicles" id="vehiclesCard">
           <div class="kpi-header">
             <div class="kpi-icon">🚲</div>
@@ -193,9 +166,7 @@
 
           <div class="kpi-divider"></div>
 
-          <!-- Status Breakdown -->
           <div class="vehicles-status-breakdown">
-            <!-- Disponibili -->
             <div class="status-item">
               <div class="status-dot available"></div>
               <div class="status-info">
@@ -204,7 +175,6 @@
               </div>
             </div>
 
-            <!-- Non Prelevabili -->
             <div class="status-item">
               <div class="status-dot unavailable"></div>
               <div class="status-info">
@@ -213,7 +183,6 @@
               </div>
             </div>
 
-            <!-- In Manutenzione -->
             <div class="status-item">
               <div class="status-dot maintenance"></div>
               <div class="status-info">
@@ -222,7 +191,6 @@
               </div>
             </div>
 
-            <!-- In Uso -->
             <div class="status-item">
               <div class="status-dot in-use"></div>
               <div class="status-info">
@@ -232,7 +200,6 @@
             </div>
           </div>
 
-          <!-- Vehicle Types Distribution -->
           <div class="vehicles-types">
             <div class="type-badge" id="bikeBadge">
               <span class="type-icon">🚴</span>
@@ -250,7 +217,6 @@
 
           <div class="kpi-divider"></div>
 
-          <!-- Action Button -->
           <button
             class="btn btn-sm btn-outline"
             id="viewVehiclesBtn"
@@ -261,7 +227,6 @@
           </button>
         </div>
 
-        <!-- PARCHEGGI CARD -->
         <div class="kpi-card kpi-card--parkings" id="parkingsCard">
           <div class="kpi-header">
             <div class="kpi-icon">📍</div>
@@ -273,28 +238,23 @@
 
           <div class="kpi-divider"></div>
 
-          <!-- Parking Capacity Overview -->
           <div class="parkings-overview">
-            <!-- Total Capacity -->
             <div class="capacity-item">
               <div class="capacity-label">Posti Totali</div>
               <div class="capacity-value" id="totalCapacity">0</div>
             </div>
 
-            <!-- Occupied -->
             <div class="capacity-item">
               <div class="capacity-label">Occupati</div>
               <div class="capacity-value occupied" id="totalOccupied">0</div>
             </div>
 
-            <!-- Available -->
             <div class="capacity-item">
               <div class="capacity-label">Disponibili</div>
               <div class="capacity-value available" id="totalAvailable">0</div>
             </div>
           </div>
 
-          <!-- Global Occupancy Progress Bar -->
           <div class="occupancy-container">
             <div class="occupancy-label">
               <span>Occupazione</span>
@@ -305,10 +265,8 @@
             </div>
           </div>
 
-          <!-- Divider before button -->
           <div class="kpi-divider"></div>
 
-          <!-- Action Button -->
           <button
             class="btn btn-sm btn-outline"
             id="viewParkingsBtn"
@@ -319,7 +277,6 @@
           </button>
         </div>
 
-        <!-- CORSE OGGI CARD -->
         <div class="kpi-card kpi-card--rides" id="ridesCard">
           <div class="kpi-header">
             <div class="kpi-icon">🏃</div>
@@ -331,9 +288,7 @@
 
           <div class="kpi-divider"></div>
 
-          <!-- Rides Status Breakdown -->
           <div class="rides-status-breakdown">
-            <!-- Completate -->
             <div class="status-item">
               <div class="status-dot completed"></div>
               <div class="status-info">
@@ -342,7 +297,6 @@
               </div>
             </div>
 
-            <!-- In Corso -->
             <div class="status-item">
               <div class="status-dot in-use"></div>
               <div class="status-info">
@@ -352,7 +306,6 @@
             </div>
           </div>
 
-          <!-- Rides Stats Grid -->
           <div class="rides-stats-grid">
             <div class="rides-stat-item">
               <div class="rides-stat-label">km Percorsi</div>
@@ -360,10 +313,8 @@
             </div>
           </div>
 
-          <!-- Divider before button -->
           <div class="kpi-divider"></div>
 
-          <!-- Action Button -->
           <button
             class="btn btn-sm btn-outline"
             id="viewRidesBtn"
@@ -374,7 +325,6 @@
           </button>
         </div>
 
-        <!-- INCASSI OGGI CARD -->
         <div class="kpi-card kpi-card--earnings" id="earningsCard">
           <div class="kpi-header">
             <div class="kpi-icon">💰</div>
@@ -386,7 +336,6 @@
 
           <div class="kpi-divider"></div>
 
-          <!-- Earnings Stats Grid -->
           <div class="earnings-stats-grid">
             <div class="earnings-stat-item">
               <div class="earnings-stat-label">Corse</div>
@@ -402,7 +351,6 @@
             </div>
           </div>
 
-          <!-- Earnings by Vehicle Type -->
           <div class="kpi-divider"></div>
           <div class="earnings-by-type">
             <div class="earnings-type-item">
@@ -424,10 +372,8 @@
             </div>
           </div>
 
-          <!-- Divider before button -->
           <div class="kpi-divider"></div>
 
-          <!-- Action Button -->
           <button
             class="btn btn-sm btn-outline"
             id="viewEarningsBtn"
@@ -440,12 +386,8 @@
       </div>
     </main>
 
-    <!-- Snackbar -->
     <div id="snackbar" class="snackbar"></div>
 
-    <!-- ====================================================================
-       SCRIPT
-       ==================================================================== -->
     <script src="/js/admin-dashboard.js"></script>
   </body>
 </html>

@@ -1,30 +1,20 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-/* ============================================================================
-   CSS CUSTOM PROPERTIES E RESET
-   ========================================================================== */
-
 :root {
-  /* Colori primari e secondari */
   --primary-teal: rgba(33, 128, 141, 1);
   --primary-teal-dark: rgba(29, 116, 128, 1);
   --success-green: rgba(33, 128, 141, 1);
   --warning-orange: #e68161;
   --error-red: rgba(192, 21, 47, 1);
   --info-blue: #2196f3;
-
   --error-bg: #ffe6e6;
   --error-color: #ff4444;
   --error-dark: #cc0000;
-
-  /* Colori neutrali */
   --light-bg: rgba(252, 252, 249, 1);
   --dark-text: rgba(19, 52, 59, 1);
   --light-text: rgba(98, 108, 113, 1);
   --white: rgba(255, 255, 255, 1);
   --border-color: rgba(94, 82, 64, 0.2);
-
-  /* Transizioni */
   --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -44,10 +34,6 @@ body {
   margin-left: 250px;
   padding: 24px;
 }
-
-/* ============================================================================
-   STAT CARDS
-   ========================================================================== */
 
 .stats-grid {
   display: grid;
@@ -105,10 +91,6 @@ body {
   color: var(--dark-text);
 }
 
-/* ============================================================================
-   FILTERS SECTION
-   ========================================================================== */
-
 .filters-section {
   display: grid;
   grid-template-columns: 1fr auto auto;
@@ -157,10 +139,6 @@ body {
 .filter-input {
   width: 100%;
 }
-
-/* ============================================================================
-   TABLE
-   ========================================================================== */
 
 .table-container {
   background: var(--white);
@@ -212,7 +190,6 @@ body {
   white-space: nowrap;
 }
 
-/* Badge styles */
 .badge {
   display: inline-block;
   padding: 4px 10px;
@@ -232,10 +209,6 @@ body {
   background: rgba(255, 193, 7, 0.15);
   color: #ffc107;
 }
-
-/* ============================================================================
-   ACTION BUTTONS
-   ========================================================================== */
 
 .action-buttons {
   display: flex;
@@ -276,10 +249,6 @@ body {
   background-color: var(--primary-teal-dark);
 }
 
-/* ============================================================================
-   EMPTY STATE
-   ========================================================================== */
-
 .empty-state {
   text-align: center;
   padding: 20px 20px;
@@ -290,10 +259,6 @@ body {
   font-size: 48px;
   opacity: 0.5;
 }
-
-/* ============================================================================
-   PAGINATION
-   ========================================================================== */
 
 .pagination-container {
   display: flex;
@@ -336,10 +301,6 @@ body {
   opacity: 0.4;
   cursor: not-allowed;
 }
-
-/* ============================================================================
-   MODAL
-   ========================================================================== */
 
 .modal {
   position: fixed;
@@ -471,10 +432,6 @@ body {
   justify-content: flex-end;
 }
 
-/* ============================================================================
-   BUTTON STYLES
-   ========================================================================== */
-
 .btn {
   padding: 11px 24px;
   border-radius: 8px;
@@ -513,10 +470,6 @@ body {
   background-color: rgba(33, 128, 141, 0.05);
 }
 
-/* ============================================================================
-   SNACKBAR
-   ========================================================================== */
-
 .snackbar {
   position: fixed;
   bottom: 16px;
@@ -544,10 +497,6 @@ body {
   background-color: var(--error-red);
 }
 
-/* ============================================================================
-   RESPONSIVE
-   ========================================================================== */
-
 @media (max-width: 1090px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -561,12 +510,10 @@ body {
     gap: 12px;
   }
 
-  /* Input prende tutta la prima riga */
   .filter-group:first-child {
     grid-column: 1 / -1;
   }
 
-  /* Le due select sulla riga sotto, una vicina all'altra */
   .filter-group:nth-child(2),
   .filter-group:nth-child(3) {
     width: 100%;

@@ -4,29 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestione Mezzi</title>
+    <link rel="stylesheet" href="/css/gestione-mezzi.css" />
+    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="/css/gestione-mezzi.css" />
-    <link rel="stylesheet" href="/css/navbar-sidebar.css" />
 
-    <!-- ✅ Libreria MQTT per browser -->
+    <!-- Libreria MQTT per browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
-    <!-- Poi: Singleton MQTT Manager -->
+    <!-- MQTT Manager -->
     <script src="/js/mqtt-manager.js"></script>
   </head>
   <body>
-    <!-- NAVBAR -->
-    <%- include('components/navbar') %>
+    <%- include('components/navbar') %> <%- include('components/sidebar') %>
 
-    <!-- SIDEBAR -->
-    <%- include('components/sidebar') %>
-
-    <!-- MAIN CONTENT -->
     <div class="main-content">
-      <!-- STAT CARDS -->
       <div class="header-stats">
         <div class="stat-card">
           <div class="stat-icon available">
@@ -76,7 +70,6 @@
         </button>
       </div>
 
-      <!-- SEARCH & FILTER -->
       <div class="search-filter">
         <div class="search-box">
           <i class="fas fa-search"></i>
@@ -107,7 +100,6 @@
         </div>
       </div>
 
-      <!-- TABLE -->
       <div class="table-responsive">
         <table class="vehicles-table">
           <thead>
@@ -132,10 +124,8 @@
         </table>
       </div>
 
-      <!-- PAGINAZIONE -->
       <div class="pagination-container" id="paginationContainer"></div>
 
-      <!-- ===== TOP PERFORMING VEHICLES SECTION ===== -->
       <div class="vehicles-performance-section">
         <div class="performance-header">
           <h2><i class="fas fa-chart-line"></i> Top 5 Mezzi per Performance</h2>
@@ -148,7 +138,7 @@
       </div>
     </div>
 
-    <!-- ===== MODAL: DETTAGLI MEZZO ===== -->
+    <!-- MODAL DETTAGLI MEZZO -->
     <div class="modal hidden" id="vehicleDetailModal">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -165,7 +155,7 @@
       </div>
     </div>
 
-    <!-- Modal: Edit Vehicle -->
+    <!-- MODAL MODIFICA MEZZO -->
     <div id="editVehicleModal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -244,7 +234,7 @@
       </div>
     </div>
 
-    <!-- ===== MODAL: AGGIUNGI MEZZO ===== -->
+    <!-- MODAL AGGIUNGI MEZZO -->
     <div class="modal hidden" id="addVehicleModal">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -294,7 +284,7 @@
       </div>
     </div>
 
-    <!-- ===== MODAL: ELIMINA MEZZO ===== -->
+    <!-- MODAL ELIMINA MEZZO -->
     <div class="modal hidden" id="deleteVehicleModal">
       <div class="modal-overlay"></div>
       <div class="modal-content modal-confirm">
@@ -323,7 +313,7 @@
       </div>
     </div>
 
-    <!-- ===== MODAL: FEEDBACK VEICOLO ===== -->
+    <!-- MODAL FEEDBACK VEICOLO -->
     <div class="modal hidden" id="feedbackVehicleModal">
       <div class="modal-overlay"></div>
       <div class="modal-content">
@@ -345,7 +335,6 @@
       </div>
     </div>
 
-    <!-- SNACKBAR -->
     <div class="snackbar" id="snackbar"></div>
 
     <script src="/js/gestione-mezzi.js"></script>
