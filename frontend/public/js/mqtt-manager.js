@@ -1,13 +1,9 @@
-// ==========================================
-// MQTT MANAGER - SINGLETON GLOBALE
-// ==========================================
-
+// Gestione connessione MQTT per aggiornamenti in tempo reale
 const MQTTManager = (() => {
   let instance = null;
   let isConnecting = false;
 
   return {
-    // Inizializza il singleton
     init() {
       if (instance) {
         console.log("✅ MQTT già connesso, riutilizzo istanza");
@@ -36,15 +32,14 @@ const MQTTManager = (() => {
 
         instance = new Paho.MQTT.Client(broker, port, clientId);
 
-        // ✅ Handlers globali
         instance.onConnectionLost = (responseObject) => {
           if (responseObject.errorCode !== 0) {
             console.warn("⚠️ MQTT Disconnesso:", responseObject.errorMessage);
           }
         };
 
+        // Gestione messaggi in arrivo
         instance.onMessageArrived = (message) => {
-          // Dispara evento personalizzato che tutte le pagine possono ascoltare
           document.dispatchEvent(
             new CustomEvent("mqtt-message", {
               detail: {
@@ -55,7 +50,7 @@ const MQTTManager = (() => {
           );
         };
 
-        // Connetti
+        // Connetti al broker
         instance.connect({
           onSuccess: () => {
             console.log("✅ MQTT Connesso!");
@@ -81,13 +76,12 @@ const MQTTManager = (() => {
               "💡 Fallback: Continuerò con polling locale della batteria"
             );
             isConnecting = false;
-            instance = null; // Reset per retry
+            instance = null;
           },
           useSSL: false,
           keepAliveInterval: 60,
-          // ❌ RIMOSSO: reconnect: true (non supportato!)
-          timeout: 3, // ✅ AGGIUNTO: Timeout di 3 secondi
-          cleanSession: true, // ✅ AGGIUNTO: Sessione pulita
+          timeout: 3,
+          cleanSession: true,
         });
 
         console.log("🔌 Tentando connessione MQTT...");
@@ -109,7 +103,7 @@ const MQTTManager = (() => {
       return instance && instance.isConnected && instance.isConnected();
     },
 
-    // Disconnect (usa solo quando esci davvero dall'app)
+    // Disconnect (usa solo quando esci davvero dal sistema)
     disconnect() {
       if (instance && instance.isConnected()) {
         instance.disconnect();
@@ -119,7 +113,7 @@ const MQTTManager = (() => {
       isConnecting = false;
     },
 
-    // Reset (opzionale)
+    // Reset completo
     reset() {
       instance = null;
       isConnecting = false;

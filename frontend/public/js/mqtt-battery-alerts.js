@@ -1,60 +1,48 @@
-// ==========================================
-// RIDE MQTT BATTERY ALERTS - VERSIONE MIGLIORATA
-// ==========================================
+// Gestisce gli alert di batteria che arrivano da MQTT e mostra snackbar/modali appropriate
 
-/**
- * BATTERY ALERT HANDLER
- * Gestisce gli alert di batteria che arrivano da MQTT
- */
+// FUNZIONE PRINCIPALE DI GESTIONE ALERT BATTERIA
 function handleBatteryAlert(alert) {
   const { tipo, batteria, messaggio, id_mezzo } = alert;
 
   console.log(`🔋 Battery Alert: ${tipo} - ${batteria}%`);
 
-  // ⚠️ SKIP se non è per il mezzo attuale della corsa
+  // SKIP se non è per il mezzo attuale della corsa
   if (id_mezzo !== rideState.vehicleData?.id_mezzo) {
     console.log(`⏭️ Alert per mezzo diverso: ${id_mezzo}`);
     return;
   }
 
-  // ⚠️ SKIP se non è un mezzo con batteria
+  // SKIP se non è un mezzo con batteria
   if (!haBatteria(rideState.vehicleData?.tipo_mezzo)) {
     console.log(`⏭️ Mezzo senza batteria`);
     return;
   }
 
-  // ✅ Aggiorna la batteria nel display
-  //rideState.vehicleData.stato_batteria = batteria;
-  //batteryValue.textContent = batteria + "%";
-  //document.getElementById("summaryBatteria").textContent = batteria + "%";
-
-  // ✅ Cambia colore della batteria (verde → arancio → rosso)
+  // Cambia colore della batteria (verde → arancio → rosso)
   animateBatteryUpdate(batteria);
 
-  // ⚠️ NUOVO: Non mostrare snackbar a 0% (arriva diritto alla modal)
   if (batteria <= 0) {
     handleBatteryZero();
     return;
   }
 
-  // ✅ Mostra snackbar SOLO fino all'1%
   switch (tipo) {
     case "batteria_bassa":
-      // 20-1%: Snackbar ARANCIONE
+      // 20-10%: Snackbar ARANCIONE
       if (batteria > 0) {
         showBatteryWarningSnackbar(batteria, messaggio);
       }
       break;
 
     case "batteria_critica":
-      // 10-1%: Snackbar ROSSA con animazione
+      // 10-1%: Snackbar ROSSA
       if (batteria > 0) {
         showBatteryCriticalSnackbar(batteria, messaggio);
       }
       break;
 
     case "batteria_esaurita":
-      // 0%: Modal rossa (usa la tua funzione existing)
+      // 0%: Modal Batteria Esaurita
       handleBatteryZero();
       break;
 
@@ -63,7 +51,7 @@ function handleBatteryAlert(alert) {
   }
 }
 
-// ===== SNACKBAR BATTERIA BASSA - ARANCIONE (20-10%) =====
+// SNACKBAR BATTERIA BASSA - ARANCIONE (20-10%)
 function showBatteryWarningSnackbar(batteryLevel, message) {
   const snackbarEl = document.getElementById("snackbar");
   if (!snackbarEl) {
@@ -71,7 +59,6 @@ function showBatteryWarningSnackbar(batteryLevel, message) {
     return;
   }
 
-  // ✅ Evita di mostrare 100 volte la stessa snackbar
   if (
     snackbarEl.classList.contains("show") &&
     snackbarEl.dataset.batteryLevel === "warning"
@@ -81,7 +68,6 @@ function showBatteryWarningSnackbar(batteryLevel, message) {
 
   snackbarEl.dataset.batteryLevel = "warning";
 
-  // 🟠 HTML della snackbar arancione SENZA LA X
   snackbarEl.innerHTML = `
     <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
       <!-- ICON CON SFONDO -->
@@ -126,7 +112,6 @@ function showBatteryWarningSnackbar(batteryLevel, message) {
     </div>
   `;
 
-  // 🟠 Styling moderno arancione con gradient
   snackbarEl.className = "snackbar show snackbar--warning";
   snackbarEl.style.cssText = `
     background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
@@ -139,14 +124,13 @@ function showBatteryWarningSnackbar(batteryLevel, message) {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   `;
 
-  // Rimani visibile 6 secondi
   setTimeout(() => {
     snackbarEl.classList.remove("show");
     snackbarEl.dataset.batteryLevel = "";
   }, 8000);
 }
 
-// ===== SNACKBAR BATTERIA CRITICA - ROSSO (10-0%) =====
+// SNACKBAR BATTERIA CRITICA - ROSSO (10-0%)
 function showBatteryCriticalSnackbar(batteryLevel, message) {
   const snackbarEl = document.getElementById("snackbar");
   if (!snackbarEl) {
@@ -154,7 +138,6 @@ function showBatteryCriticalSnackbar(batteryLevel, message) {
     return;
   }
 
-  // ✅ Evita duplicati
   if (
     snackbarEl.classList.contains("show") &&
     snackbarEl.dataset.batteryLevel === "critical"
@@ -164,7 +147,6 @@ function showBatteryCriticalSnackbar(batteryLevel, message) {
 
   snackbarEl.dataset.batteryLevel = "critical";
 
-  // 🔴 HTML della snackbar rossa MIGLIORATA - SENZA X e icona batteria piccola
   snackbarEl.innerHTML = `
     <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
       <!-- ICON BATTERIA CON SFONDO PICCOLO (come warning) -->
@@ -211,7 +193,6 @@ function showBatteryCriticalSnackbar(batteryLevel, message) {
     </div>
   `;
 
-  // 🔴 Styling moderno rosso con gradient e shadow drammatico
   snackbarEl.className = "snackbar show snackbar--error";
   snackbarEl.style.cssText = `
     background: linear-gradient(135deg, #ff5459 0%, #dc2626 100%) !important;
@@ -224,16 +205,14 @@ function showBatteryCriticalSnackbar(batteryLevel, message) {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   `;
 
-  // Rimani visibile 8 secondi
   setTimeout(() => {
     snackbarEl.classList.remove("show");
     snackbarEl.dataset.batteryLevel = "";
   }, 8000);
 }
 
-// ===== ANIMAZIONI CSS =====
+// ANIMAZIONI CSS PER SNACKBAR
 (function injectBatteryStyles() {
-  // Controlla se lo stile è già stato aggiunto
   if (document.getElementById("battery-alert-styles")) {
     return;
   }
@@ -274,18 +253,6 @@ function showBatteryCriticalSnackbar(batteryLevel, message) {
       to {
         transform: translateY(0);
         opacity: 1;
-      }
-    }
-
-    /* Animazione slide-out */
-    @keyframes slideOut {
-      from {
-        transform: translateX(0);
-        opacity: 1;
-      }
-      to {
-        transform: translateX(400px);
-        opacity: 0;
       }
     }
 

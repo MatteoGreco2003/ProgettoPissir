@@ -1,6 +1,7 @@
 import Vehicle from "../models/Vehicle.js";
 import Parking from "../models/Parking.js";
 import Report from "../models/Report.js";
+import Ride from "../models/Ride.js";
 
 // GET ALL VEHICLES - Lista mezzi con filtri opzionali (tipo, parcheggio, stato)
 export const getAllVehicles = async (req, res) => {
@@ -251,6 +252,20 @@ export const deleteVehicle = async (req, res) => {
     const vehicle = await Vehicle.findByPk(id);
     if (!vehicle) {
       return res.status(404).json({ error: "Mezzo non trovato" });
+    }
+
+    const activeRide = await Ride.findOne({
+      where: {
+        id_mezzo: id,
+        stato_corsa: ["in_corso", "sospesa_batteria_esaurita"],
+      },
+    });
+
+    if (activeRide) {
+      return res.status(400).json({
+        error:
+          "Non puoi eliminare un mezzo che è attualmente in uso in una corsa",
+      });
     }
 
     await vehicle.destroy();
